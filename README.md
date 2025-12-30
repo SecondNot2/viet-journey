@@ -1,70 +1,121 @@
-# Getting Started with Create React App
+# Travel Website - Viet Journey
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Ứng dụng đặt tour du lịch, khách sạn, vé máy bay và phương tiện di chuyển tại Việt Nam.
 
-## Available Scripts
+## 🚀 Quick Start
 
-In the project directory, you can run:
+### Prerequisites
 
-### `npm start`
+- Node.js v18+
+- Supabase Account (for database)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Installation
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```bash
+# Clone repository
+git clone <repository-url>
+cd travel-website
 
-### `npm test`
+# Install dependencies
+npm install
+cd backend && npm install && cd ..
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# Configure environment
+cp .env.example .env
+cp .env.example backend/.env
+# Edit .env files with your Supabase credentials
 
-### `npm run build`
+# Start development
+npm start
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Ứng dụng sẽ chạy tại:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:5000
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 📁 Project Structure
 
-### `npm run eject`
+```
+travel-website/
+├── backend/                    # Backend (Node.js + Express)
+│   ├── src/
+│   │   ├── modules/           # Feature modules (Modular Monolith)
+│   │   │   ├── auth/          # Authentication
+│   │   │   ├── users/         # User management
+│   │   │   ├── tours/         # Tours
+│   │   │   ├── hotels/        # Hotels
+│   │   │   ├── flights/       # Flights
+│   │   │   ├── bookings/      # Bookings
+│   │   │   ├── destinations/  # Destinations
+│   │   │   ├── blogs/         # Blogs
+│   │   │   ├── transport/     # Transport
+│   │   │   ├── promotions/    # Promotions
+│   │   │   └── reviews/       # Reviews
+│   │   ├── shared/            # Shared utilities
+│   │   │   ├── config/        # App config
+│   │   │   ├── database/      # Supabase connection
+│   │   │   ├── middleware/    # Auth middleware
+│   │   │   └── utils/         # Response & validation utils
+│   │   └── app.js             # Express app setup
+│   └── server.js              # Entry point
+│
+├── src/                        # Frontend (React)
+│   ├── api/                   # API service layer
+│   ├── components/            # React components
+│   ├── shared/                # Shared hooks, utils, constants
+│   ├── contexts/              # React contexts
+│   └── App.js                 # App entry
+│
+├── docs/                       # Documentation
+│   ├── guides/                # How-to guides
+│   └── ARCHITECTURE.md        # System architecture
+│
+└── package.json
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 🛠️ Tech Stack
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Backend
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: Supabase (PostgreSQL)
+- **Auth**: JWT + bcryptjs
+- **File Upload**: Multer
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Frontend
 
-## Learn More
+- **Framework**: React 19
+- **Routing**: React Router v7
+- **Styling**: Tailwind CSS
+- **HTTP Client**: Axios
+- **Charts**: Recharts
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 🔑 Environment Variables
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Create `.env` files in both root and `backend/` directories:
 
-### Code Splitting
+```env
+# Backend (backend/.env)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+JWT_SECRET=your-secure-jwt-secret
+PORT=5000
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+# Frontend (.env)
+REACT_APP_API_URL=http://localhost:5000
+REACT_APP_SUPABASE_URL=https://your-project.supabase.co
+REACT_APP_SUPABASE_ANON_KEY=your-anon-key
+```
 
-### Analyzing the Bundle Size
+> ⚠️ **IMPORTANT**: Never commit `.env` files to version control!
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 📖 Documentation
 
-### Making a Progressive Web App
+- [Architecture Overview](./docs/ARCHITECTURE.md)
+- [Development Guides](./docs/guides/)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## 📄 License
 
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Private - All rights reserved.

@@ -1,0 +1,25 @@
+{
+  "extends": ["react-app", "react-app/jest"],
+  "rules": {
+    "no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_|^[A-Z].*Tag$|^API_URL$|^PLACEHOLDER_IMAGE$"
+      }
+    ],
+    "react-hooks/exhaustive-deps": "off",
+    "eqeqeq": "warn"
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/components/Admin/**/*.js",
+        "src/components/Services/**/*.js"
+      ],
+      "rules": {
+        "no-unused-vars": "off"
+      }
+    }
+  ]
+}
