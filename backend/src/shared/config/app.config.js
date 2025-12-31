@@ -13,12 +13,14 @@ const config = {
     if (!secret && process.env.NODE_ENV === "production") {
       throw new Error("❌ JWT_SECRET is required in production!");
     }
-    return secret || "dev-only-secret-do-not-use-in-production";
+    return secret;
   })(),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
 
   // CORS
-  corsOrigins: ["http://localhost:3000", "http://127.0.0.1:3000"],
+  corsOrigins: process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(",")
+    : ["http://localhost:3000", "http://127.0.0.1:3000"],
 
   // Upload
   uploadLimit: "50mb",

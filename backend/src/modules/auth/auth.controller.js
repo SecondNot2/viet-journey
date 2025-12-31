@@ -108,10 +108,11 @@ const login = async (req, res) => {
     const token = authService.generateToken(user, remember);
 
     // Set cookie
+    const isProduction = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: isProduction, // Secure in production
+      sameSite: isProduction ? "strict" : "lax", // Strict CSRF protection in production
       path: "/",
       maxAge: remember ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
     });
@@ -130,10 +131,11 @@ const login = async (req, res) => {
  * User logout
  */
 const logout = (req, res) => {
+  const isProduction = process.env.NODE_ENV === "production";
   res.clearCookie("token", {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "strict" : "lax",
     path: "/",
   });
   return response.success(res, null, "Đăng xuất thành công");

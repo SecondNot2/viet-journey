@@ -131,7 +131,12 @@ router.get("/:id", async (req, res) => {
 });
 
 // Create tour
-router.post("/", async (req, res) => {
+const {
+  authenticateToken,
+  requireRole,
+} = require("../../shared/middleware/auth.middleware");
+
+router.post("/", authenticateToken, requireRole("admin"), async (req, res) => {
   try {
     const supabase = db.getClient();
     const { data, error } = await supabase
@@ -149,47 +154,57 @@ router.post("/", async (req, res) => {
 });
 
 // Update tour
-router.put("/:id", async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "ID không hợp lệ" });
+router.put(
+  "/:id",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "ID không hợp lệ" });
+      }
+
+      const supabase = db.getClient();
+      const { error } = await supabase
+        .from("tours")
+        .update({ ...req.body, updated_at: new Date().toISOString() })
+        .eq("id", id);
+
+      if (error) throw error;
+      res.json({ message: "Cập nhật tour thành công" });
+    } catch (error) {
+      console.error("Error updating tour:", error);
+      res.status(500).json({ error: "Lỗi khi cập nhật tour" });
     }
-
-    const supabase = db.getClient();
-    const { error } = await supabase
-      .from("tours")
-      .update({ ...req.body, updated_at: new Date().toISOString() })
-      .eq("id", id);
-
-    if (error) throw error;
-    res.json({ message: "Cập nhật tour thành công" });
-  } catch (error) {
-    console.error("Error updating tour:", error);
-    res.status(500).json({ error: "Lỗi khi cập nhật tour" });
   }
-});
+);
 
 // Delete tour
-router.delete("/:id", async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "ID không hợp lệ" });
+router.delete(
+  "/:id",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "ID không hợp lệ" });
+      }
+
+      const supabase = db.getClient();
+      const { error } = await supabase
+        .from("tours")
+        .update({ status: "inactive" })
+        .eq("id", id);
+
+      if (error) throw error;
+      res.json({ message: "Xóa tour thành công" });
+    } catch (error) {
+      console.error("Error deleting tour:", error);
+      res.status(500).json({ error: "Lỗi khi xóa tour" });
     }
-
-    const supabase = db.getClient();
-    const { error } = await supabase
-      .from("tours")
-      .update({ status: "inactive" })
-      .eq("id", id);
-
-    if (error) throw error;
-    res.json({ message: "Xóa tour thành công" });
-  } catch (error) {
-    console.error("Error deleting tour:", error);
-    res.status(500).json({ error: "Lỗi khi xóa tour" });
   }
-});
+);
 
 module.exports = router;

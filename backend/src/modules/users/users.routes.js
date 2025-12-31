@@ -10,10 +10,32 @@ const {
 } = require("../../shared/middleware/auth.middleware");
 
 // Admin routes (must be before /:id to avoid conflicts)
-router.get("/admin/stats", usersController.getAdminStats);
-router.get("/admin/users", usersController.getAdminUsers);
-router.get("/admin/roles", usersController.getAdminRoles);
-router.put("/admin/users/:id", usersController.updateAdminUser);
+const { requireRole } = require("../../shared/middleware/auth.middleware");
+
+router.get(
+  "/admin/stats",
+  authenticateToken,
+  requireRole("admin"),
+  usersController.getAdminStats
+);
+router.get(
+  "/admin/users",
+  authenticateToken,
+  requireRole("admin"),
+  usersController.getAdminUsers
+);
+router.get(
+  "/admin/roles",
+  authenticateToken,
+  requireRole("admin"),
+  usersController.getAdminRoles
+);
+router.put(
+  "/admin/users/:id",
+  authenticateToken,
+  requireRole("admin"),
+  usersController.updateAdminUser
+);
 
 // Roles route
 router.get("/roles", usersController.getRoles);

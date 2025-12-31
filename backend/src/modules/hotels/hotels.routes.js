@@ -114,7 +114,12 @@ router.get("/:id/rooms", async (req, res) => {
 });
 
 // Create hotel
-router.post("/", async (req, res) => {
+const {
+  authenticateToken,
+  requireRole,
+} = require("../../shared/middleware/auth.middleware");
+
+router.post("/", authenticateToken, requireRole("admin"), async (req, res) => {
   try {
     const supabase = db.getClient();
     const { data, error } = await supabase
@@ -132,47 +137,57 @@ router.post("/", async (req, res) => {
 });
 
 // Update hotel
-router.put("/:id", async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "ID không hợp lệ" });
+router.put(
+  "/:id",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "ID không hợp lệ" });
+      }
+
+      const supabase = db.getClient();
+      const { error } = await supabase
+        .from("hotels")
+        .update({ ...req.body, updated_at: new Date().toISOString() })
+        .eq("id", id);
+
+      if (error) throw error;
+      res.json({ message: "Cập nhật khách sạn thành công" });
+    } catch (error) {
+      console.error("Error updating hotel:", error);
+      res.status(500).json({ error: "Lỗi khi cập nhật khách sạn" });
     }
-
-    const supabase = db.getClient();
-    const { error } = await supabase
-      .from("hotels")
-      .update({ ...req.body, updated_at: new Date().toISOString() })
-      .eq("id", id);
-
-    if (error) throw error;
-    res.json({ message: "Cập nhật khách sạn thành công" });
-  } catch (error) {
-    console.error("Error updating hotel:", error);
-    res.status(500).json({ error: "Lỗi khi cập nhật khách sạn" });
   }
-});
+);
 
 // Delete hotel
-router.delete("/:id", async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "ID không hợp lệ" });
+router.delete(
+  "/:id",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "ID không hợp lệ" });
+      }
+
+      const supabase = db.getClient();
+      const { error } = await supabase
+        .from("hotels")
+        .update({ status: "inactive" })
+        .eq("id", id);
+
+      if (error) throw error;
+      res.json({ message: "Xóa khách sạn thành công" });
+    } catch (error) {
+      console.error("Error deleting hotel:", error);
+      res.status(500).json({ error: "Lỗi khi xóa khách sạn" });
     }
-
-    const supabase = db.getClient();
-    const { error } = await supabase
-      .from("hotels")
-      .update({ status: "inactive" })
-      .eq("id", id);
-
-    if (error) throw error;
-    res.json({ message: "Xóa khách sạn thành công" });
-  } catch (error) {
-    console.error("Error deleting hotel:", error);
-    res.status(500).json({ error: "Lỗi khi xóa khách sạn" });
   }
-});
+);
 
 module.exports = router;
