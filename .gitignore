@@ -43,7 +43,7 @@ yarn-error.log*
 .cache/
 
 # database files (legacy)
-*.sql
+# *.sql
 
 # misc
 localhost.log
