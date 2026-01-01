@@ -11,9 +11,13 @@ const PLACEHOLDER_IMAGE = `${API_URL}/images/placeholder.png`;
 
 // Tạo component riêng để hiển thị tag hãng hàng không thay vì tag loại dịch vụ
 const AirlineTag = ({ airline, className = "" }) => {
+  // Defensive check: fallback to 'Hãng bay' if airline is undefined/null
+  const safeAirline = airline || "Hãng bay";
+  const safeAirlineLower = safeAirline.toLowerCase();
+
   // Lấy màu dựa trên tên hãng
   const getAirlineColor = () => {
-    switch (airline.toLowerCase()) {
+    switch (safeAirlineLower) {
       case "vietnam airlines":
         return "bg-blue-50 text-blue-700";
       case "vietjet air":
@@ -34,7 +38,7 @@ const AirlineTag = ({ airline, className = "" }) => {
     <span
       className={`text-xs uppercase px-2 py-1 rounded-full font-bold ${getAirlineColor()} ${className}`}
     >
-      {airline}
+      {safeAirline}
     </span>
   );
 };
@@ -93,6 +97,7 @@ const FeaturedFlights = () => {
           return;
         }
 
+        // Backend now returns flat data, no need to map
         setFlights(response.data);
         setLoading(false);
       } catch (err) {

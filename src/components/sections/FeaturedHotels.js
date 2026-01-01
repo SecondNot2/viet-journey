@@ -45,6 +45,8 @@ const HotelAmenities = ({ amenities, className = "" }) => {
   // Map icon cho từng loại tiện nghi
   const getAmenityIcon = (amenity) => {
     const iconProps = { className: "w-4 h-4 mr-1 flex-shrink-0" };
+    // Defensive check: return default icon if amenity is undefined/null
+    if (!amenity) return <Bed {...iconProps} />;
     const amenityLower = amenity.toLowerCase();
 
     if (amenityLower.includes("wifi") || amenityLower.includes("internet")) {

@@ -38,6 +38,8 @@ router.get("/", async (req, res) => {
     const { location, min_price, max_price, page = 1, limit = 10 } = req.query;
     const supabase = db.getClient();
     const offset = (parseInt(page) - 1) * parseInt(limit);
+    const parsedLimit = parseInt(limit);
+    const parsedPage = parseInt(page);
 
     let query = supabase
       .from("hotels")
@@ -48,10 +50,24 @@ router.get("/", async (req, res) => {
 
     const { data, count, error } = await query
       .order("created_at", { ascending: false })
-      .range(offset, offset + parseInt(limit) - 1);
+      .range(offset, offset + parsedLimit - 1);
 
     if (error) throw error;
-    res.json({ hotels: data || [], total: count || 0 });
+
+    // Return pagination object that Frontend expects
+    const total = count || 0;
+    const total_pages = Math.ceil(total / parsedLimit);
+
+    res.json({
+      hotels: data || [],
+      total,
+      pagination: {
+        page: parsedPage,
+        limit: parsedLimit,
+        total,
+        total_pages,
+      },
+    });
   } catch (error) {
     console.error("Error fetching hotels:", error);
     res.status(500).json({ error: "Lỗi khi lấy danh sách khách sạn" });

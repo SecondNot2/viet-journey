@@ -22,9 +22,12 @@ const PLACEHOLDER_IMAGE = `${API_URL}/images/placeholder.png`;
 
 // Component tùy chỉnh cho tag phương tiện
 const TransportTypeTag = ({ type, className = "" }) => {
+  // Defensive check: fallback to 'bus' if type is undefined/null
+  const safeType = (type || "bus").toLowerCase();
+
   // Chuyển đổi loại phương tiện sang tiếng Việt
   const getTransportTypeLabel = () => {
-    switch (type.toLowerCase()) {
+    switch (safeType) {
       case "bus":
         return "Xe buýt";
       case "car":
@@ -49,7 +52,7 @@ const TransportTypeTag = ({ type, className = "" }) => {
 
   // Chọn icon phù hợp với loại phương tiện
   const getTransportTypeIcon = () => {
-    switch (type.toLowerCase()) {
+    switch (safeType) {
       case "bus":
         return <Bus className="w-3 h-3 mr-1" />;
       case "car":
@@ -73,7 +76,7 @@ const TransportTypeTag = ({ type, className = "" }) => {
 
   // Chọn màu nền phù hợp với loại phương tiện
   const getTransportTypeColor = () => {
-    switch (type.toLowerCase()) {
+    switch (safeType) {
       case "bus":
         return "bg-orange-50 text-orange-700";
       case "car":
@@ -194,8 +197,8 @@ const FeaturedTransport = () => {
       try {
         const response = await axios.get(`${API_URL}/api/transport/featured`);
 
-        // Backend trả về { transports: [...] }
-        const transportData = response.data.transports || response.data;
+        // Backend trả về array đã flatten
+        const transportData = response.data;
 
         if (!transportData || transportData.length === 0) {
           setTransports([]);
@@ -203,6 +206,7 @@ const FeaturedTransport = () => {
           return;
         }
 
+        // Backend now returns flat data, no need to map
         setTransports(transportData);
         setLoading(false);
       } catch (err) {

@@ -21,7 +21,7 @@ router.get("/featured", async (req, res) => {
         flight_routes (
           flight_number, airline, airline_image,
           from_location, to_location, aircraft,
-          base_price, baggage, amenities
+          base_price, duration, baggage, amenities, trip_type
         )
       `
       )
@@ -30,7 +30,31 @@ router.get("/featured", async (req, res) => {
       .limit(4);
 
     if (error) throw error;
-    res.json(data || []);
+
+    // Flatten nested data for frontend compatibility
+    const flattenedFlights = (data || []).map((schedule) => ({
+      id: schedule.id,
+      schedule_code: schedule.schedule_code,
+      flight_date: schedule.flight_date,
+      departure_datetime: schedule.departure_datetime,
+      arrival_datetime: schedule.arrival_datetime,
+      departure_time: schedule.departure_datetime,
+      arrival_time: schedule.arrival_datetime,
+      status: schedule.status,
+      flight_number: schedule.flight_routes?.flight_number || "",
+      airline: schedule.flight_routes?.airline || "Hãng bay",
+      airline_image: schedule.flight_routes?.airline_image,
+      from_location: schedule.flight_routes?.from_location || "",
+      to_location: schedule.flight_routes?.to_location || "",
+      aircraft: schedule.flight_routes?.aircraft,
+      price: schedule.price_override || schedule.flight_routes?.base_price || 0,
+      duration: schedule.flight_routes?.duration || 0,
+      baggage: schedule.flight_routes?.baggage,
+      amenities: schedule.flight_routes?.amenities,
+      trip_type: schedule.flight_routes?.trip_type || "one_way",
+    }));
+
+    res.json(flattenedFlights);
   } catch (error) {
     console.error("Error fetching featured flights:", error);
     res.status(500).json({ error: "Lỗi khi lấy chuyến bay nổi bật" });
@@ -52,7 +76,9 @@ router.get("/", async (req, res) => {
       limit = 10,
     } = req.query;
     const supabase = db.getClient();
-    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const parsedPage = parseInt(page);
+    const parsedLimit = parseInt(limit);
+    const offset = (parsedPage - 1) * parsedLimit;
 
     let query = supabase
       .from("flight_schedules")
@@ -62,7 +88,7 @@ router.get("/", async (req, res) => {
         flight_routes (
           flight_number, airline, airline_image,
           from_location, to_location, aircraft,
-          base_price, baggage, amenities
+          base_price, duration, baggage, amenities, trip_type
         )
       `,
         { count: "exact" }
@@ -75,10 +101,53 @@ router.get("/", async (req, res) => {
 
     const { data, count, error } = await query
       .order("departure_datetime", { ascending: true })
-      .range(offset, offset + parseInt(limit) - 1);
+      .range(offset, offset + parsedLimit - 1);
 
     if (error) throw error;
-    res.json({ flights: data || [], total: count || 0 });
+
+    // Flatten nested flight_routes data for frontend compatibility
+    const flattenedFlights = (data || []).map((schedule) => ({
+      // Schedule fields
+      id: schedule.id,
+      schedule_id: schedule.id,
+      schedule_code: schedule.schedule_code,
+      flight_date: schedule.flight_date,
+      departure_datetime: schedule.departure_datetime,
+      arrival_datetime: schedule.arrival_datetime,
+      departure_time: schedule.departure_datetime,
+      arrival_time: schedule.arrival_datetime,
+      seat_classes: schedule.seat_classes,
+      flight_status: schedule.status,
+      discount_percentage: schedule.discount_percentage || 0,
+      // Flattened route fields
+      flight_number: schedule.flight_routes?.flight_number || "",
+      airline: schedule.flight_routes?.airline || "Hãng bay",
+      airline_image: schedule.flight_routes?.airline_image,
+      from_location: schedule.flight_routes?.from_location || "",
+      to_location: schedule.flight_routes?.to_location || "",
+      aircraft: schedule.flight_routes?.aircraft,
+      price: schedule.price_override || schedule.flight_routes?.base_price || 0,
+      base_price: schedule.flight_routes?.base_price || 0,
+      duration: schedule.flight_routes?.duration || 0,
+      baggage: schedule.flight_routes?.baggage,
+      amenities: schedule.flight_routes?.amenities,
+      trip_type: schedule.flight_routes?.trip_type || "one_way",
+    }));
+
+    // Return with pagination object
+    const total = count || 0;
+    const total_pages = Math.ceil(total / parsedLimit);
+
+    res.json({
+      flights: flattenedFlights,
+      total,
+      pagination: {
+        page: parsedPage,
+        limit: parsedLimit,
+        total,
+        total_pages,
+      },
+    });
   } catch (error) {
     console.error("Error fetching flights:", error);
     res.status(500).json({ error: "Lỗi khi lấy danh sách chuyến bay" });
@@ -116,7 +185,39 @@ router.get("/:id", async (req, res) => {
       }
       throw error;
     }
-    res.json(data);
+
+    // Flatten nested flight_routes data for frontend compatibility
+    const flattenedFlight = {
+      // Schedule fields
+      id: data.id,
+      schedule_id: data.id,
+      schedule_code: data.schedule_code,
+      flight_date: data.flight_date,
+      departure_datetime: data.departure_datetime,
+      arrival_datetime: data.arrival_datetime,
+      departure_time: data.departure_datetime,
+      arrival_time: data.arrival_datetime,
+      seat_classes: data.seat_classes,
+      flight_status: data.status,
+      status: data.status,
+      discount_percentage: data.discount_percentage || 0,
+      // Flattened route fields
+      route_id: data.route_id,
+      flight_number: data.flight_routes?.flight_number || "",
+      airline: data.flight_routes?.airline || "Hãng bay",
+      airline_image: data.flight_routes?.airline_image,
+      from_location: data.flight_routes?.from_location || "",
+      to_location: data.flight_routes?.to_location || "",
+      aircraft: data.flight_routes?.aircraft,
+      price: data.price_override || data.flight_routes?.base_price || 0,
+      base_price: data.flight_routes?.base_price || 0,
+      duration: data.flight_routes?.duration || 0,
+      baggage: data.flight_routes?.baggage,
+      amenities: data.flight_routes?.amenities,
+      trip_type: data.flight_routes?.trip_type || "one_way",
+    };
+
+    res.json(flattenedFlight);
   } catch (error) {
     console.error("Error fetching flight:", error);
     res.status(500).json({ error: "Lỗi khi lấy thông tin chuyến bay" });
