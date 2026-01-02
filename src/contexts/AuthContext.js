@@ -17,7 +17,9 @@ export const AuthProvider = ({ children }) => {
         const response = await axios.get(`${API_URL}/api/users/profile`, {
           withCredentials: true,
         });
-        setUser(response.data);
+        // Unwrap API response (backend wraps in { success: true, data: {...} })
+        const userData = response.data.data || response.data;
+        setUser(userData);
       } catch (err) {
         if (err.response?.status === 401 || err.response?.status === 403) {
           // Token không tồn tại hoặc hết hạn
@@ -65,7 +67,9 @@ export const AuthProvider = ({ children }) => {
           `${API_URL}/api/users/profile`,
           { withCredentials: true }
         );
-        setUser(profileResponse.data);
+        // Unwrap API response
+        const fullProfile = profileResponse.data.data || profileResponse.data;
+        setUser(fullProfile);
       } catch (profileErr) {
         // Nếu không load được profile đầy đủ, vẫn giữ userData từ login response
         // nhưng không log warning nữa

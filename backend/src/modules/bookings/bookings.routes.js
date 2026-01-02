@@ -48,7 +48,7 @@ router.get("/user/:userId", async (req, res) => {
     }
 
     const supabase = db.getClient();
-    const { data, error } = await supabase
+    let query = supabase
       .from("bookings")
       .select(
         `
@@ -65,8 +65,16 @@ router.get("/user/:userId", async (req, res) => {
         )
       `
       )
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+      .eq("user_id", userId);
+
+    const { status } = req.query;
+    if (status && status !== "all") {
+      query = query.eq("status", status);
+    }
+
+    const { data, error } = await query.order("created_at", {
+      ascending: false,
+    });
 
     if (error) throw error;
     res.json(data || []);

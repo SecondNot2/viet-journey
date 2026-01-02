@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../../contexts/AuthContext";
 import {
   Calendar,
   MapPin,
@@ -18,6 +19,7 @@ import {
 } from "lucide-react";
 
 const BookingHistory = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("all");
   const [expandedBooking, setExpandedBooking] = useState(null);
   const [bookings, setBookings] = useState([]);
@@ -28,13 +30,22 @@ const BookingHistory = () => {
 
   useEffect(() => {
     const fetchBookings = async () => {
+      if (!user || !user.id) {
+        setError("Vui lòng đăng nhập để xem lịch sử đặt chỗ");
+        setLoading(false);
+        return;
+      }
+
       try {
-        const response = await axios.get("http://localhost:5000/api/bookings", {
-          withCredentials: true,
-          params: {
-            status: activeTab !== "all" ? activeTab : undefined,
-          },
-        });
+        const response = await axios.get(
+          `http://localhost:5000/api/bookings/user/${user.id}`,
+          {
+            withCredentials: true,
+            params: {
+              status: activeTab !== "all" ? activeTab : undefined,
+            },
+          }
+        );
 
         // Xử lý và định dạng dữ liệu từ API
         const formattedBookings = (response.data.data || response.data).map(
