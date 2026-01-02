@@ -47,12 +47,46 @@ const getUserProfile = async (id) => {
       completedBookings: parseInt(user.completed_bookings) || 0,
       upcomingBookings: parseInt(user.upcoming_bookings) || 0,
       totalReviews: parseInt(user.total_reviews) || 0,
+      totalTours: parseInt(user.total_tours) || 0,
+      totalHotels: parseInt(user.total_hotels) || 0,
     },
     preferences: {
-      favoriteDestinations: user.favorite_destinations || [],
-      travelStyle: user.travel_style || "Chưa cập nhật",
-      budget: user.budget || "Chưa cập nhật",
+      favoriteDestinations: [], // Placeholder as strict schema doesn't have this yet
+      travelStyle: "Chưa cập nhật",
+      budget: "Chưa cập nhật",
     },
+    recentActivities: [
+      ...(user.recent_bookings || []).map((b) => {
+        let title = "Đã đặt dịch vụ";
+        if (b.tours) title = `Đã đặt tour ${b.tours.title}`;
+        else if (b.hotels) title = `Đã đặt phòng khách sạn ${b.hotels.name}`;
+        else if (b.flight_schedules) {
+          const route = b.flight_schedules.flight_routes;
+          title = `Đã đặt vé máy bay ${route.from_location} - ${route.to_location}`;
+        }
+        return {
+          id: `booking-${b.id}`,
+          type: "booking",
+          title,
+          time: b.created_at,
+          details: b.status,
+        };
+      }),
+      ...(user.recent_reviews || []).map((r) => {
+        let title = "Đã viết đánh giá";
+        if (r.tours) title = `Đã đánh giá tour ${r.tours.title}`;
+        else if (r.hotels) title = `Đã đánh giá khách sạn ${r.hotels.name}`;
+        return {
+          id: `review-${r.id}`,
+          type: "review",
+          title,
+          time: r.created_at,
+          rating: r.rating,
+        };
+      }),
+    ]
+      .sort((a, b) => new Date(b.time) - new Date(a.time))
+      .slice(0, 5),
   };
 };
 

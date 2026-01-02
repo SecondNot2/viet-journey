@@ -50,7 +50,7 @@ const Profile = () => {
             withCredentials: true,
           }
         );
-        setUserData(response.data);
+        setUserData(response.data.data || response.data);
         setLoading(false);
       } catch (err) {
         setError(err.response?.data?.error || "Có lỗi xảy ra khi tải dữ liệu");
@@ -138,6 +138,32 @@ const Profile = () => {
     }
   };
 
+  const getTimeAgo = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " năm trước";
+
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " tháng trước";
+
+    interval = seconds / 604800; // weeks
+    if (interval > 1) return Math.floor(interval) + " tuần trước";
+
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " ngày trước";
+
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " giờ trước";
+
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " phút trước";
+
+    return "Vừa xong";
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -147,6 +173,7 @@ const Profile = () => {
   }
 
   if (error) {
+    // ... (unchanged error block start) ...
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -165,6 +192,8 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* ... (header and nav unchanged) ... */}
+
       {/* Profile Header */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -353,37 +382,43 @@ const Profile = () => {
                 </Link>
               </div>
               <div className="space-y-4">
-                <div className="flex items-center gap-4 p-4 border rounded-lg">
-                  <div className="p-3 bg-emerald-50 rounded-lg">
-                    <Star className="w-6 h-6 text-emerald-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Đã đánh giá tour Sapa</p>
-                    <p className="text-sm text-gray-600">2 ngày trước</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 p-4 border rounded-lg">
-                  <div className="p-3 bg-emerald-50 rounded-lg">
-                    <Building2 className="w-6 h-6 text-emerald-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">
-                      Đã đặt phòng khách sạn Đà Nẵng
-                    </p>
-                    <p className="text-sm text-gray-600">5 ngày trước</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 p-4 border rounded-lg">
-                  <div className="p-3 bg-emerald-50 rounded-lg">
-                    <Plane className="w-6 h-6 text-emerald-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">
-                      Đã đặt vé máy bay Hà Nội - Đà Nẵng
-                    </p>
-                    <p className="text-sm text-gray-600">1 tuần trước</p>
-                  </div>
-                </div>
+                {userData.recentActivities &&
+                userData.recentActivities.length > 0 ? (
+                  userData.recentActivities.map((activity) => {
+                    let Icon = Star;
+                    let bgClass = "bg-emerald-50 text-emerald-600";
+
+                    if (activity.type === "booking") {
+                      if (activity.title.includes("vé máy bay")) Icon = Plane;
+                      else if (activity.title.includes("khách sạn"))
+                        Icon = Building2;
+                      else Icon = Calendar; // Default booking icon
+                    } else if (activity.type === "review") {
+                      Icon = Star;
+                    }
+
+                    return (
+                      <div
+                        key={activity.id}
+                        className="flex items-center gap-4 p-4 border rounded-lg"
+                      >
+                        <div className={`p-3 rounded-lg ${bgClass}`}>
+                          <Icon className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{activity.title}</p>
+                          <p className="text-sm text-gray-600">
+                            {getTimeAgo(activity.time)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-gray-500 text-center py-4">
+                    Chưa có hoạt động nào gần đây
+                  </p>
+                )}
               </div>
             </div>
 

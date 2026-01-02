@@ -80,7 +80,9 @@ const findByEmail = async (email) => {
  */
 const findProfileById = async (id) => {
   const supabase = db.getClient();
-  const { data, error } = await supabase
+
+  // 1. Fetch user & profile
+  const { data: user, error } = await supabase
     .from("users")
     .select(
       `
@@ -93,7 +95,95 @@ const findProfileById = async (id) => {
     .single();
 
   if (error) throw error;
-  return data ? formatFullProfile(data) : null;
+  if (!user) return null;
+
+  // 2. Calculate stats
+  // Total bookings
+  const { count: totalBookings } = await supabase
+    .from("bookings")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", id);
+
+  // Completed bookings
+  const { count: completedBookings } = await supabase
+    .from("bookings")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", id)
+    .eq("status", "completed");
+
+  // Upcoming bookings
+  const { count: upcomingBookings } = await supabase
+    .from("bookings")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", id)
+    .or("status.eq.confirmed,status.eq.pending");
+
+  // Total reviews
+  const { count: totalReviews } = await supabase
+    .from("reviews")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", id);
+
+  // Total Tours Booked
+  const { count: totalTours } = await supabase
+    .from("bookings")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", id)
+    .not("tour_id", "is", null);
+
+  // Total Hotels Booked
+  const { count: totalHotels } = await supabase
+    .from("bookings")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", id)
+    .not("hotel_id", "is", null);
+
+  // Stats object
+  const stats = {
+    total_bookings: totalBookings || 0,
+    completed_bookings: completedBookings || 0,
+    upcoming_bookings: upcomingBookings || 0,
+    total_reviews: totalReviews || 0,
+    total_tours: totalTours || 0,
+    total_hotels: totalHotels || 0,
+  };
+
+  // 3. Fetch recent activity data
+  const { data: recentBookings } = await supabase
+    .from("bookings")
+    .select(
+      `
+      id, created_at, status,
+      tours (title),
+      hotels (name),
+      flight_schedules (
+        flight_routes (from_location, to_location)
+      )
+    `
+    )
+    .eq("user_id", id)
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  const { data: recentReviews } = await supabase
+    .from("reviews")
+    .select(
+      `
+      id, created_at, rating,
+      tours (title),
+      hotels (name)
+    `
+    )
+    .eq("user_id", id)
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  return formatFullProfile({
+    ...user,
+    ...stats,
+    recent_bookings: recentBookings || [],
+    recent_reviews: recentReviews || [],
+  });
 };
 
 /**
@@ -253,6 +343,14 @@ const formatFullProfile = (user) => ({
   avatar: user.userprofiles?.avatar,
   bio: user.userprofiles?.bio,
   created_at: user.created_at,
+  total_bookings: user.total_bookings,
+  completed_bookings: user.completed_bookings,
+  upcoming_bookings: user.upcoming_bookings,
+  total_reviews: user.total_reviews,
+  total_tours: user.total_tours,
+  total_hotels: user.total_hotels,
+  recent_bookings: user.recent_bookings,
+  recent_reviews: user.recent_reviews,
 });
 
 module.exports = {

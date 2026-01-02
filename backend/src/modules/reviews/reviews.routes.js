@@ -4,6 +4,9 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../../shared/database/db");
+const {
+  authenticateToken,
+} = require("../../shared/middleware/auth.middleware");
 
 // ========================================
 // SPECIFIC ROUTES (before /:id)
@@ -144,6 +147,60 @@ router.get("/", async (req, res) => {
 // ========================================
 // PARAMETERIZED ROUTES
 // ========================================
+
+// Get user reviews
+router.get("/user", authenticateToken, async (req, res) => {
+  try {
+    // Note: Assuming auth middleware populates req.user
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const userId = req.user.id;
+    const { type } = req.query;
+
+    const supabase = db.getClient();
+    let query = supabase
+      .from("reviews")
+      .select(
+        `
+        *,
+        tours (title, location, image),
+        hotels (name, location, images),
+        flight_schedules (
+           flight_routes (airline, flight_number, from_location, to_location)
+        ),
+        transport_trips (
+           transport_routes (company, type, from_location, to_location)
+        ),
+        destinations (name, location, image),
+        blogs (title, category, image)
+      `
+      )
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    // Client filtering for 'type' can be complex due to dynamic columns (tour_id, etc.)
+    // If strict type filtering is needed via query param:
+    if (type && type !== "all") {
+      if (type === "tour") query = query.not("tour_id", "is", null);
+      else if (type === "hotel") query = query.not("hotel_id", "is", null);
+      else if (type === "flight") query = query.not("flight_id", "is", null);
+      else if (type === "transport")
+        query = query.not("transport_id", "is", null);
+      else if (type === "destination")
+        query = query.not("destination_id", "is", null);
+      else if (type === "blog") query = query.not("blog_id", "is", null);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+    res.json(data || []);
+  } catch (error) {
+    console.error("Error fetching user reviews:", error);
+    res.status(500).json({ error: "Lỗi khi lấy danh sách đánh giá của bạn" });
+  }
+});
 
 // Get review by ID
 router.get("/:id", async (req, res) => {

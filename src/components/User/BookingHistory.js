@@ -37,113 +37,147 @@ const BookingHistory = () => {
         });
 
         // Xử lý và định dạng dữ liệu từ API
-        const formattedBookings = response.data.map((booking) => {
-          let title, location, duration, image, price, guests;
+        const formattedBookings = (response.data.data || response.data).map(
+          (booking) => {
+            let title, location, duration, image, price, guests;
 
-          if (booking.tour_id) {
-            title = booking.tour_title || "Tour du lịch";
-            location = booking.tour_location || "Chưa cập nhật";
-            duration = booking.tour_duration || "3 ngày 2 đêm";
-            image =
-              booking.tour_image ||
-              "https://images.unsplash.com/photo-1512291313931-d4291048e7b6";
-            price = booking.tour_price;
-            guests = booking.number_of_guests || 1;
-          } else if (booking.hotel_id) {
-            title = booking.hotel_name || "Khách sạn";
-            location = booking.hotel_location || "Chưa cập nhật";
-            duration = `${booking.duration || 1} đêm`;
-            image =
-              booking.hotel_image ||
-              "https://images.unsplash.com/photo-1566073771259-6a8506099945";
-            price = booking.hotel_price;
-            guests = booking.number_of_guests || 1;
-          } else if (booking.flight_id) {
-            title = `${booking.flight_airline || "Chuyến bay"} ${
-              booking.flight_number || ""
-            }`;
-            location = `${booking.flight_from || ""} → ${
-              booking.flight_to || ""
-            }`;
-            duration = booking.flight_duration || "1h 20m";
-            image =
-              "https://images.unsplash.com/photo-1436491865332-7a61a109cc05";
-            price = booking.flight_price;
-            guests = booking.number_of_guests || 1;
-          } else if (booking.transport_id) {
-            title = `${booking.transport_company || ""} - ${
-              booking.transport_type || "Vận chuyển"
-            }`;
-            location = `${booking.transport_from || ""} → ${
-              booking.transport_to || ""
-            }`;
-            duration = booking.transport_duration || "2h";
-            image = "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957";
-            price = booking.transport_price;
-            guests = booking.number_of_guests || 1;
+            if (booking.tour_id && booking.tours) {
+              title = booking.tours.title || "Tour du lịch";
+              location = booking.tours.location || "Chưa cập nhật";
+              duration = booking.tours.duration
+                ? `${booking.tours.duration} ngày`
+                : "3 ngày 2 đêm";
+              image =
+                booking.tours.image ||
+                "https://images.unsplash.com/photo-1512291313931-d4291048e7b6";
+              price = booking.tour_price || booking.total_price;
+              guests = booking.number_of_guests || 1;
+            } else if (booking.hotel_id && booking.hotels) {
+              title = booking.hotels.name || "Khách sạn";
+              location = booking.hotels.location || "Chưa cập nhật";
+              // Calculate duration from dates if not provided
+              const nights =
+                booking.duration ||
+                (booking.end_date && booking.booking_date
+                  ? Math.round(
+                      (new Date(booking.end_date) -
+                        new Date(booking.booking_date)) /
+                        (1000 * 60 * 60 * 24)
+                    )
+                  : 1);
+              duration = `${nights} đêm`;
+              image =
+                (booking.hotels.images && booking.hotels.images[0]) ||
+                "https://images.unsplash.com/photo-1566073771259-6a8506099945";
+              price = booking.hotel_price || booking.total_price;
+              guests = booking.number_of_guests || 1;
+            } else if (
+              booking.flight_id &&
+              booking.flight_schedules?.flight_routes
+            ) {
+              const route = booking.flight_schedules.flight_routes;
+              title = `${route.airline || "Chuyến bay"} ${
+                route.flight_number || ""
+              }`;
+              location = `${route.from_location || ""} → ${
+                route.to_location || ""
+              }`;
+              duration = route.duration
+                ? `${Math.floor(route.duration / 60)}h ${route.duration % 60}m`
+                : "1h 20m";
+              image =
+                "https://images.unsplash.com/photo-1436491865332-7a61a109cc05";
+              price = booking.flight_price || booking.total_price;
+              guests = booking.number_of_guests || 1;
+
+              // Map specific flight details
+              booking.departure_time =
+                booking.flight_schedules.departure_datetime;
+              booking.arrival_time = booking.flight_schedules.arrival_datetime;
+              booking.flight_number = route.flight_number;
+            } else if (
+              booking.transport_id &&
+              booking.transport_trips?.transport_routes
+            ) {
+              const route = booking.transport_trips.transport_routes;
+              title = `${route.company || ""} - ${route.type || "Vận chuyển"}`;
+              location = `${route.from_location || ""} → ${
+                route.to_location || ""
+              }`;
+              duration = route.duration
+                ? `${Math.floor(route.duration / 60)}h ${route.duration % 60}m`
+                : "2h";
+              image =
+                route.image ||
+                "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957";
+              price = booking.transport_price || booking.total_price;
+              guests = booking.number_of_guests || 1;
+            }
+
+            // Xử lý ngày tháng
+            const bookingDate = booking.booking_date
+              ? new Date(booking.booking_date)
+              : null;
+            const formattedBookingDate = bookingDate
+              ? bookingDate.toLocaleDateString("vi-VN")
+              : "Chưa cập nhật";
+
+            const endDate = booking.end_date
+              ? new Date(booking.end_date)
+              : null;
+            const formattedEndDate = endDate
+              ? endDate.toLocaleDateString("vi-VN")
+              : "Chưa cập nhật";
+
+            // Xử lý thời gian bay
+            const departureTime =
+              booking.flight_id && booking.departure_time
+                ? new Date(booking.departure_time)
+                : null;
+            const arrivalTime =
+              booking.flight_id && booking.arrival_time
+                ? new Date(booking.arrival_time)
+                : null;
+
+            return {
+              ...booking,
+              title,
+              location,
+              duration,
+              image,
+              price: price || 0,
+              guests,
+              date: formattedBookingDate,
+              type: booking.tour_id
+                ? "tour"
+                : booking.hotel_id
+                ? "hotel"
+                : booking.flight_id
+                ? "flight"
+                : "transport",
+              details: {
+                bookingCode: booking.id || "Chưa có",
+                paymentMethod: booking.payment_status || "Chưa thanh toán",
+                checkIn: formattedBookingDate,
+                checkOut: formattedEndDate,
+                flightNumber: booking.flight_number || "Chưa cập nhật",
+                departure: departureTime
+                  ? departureTime.toLocaleTimeString("vi-VN")
+                  : "Chưa cập nhật",
+                arrival: arrivalTime
+                  ? arrivalTime.toLocaleTimeString("vi-VN")
+                  : "Chưa cập nhật",
+                seat: booking.seat_number || "Chưa cập nhật",
+                gate: booking.gate || "Chưa cập nhật",
+                roomType: booking.room_type || "Chưa cập nhật",
+                bedType: booking.bed_type || "Chưa cập nhật",
+                guide: booking.guide_name || "Chưa phân công",
+                pickupLocation: booking.pickup_location || "Chưa cập nhật",
+                notes: booking.notes || "Không có ghi chú",
+              },
+            };
           }
-
-          // Xử lý ngày tháng
-          const bookingDate = booking.booking_date
-            ? new Date(booking.booking_date)
-            : null;
-          const formattedBookingDate = bookingDate
-            ? bookingDate.toLocaleDateString("vi-VN")
-            : "Chưa cập nhật";
-
-          const endDate = booking.end_date ? new Date(booking.end_date) : null;
-          const formattedEndDate = endDate
-            ? endDate.toLocaleDateString("vi-VN")
-            : "Chưa cập nhật";
-
-          // Xử lý thời gian bay
-          const departureTime =
-            booking.flight_id && booking.departure_time
-              ? new Date(booking.departure_time)
-              : null;
-          const arrivalTime =
-            booking.flight_id && booking.arrival_time
-              ? new Date(booking.arrival_time)
-              : null;
-
-          return {
-            ...booking,
-            title,
-            location,
-            duration,
-            image,
-            price: price || 0,
-            guests,
-            date: formattedBookingDate,
-            type: booking.tour_id
-              ? "tour"
-              : booking.hotel_id
-              ? "hotel"
-              : booking.flight_id
-              ? "flight"
-              : "transport",
-            details: {
-              bookingCode: booking.id || "Chưa có",
-              paymentMethod: booking.payment_status || "Chưa thanh toán",
-              checkIn: formattedBookingDate,
-              checkOut: formattedEndDate,
-              flightNumber: booking.flight_number || "Chưa cập nhật",
-              departure: departureTime
-                ? departureTime.toLocaleTimeString("vi-VN")
-                : "Chưa cập nhật",
-              arrival: arrivalTime
-                ? arrivalTime.toLocaleTimeString("vi-VN")
-                : "Chưa cập nhật",
-              seat: booking.seat_number || "Chưa cập nhật",
-              gate: booking.gate || "Chưa cập nhật",
-              roomType: booking.room_type || "Chưa cập nhật",
-              bedType: booking.bed_type || "Chưa cập nhật",
-              guide: booking.guide_name || "Chưa phân công",
-              pickupLocation: booking.pickup_location || "Chưa cập nhật",
-              notes: booking.notes || "Không có ghi chú",
-            },
-          };
-        });
+        );
 
         setBookings(formattedBookings);
         setLoading(false);

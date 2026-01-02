@@ -43,79 +43,93 @@ const Reviews = () => {
         }
 
         // Xử lý và định dạng dữ liệu từ API
-        const formattedReviews = response.data.map((review) => {
-          let title, location, image;
+        const formattedReviews = (response.data.data || response.data).map(
+          (review) => {
+            let title, location, image;
 
-          if (review.tour_id) {
-            title = review.tour_title || "Tour du lịch";
-            location = review.tour_location;
-            image =
-              review.tour_image ||
-              "https://images.unsplash.com/photo-1512291313931-d4291048e7b6";
-          } else if (review.hotel_id) {
-            title = review.hotel_name || "Khách sạn";
-            location = review.hotel_location;
-            image =
-              review.hotel_image ||
-              "https://images.unsplash.com/photo-1566073771259-6a8506099945";
-          } else if (review.flight_id) {
-            title = `${review.flight_airline || ""} - ${
-              review.flight_number || ""
-            }`;
-            location = `${review.flight_from || ""} → ${
-              review.flight_to || ""
-            }`;
-            image =
-              "https://images.unsplash.com/photo-1436491865332-7a61a109cc05";
-          } else if (review.transport_id) {
-            title = `${review.transport_company || ""} - ${
-              review.transport_type || ""
-            }`;
-            location = `${review.transport_from || ""} → ${
-              review.transport_to || ""
-            }`;
-            image = "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957";
-          } else if (review.destination_id) {
-            title = review.destination_name || "Điểm đến du lịch";
-            location = review.destination_location;
-            image =
-              review.destination_image ||
-              "https://images.unsplash.com/photo-1512291313931-d4291048e7b6";
-          } else if (review.blog_id) {
-            title = review.blog_title || "Bài viết";
-            location = review.blog_category;
-            image =
-              review.blog_image ||
-              "https://images.unsplash.com/photo-1512291313931-d4291048e7b6";
+            if (review.tour_id && review.tours) {
+              title = review.tours.title || "Tour du lịch";
+              location = review.tours.location;
+              image =
+                review.tours.image ||
+                "https://images.unsplash.com/photo-1512291313931-d4291048e7b6";
+            } else if (review.hotel_id && review.hotels) {
+              title = review.hotels.name || "Khách sạn";
+              location = review.hotels.location;
+              image =
+                (review.hotels.images && review.hotels.images[0]) ||
+                "https://images.unsplash.com/photo-1566073771259-6a8506099945";
+            } else if (
+              review.flight_id &&
+              review.flight_schedules?.flight_routes
+            ) {
+              const route = review.flight_schedules.flight_routes;
+              title = `${route.airline || "Chuyến bay"} - ${
+                route.flight_number || ""
+              }`;
+              location = `${route.from_location || ""} → ${
+                route.to_location || ""
+              }`;
+              image =
+                "https://images.unsplash.com/photo-1436491865332-7a61a109cc05";
+            } else if (
+              review.transport_id &&
+              review.transport_trips?.transport_routes
+            ) {
+              const route = review.transport_trips.transport_routes;
+              title = `${route.company || "Xe khách"} - ${route.type || ""}`;
+              location = `${route.from_location || ""} → ${
+                route.to_location || ""
+              }`;
+              image =
+                "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957";
+            } else if (review.destination_id && review.destinations) {
+              title = review.destinations.name || "Điểm đến du lịch";
+              location = review.destinations.location;
+              image =
+                review.destinations.image ||
+                "https://images.unsplash.com/photo-1512291313931-d4291048e7b6";
+            } else if (review.blog_id && review.blogs) {
+              title = review.blogs.title || "Bài viết";
+              location = review.blogs.category;
+              image =
+                review.blogs.image ||
+                "https://images.unsplash.com/photo-1512291313931-d4291048e7b6";
+            } else {
+              title = "Đánh giá chung";
+              location = "Hệ thống";
+              image =
+                "https://images.unsplash.com/photo-1512291313931-d4291048e7b6";
+            }
+
+            return {
+              id: review.id,
+              type: review.tour_id
+                ? "tour"
+                : review.hotel_id
+                ? "hotel"
+                : review.flight_id
+                ? "flight"
+                : review.transport_id
+                ? "transport"
+                : review.destination_id
+                ? "destination"
+                : review.blog_id
+                ? "blog"
+                : "other",
+              title,
+              location: location || "Chưa cập nhật",
+              rating: review.rating || 0,
+              content: review.comment || "Không có nội dung đánh giá",
+              likes: review.likes || 0,
+              replies: review.replies || 0,
+              image,
+              status: review.status,
+              created_at: review.created_at,
+              updated_at: review.updated_at,
+            };
           }
-
-          return {
-            id: review.id,
-            type: review.tour_id
-              ? "tour"
-              : review.hotel_id
-              ? "hotel"
-              : review.flight_id
-              ? "flight"
-              : review.transport_id
-              ? "transport"
-              : review.destination_id
-              ? "destination"
-              : review.blog_id
-              ? "blog"
-              : "other",
-            title,
-            location: location || "Chưa cập nhật",
-            rating: review.rating || 0,
-            content: review.comment || "Không có nội dung đánh giá",
-            likes: review.likes || 0,
-            replies: review.replies || 0,
-            image,
-            status: review.status,
-            created_at: review.created_at,
-            updated_at: review.updated_at,
-          };
-        });
+        );
 
         setReviews(formattedReviews);
         setError(null);

@@ -53,9 +53,16 @@ router.get("/user/:userId", async (req, res) => {
       .select(
         `
         *,
-        tours (title),
-        hotels (name),
-        flight_schedules (schedule_code)
+        tours (title, location, duration, image),
+        hotels (name, location, images),
+        flight_schedules (
+          schedule_code, flight_date, departure_datetime, arrival_datetime,
+          flight_routes (airline, flight_number, from_location, to_location, duration)
+        ),
+        transport_trips (
+          trip_code, trip_date, departure_datetime, arrival_datetime,
+          transport_routes (company, type, from_location, to_location, duration, image)
+        )
       `
       )
       .eq("user_id", userId)
