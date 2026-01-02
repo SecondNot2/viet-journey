@@ -15,13 +15,31 @@ router.get("/featured", async (req, res) => {
     const supabase = db.getClient();
     const { data, error } = await supabase
       .from("hotels")
-      .select("*")
+      .select("*, hotelrooms(price)")
       .eq("status", "active")
       .order("rating", { ascending: false })
       .limit(4);
 
     if (error) throw error;
-    res.json(data || []);
+
+    // Process hotels to add min_price from rooms
+    const hotelsWithPrice = (data || []).map((hotel) => {
+      const rooms = hotel.hotelrooms || [];
+      const prices = rooms
+        .filter((room) => room.price != null)
+        .map((room) => parseFloat(room.price));
+      const min_price = prices.length > 0 ? Math.min(...prices) : null;
+
+      // Remove nested hotelrooms, keep only min_price
+      const { hotelrooms, ...hotelData } = hotel;
+      return {
+        ...hotelData,
+        min_price,
+        room_count: rooms.length,
+      };
+    });
+
+    res.json(hotelsWithPrice);
   } catch (error) {
     console.error("Error fetching featured hotels:", error);
     res.status(500).json({ error: "Lỗi khi lấy khách sạn nổi bật" });
@@ -41,9 +59,10 @@ router.get("/", async (req, res) => {
     const parsedLimit = parseInt(limit);
     const parsedPage = parseInt(page);
 
+    // Query hotels with rooms to calculate min_price
     let query = supabase
       .from("hotels")
-      .select("*", { count: "exact" })
+      .select("*, hotelrooms(price)", { count: "exact" })
       .eq("status", "active");
 
     if (location) query = query.ilike("location", `%${location}%`);
@@ -54,12 +73,29 @@ router.get("/", async (req, res) => {
 
     if (error) throw error;
 
+    // Process hotels to add min_price from rooms
+    const hotelsWithPrice = (data || []).map((hotel) => {
+      const rooms = hotel.hotelrooms || [];
+      const prices = rooms
+        .filter((room) => room.price != null)
+        .map((room) => parseFloat(room.price));
+      const min_price = prices.length > 0 ? Math.min(...prices) : null;
+
+      // Remove nested hotelrooms, keep only min_price
+      const { hotelrooms, ...hotelData } = hotel;
+      return {
+        ...hotelData,
+        min_price,
+        room_count: rooms.length,
+      };
+    });
+
     // Return pagination object that Frontend expects
     const total = count || 0;
     const total_pages = Math.ceil(total / parsedLimit);
 
     res.json({
-      hotels: data || [],
+      hotels: hotelsWithPrice,
       total,
       pagination: {
         page: parsedPage,

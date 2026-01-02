@@ -291,10 +291,19 @@ const ServiceCard = ({
   reviewCount,
   duration,
   groupSize,
+  difficultyLevel,
+  tourType,
+  amenities,
   departureTime,
   arrivalTime,
   fromLocation,
   toLocation,
+  airline,
+  airlineImage,
+  aircraft,
+  vehicleName,
+  company,
+  seats,
   promotion,
   tripType,
   icon: Icon,
@@ -348,7 +357,9 @@ const ServiceCard = ({
         </div>
 
         {/* Tag địa điểm */}
-        {location && type === "tour" && <LocationTag location={location} />}
+        {location && (type === "tour" || type === "hotel") && (
+          <LocationTag location={location} />
+        )}
 
         {/* Tag loại chuyến đi */}
         {(type === "flight" || type === "transport") && tripType && (
@@ -357,7 +368,37 @@ const ServiceCard = ({
       </div>
 
       <div className="p-4 flex flex-col flex-grow">
-        <div className="text-lg font-semibold line-clamp-2 h-10 group-hover:text-emerald-600 transition-colors duration-300">
+        {/* Header: Airline info for flights */}
+        {type === "flight" && airline && (
+          <div className="flex items-center gap-2 mb-2">
+            {airlineImage ? (
+              <img
+                src={getImageUrl(airlineImage)}
+                alt={airline}
+                className="h-6 object-contain"
+              />
+            ) : (
+              <span className="text-xs font-bold text-gray-500 uppercase">
+                {airline}
+              </span>
+            )}
+            <span className="text-xs text-gray-400">| {aircraft}</span>
+          </div>
+        )}
+
+        {/* Header: Company info for transport */}
+        {type === "transport" && company && (
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-bold text-emerald-600 uppercase">
+              {company}
+            </span>
+            {vehicleName && (
+              <span className="text-xs text-gray-400">| {vehicleName}</span>
+            )}
+          </div>
+        )}
+
+        <div className="text-lg font-semibold line-clamp-2 min-h-[3.5rem] mb-1 group-hover:text-emerald-600 transition-colors duration-300">
           {title}
         </div>
 
@@ -365,13 +406,13 @@ const ServiceCard = ({
           {/* Hiển thị đánh giá */}
           <RatingDisplay rating={rating} reviewCount={reviewCount} />
 
-          {/* Hiển thị thời lượng và số người */}
+          {/* Hiển thị thời lượng và số người / ghế */}
           <div className="flex flex-row-reverse gap-2 text-xs text-gray-500">
-            {groupSize && (
+            {(groupSize || seats) && (
               <div className="flex items-center group hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-300">
                 <User className="w-3 h-3 mr-1 flex-shrink-0 group-hover:text-emerald-600 transition-colors duration-300" />
                 <span className="group-hover:text-gray-700 transition-colors duration-300">
-                  {groupSize}
+                  {groupSize || `${seats} chỗ`}
                 </span>
               </div>
             )}
@@ -379,19 +420,34 @@ const ServiceCard = ({
               <div className="flex items-center group hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-300">
                 <Clock className="w-3 h-3 mr-1 flex-shrink-0 group-hover:text-emerald-600 transition-colors duration-300" />
                 <span className="group-hover:text-gray-700 transition-colors duration-300">
-                  {type === "tour"
-                    ? (() => {
-                        const days = Math.floor(duration / (60 * 24));
-                        const hours = Math.floor((duration % (60 * 24)) / 60);
-                        if (days > 0) return `${days} ngày`;
-                        return `${hours} giờ`;
-                      })()
-                    : `${Math.floor(duration / 60)}h ${duration % 60}m`}
+                  {type === "tour" ? `${duration} ngày` : duration}
                 </span>
               </div>
             )}
           </div>
         </div>
+
+        {/* Tour specific info */}
+        {type === "tour" && (difficultyLevel || tourType) && (
+          <div className="flex gap-2 mb-3">
+            {difficultyLevel && (
+              <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-orange-50 text-orange-600 font-bold border border-orange-100">
+                {difficultyLevel === "easy"
+                  ? "Dễ"
+                  : difficultyLevel === "moderate"
+                  ? "Vừa"
+                  : difficultyLevel === "challenging"
+                  ? "Thử thách"
+                  : "Khó"}
+              </span>
+            )}
+            {tourType && (
+              <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-blue-50 text-blue-600 font-bold border border-blue-100">
+                {tourType === "domestic" ? "Trong nước" : "Quốc tế"}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Hiển thị thông tin chuyến bay hoặc vận chuyển */}
         {(type === "flight" || type === "transport") &&

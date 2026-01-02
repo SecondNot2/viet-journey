@@ -12,10 +12,11 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/users/profile",
-          { withCredentials: true }
-        );
+        const API_URL =
+          process.env.REACT_APP_API_URL || "http://localhost:5000";
+        const response = await axios.get(`${API_URL}/api/users/profile`, {
+          withCredentials: true,
+        });
         setUser(response.data);
       } catch (err) {
         if (err.response?.status === 401 || err.response?.status === 403) {
@@ -38,8 +39,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password, remember) => {
     try {
+      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
       const response = await axios.post(
-        "http://localhost:5000/api/users/login",
+        `${API_URL}/api/auth/login`,
         { username, password, remember },
         { withCredentials: true }
       );
@@ -57,8 +59,10 @@ export const AuthProvider = ({ children }) => {
 
       // Sau khi login thành công, gọi lại profile để sync đầy đủ data
       try {
+        const API_URL =
+          process.env.REACT_APP_API_URL || "http://localhost:5000";
         const profileResponse = await axios.get(
-          "http://localhost:5000/api/users/profile",
+          `${API_URL}/api/users/profile`,
           { withCredentials: true }
         );
         setUser(profileResponse.data);
@@ -78,8 +82,9 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
       await axios.post(
-        "http://localhost:5000/api/users/logout",
+        `${API_URL}/api/auth/logout`,
         {},
         { withCredentials: true }
       );

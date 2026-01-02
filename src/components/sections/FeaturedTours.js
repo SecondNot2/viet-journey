@@ -115,6 +115,8 @@ const FeaturedTours = () => {
               reviewCount={tour.review_count}
               duration={tour.duration}
               groupSize={tour.group_size}
+              difficultyLevel={tour.difficulty_level}
+              tourType={tour.type}
               promotion={promotions[tour.id]}
               onClick={handleTourClick}
               actionButtonText="Đặt ngay"

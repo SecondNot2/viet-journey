@@ -275,9 +275,10 @@ const FeaturedHotels = () => {
               title={hotel.name}
               description={null}
               location={hotel.location}
-              price={hotel.display_price || hotel.min_price}
+              price={hotel.min_price}
               rating={hotel.rating}
               reviewCount={hotel.review_count}
+              amenities={hotel.amenities}
               promotion={promotions[hotel.id]}
               icon={Hotel}
               onClick={handleHotelClick}

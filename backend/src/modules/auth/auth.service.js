@@ -69,7 +69,7 @@ const login = async ({ username, password, remember = false }) => {
       roles (name)
     `
     )
-    .or(`username.eq.${username},email.eq.${username}`)
+    .or(`username.eq."${username}",email.eq."${username}"`)
     .limit(1);
 
   if (error) throw error;

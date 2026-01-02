@@ -182,6 +182,9 @@ const FeaturedFlights = () => {
               arrivalTime={flight.arrival_time}
               fromLocation={flight.from_location}
               toLocation={flight.to_location}
+              airline={flight.airline}
+              airlineImage={flight.airline_image}
+              aircraft={flight.aircraft}
               promotion={promotions[flight.id]}
               tripType={flight.trip_type}
               icon={Plane}

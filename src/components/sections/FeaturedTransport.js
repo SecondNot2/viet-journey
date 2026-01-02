@@ -292,6 +292,9 @@ const FeaturedTransport = () => {
               arrivalTime={transport.arrival_time || transport.arrival_datetime}
               fromLocation={transport.from_location}
               toLocation={transport.to_location}
+              company={transport.company}
+              vehicleName={transport.vehicle_name || transport.type}
+              seats={transport.seats}
               promotion={promotions[transport.trip_id || transport.id]}
               tripType={transport.trip_type}
               icon={getTransportIcon()}

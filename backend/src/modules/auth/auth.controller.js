@@ -86,42 +86,35 @@ const login = async (req, res) => {
   try {
     const { username, password, remember } = req.body;
 
-    // Find user
-    const user = await authService.findUserByCredential(username);
-    if (!user) {
-      return response.unauthorized(
-        res,
-        "Tên đăng nhập hoặc mật khẩu không đúng"
-      );
+    if (!username || !password) {
+      return response.badRequest(res, "Vui lòng nhập tài khoản và mật khẩu");
     }
 
-    // Validate password
-    const isValid = await authService.validatePassword(password, user.password);
-    if (!isValid) {
-      return response.unauthorized(
-        res,
-        "Tên đăng nhập hoặc mật khẩu không đúng"
-      );
-    }
-
-    // Generate token
-    const token = authService.generateToken(user, remember);
+    // Use the login method from authService which handles finding user and validating password
+    const result = await authService.login({ username, password, remember });
 
     // Set cookie
     const isProduction = process.env.NODE_ENV === "production";
-    res.cookie("token", token, {
+    res.cookie("token", result.token, {
       httpOnly: true,
-      secure: isProduction, // Secure in production
-      sameSite: isProduction ? "strict" : "lax", // Strict CSRF protection in production
+      secure: isProduction,
+      sameSite: isProduction ? "strict" : "lax",
       path: "/",
       maxAge: remember ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000,
     });
 
-    // Return user without password
-    const { password: _, ...userWithoutPassword } = user;
-    return response.success(res, { user: userWithoutPassword, token });
+    return response.success(res, { user: result.user, token: result.token });
   } catch (error) {
     console.error("❌ Login error:", error);
+
+    // Handle specific error codes from service
+    if (
+      error.code === "INVALID_CREDENTIALS" ||
+      error.code === "ACCOUNT_BANNED"
+    ) {
+      return response.unauthorized(res, error.message);
+    }
+
     return response.serverError(res, "Lỗi server");
   }
 };
