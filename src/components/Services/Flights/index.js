@@ -26,7 +26,8 @@ import { API_URL, API_HOST } from "../../../config/api";
 const API_BASE_URL = API_URL;
 
 // Cấu hình URL cơ sở cho axios
-axios.defaults.baseURL = API_BASE_URL;
+// Cấu hình URL cơ sở cho axios - REMOVED to avoid double /api/api prefix globally
+// axios.defaults.baseURL = API_BASE_URL;
 
 // Dữ liệu mẫu cho các chuyến bay
 const sampleFlights = [
@@ -220,12 +221,9 @@ const FlightSearch = () => {
 
     setLoadingSuggestions(true);
     try {
-      const res = await axios.get(
-        `${API_BASE_URL}/flights/locations/suggest`,
-        {
-          params: { q, field },
-        }
-      );
+      const res = await axios.get(`${API_BASE_URL}/flights/locations/suggest`, {
+        params: { q, field },
+      });
 
       const locations = res.data.locations || [];
 
@@ -259,9 +257,7 @@ const FlightSearch = () => {
       // ✅ Fetch destinations từ điểm đi này
       try {
         const res = await axios.get(
-          `${API_BASE_URL}/flights/destinations/${encodeURIComponent(
-            location
-          )}`
+          `${API_BASE_URL}/flights/destinations/${encodeURIComponent(location)}`
         );
         if (res.data?.destinations) {
           setSuggestions((prev) => ({ ...prev, to: res.data.destinations }));
@@ -297,9 +293,7 @@ const FlightSearch = () => {
   const fetchPopularDestinations = async () => {
     setLoadingDestinations(true);
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}/destinations/featured`
-      );
+      const response = await axios.get(`${API_BASE_URL}/destinations/featured`);
       if (response.data && response.data.length > 0) {
         // Xử lý URL ảnh cho mỗi điểm đến
         const destinationsWithProcessedImages = response.data.map((dest) => ({
