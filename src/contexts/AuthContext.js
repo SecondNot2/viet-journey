@@ -16,6 +16,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log("[DEBUG] API_BASE_URL:", API_BASE_URL);
+        console.log("[DEBUG] Request URL:", `${API_BASE_URL}/users/profile`);
         const response = await axios.get(`${API_BASE_URL}/users/profile`, {
           withCredentials: true,
         });
