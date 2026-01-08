@@ -15,10 +15,10 @@ import axios from "axios";
 import SectionContainer from "../common/SectionContainer";
 import ServiceCard from "../common/ServiceCard";
 import EmptyState from "../common/EmptyState";
+import { API_BASE_URL, API_HOST } from "../../api";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 // eslint-disable-next-line no-unused-vars
-const PLACEHOLDER_IMAGE = `${API_URL}/images/placeholder.png`;
+const PLACEHOLDER_IMAGE = `${API_HOST}/images/placeholder.png`;
 
 // Component tùy chỉnh cho tag phương tiện
 const TransportTypeTag = ({ type, className = "" }) => {
@@ -167,7 +167,7 @@ const FeaturedTransport = () => {
   useEffect(() => {
     const fetchPromotions = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/promotions/services`);
+        const response = await axios.get(`${API_BASE_URL}/promotions/services`);
 
         // Tạo map lưu trữ thông tin khuyến mãi theo dịch vụ
         const promoMap = {};
@@ -195,7 +195,7 @@ const FeaturedTransport = () => {
   useEffect(() => {
     const fetchTransports = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/transport/featured`);
+        const response = await axios.get(`${API_BASE_URL}/transport/featured`);
 
         // Backend trả về array đã flatten
         const transportData = response.data;

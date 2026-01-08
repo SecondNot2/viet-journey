@@ -5,9 +5,9 @@ import axios from "axios";
 import SectionContainer from "../common/SectionContainer";
 import ServiceCard from "../common/ServiceCard";
 import EmptyState from "../common/EmptyState";
+import { API_BASE_URL, API_HOST } from "../../api";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
-const PLACEHOLDER_IMAGE = `${API_URL}/images/placeholder.png`;
+const PLACEHOLDER_IMAGE = `${API_HOST}/images/placeholder.png`;
 
 // Tạo component riêng để hiển thị tag hãng hàng không thay vì tag loại dịch vụ
 const AirlineTag = ({ airline, className = "" }) => {
@@ -54,14 +54,14 @@ const FeaturedFlights = () => {
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return PLACEHOLDER_IMAGE;
     if (imageUrl.startsWith("http")) return imageUrl;
-    return `${API_URL}${imageUrl}`;
+    return `${API_HOST}${imageUrl}`;
   };
 
   // Hàm kiểm tra và lấy thông tin khuyến mãi
   useEffect(() => {
     const fetchPromotions = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/promotions/services`);
+        const response = await axios.get(`${API_BASE_URL}/promotions/services`);
 
         // Tạo map lưu trữ thông tin khuyến mãi theo dịch vụ
         const promoMap = {};
@@ -89,7 +89,7 @@ const FeaturedFlights = () => {
   useEffect(() => {
     const fetchFlights = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/flights/featured`);
+        const response = await axios.get(`${API_BASE_URL}/flights/featured`);
 
         if (!response.data || response.data.length === 0) {
           setFlights([]);

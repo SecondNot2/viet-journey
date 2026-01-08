@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../api";
 
 const AuthContext = createContext(null);
 
@@ -12,9 +13,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const API_URL =
-          process.env.REACT_APP_API_URL || "http://localhost:5000";
-        const response = await axios.get(`${API_URL}/api/users/profile`, {
+        const response = await axios.get(`${API_BASE_URL}/users/profile`, {
           withCredentials: true,
         });
         // Unwrap API response (backend wraps in { success: true, data: {...} })
@@ -41,9 +40,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password, remember) => {
     try {
-      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
       const response = await axios.post(
-        `${API_URL}/api/auth/login`,
+        `${API_BASE_URL}/auth/login`,
         { username, password, remember },
         { withCredentials: true }
       );
@@ -61,10 +59,8 @@ export const AuthProvider = ({ children }) => {
 
       // Sau khi login thành công, gọi lại profile để sync đầy đủ data
       try {
-        const API_URL =
-          process.env.REACT_APP_API_URL || "http://localhost:5000";
         const profileResponse = await axios.get(
-          `${API_URL}/api/users/profile`,
+          `${API_BASE_URL}/users/profile`,
           { withCredentials: true }
         );
         // Unwrap API response
@@ -86,9 +82,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
       await axios.post(
-        `${API_URL}/api/auth/logout`,
+        `${API_BASE_URL}/auth/logout`,
         {},
         { withCredentials: true }
       );

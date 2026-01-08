@@ -16,8 +16,7 @@ import axios from "axios";
 import SectionContainer from "../common/SectionContainer";
 import ServiceCard from "../common/ServiceCard";
 import EmptyState from "../common/EmptyState";
-
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+import { API_BASE_URL } from "../../api";
 
 // Component hiển thị tiện nghi của khách sạn
 const HotelAmenities = ({ amenities, className = "" }) => {
@@ -183,7 +182,7 @@ const FeaturedHotels = () => {
   useEffect(() => {
     const fetchPromotions = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/promotions/services`);
+        const response = await axios.get(`${API_BASE_URL}/promotions/services`);
 
         // Tạo map lưu trữ thông tin khuyến mãi theo dịch vụ
         const promoMap = {};
@@ -211,7 +210,7 @@ const FeaturedHotels = () => {
   useEffect(() => {
     const fetchHotels = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/hotels`, {
+        const response = await axios.get(`${API_BASE_URL}/hotels`, {
           params: {
             limit: "4",
             page: "1",

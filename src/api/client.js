@@ -4,8 +4,24 @@
  */
 import axios from "axios";
 
-const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+// Determine API base URL based on environment
+const getApiBaseUrl = () => {
+  // If we're in production (Vercel), use relative URL
+  if (process.env.NODE_ENV === "production") {
+    return "/api";
+  }
+  // In development, use env variable or fallback
+  return process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
+// Export for components that need direct access
+export { API_BASE_URL };
+
+// Also export the raw base (without /api) for image URLs etc.
+export const API_HOST =
+  process.env.NODE_ENV === "production" ? "" : "http://localhost:5000";
 
 // Create axios instance
 const apiClient = axios.create({

@@ -10,16 +10,16 @@ import {
   ArrowRight,
   Repeat,
 } from "lucide-react";
+import { API_HOST } from "../../api";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
-const PLACEHOLDER_IMAGE = `${API_URL}/images/placeholder.png`;
+const PLACEHOLDER_IMAGE = `${API_HOST}/images/placeholder.png`;
 
 // Hàm xử lý URL ảnh
 const getImageUrl = (imageUrl) => {
   if (!imageUrl) return PLACEHOLDER_IMAGE;
   if (imageUrl.startsWith("http")) return imageUrl;
-  if (imageUrl.startsWith("/uploads")) return `${API_URL}${imageUrl}`;
-  return `${API_URL}/${imageUrl}`.replace(/\/\//g, "/");
+  if (imageUrl.startsWith("/uploads")) return `${API_HOST}${imageUrl}`;
+  return `${API_HOST}/${imageUrl}`.replace(/\/\//g, "/");
 };
 
 // Hàm format giá

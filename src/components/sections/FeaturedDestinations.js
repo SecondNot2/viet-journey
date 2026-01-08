@@ -13,9 +13,9 @@ import {
 } from "lucide-react";
 import SectionContainer from "../common/SectionContainer";
 import EmptyState from "../common/EmptyState";
+import { API_BASE_URL, API_HOST } from "../../api";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
-const PLACEHOLDER_IMAGE = `${API_URL}/images/placeholder.png`;
+const PLACEHOLDER_IMAGE = `${API_HOST}/images/placeholder.png`;
 
 // Tạo component DestinationCard riêng cho điểm đến
 const DestinationCard = ({
@@ -36,8 +36,8 @@ const DestinationCard = ({
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return PLACEHOLDER_IMAGE;
     if (imageUrl.startsWith("http")) return imageUrl;
-    if (imageUrl.startsWith("/uploads")) return `${API_URL}${imageUrl}`;
-    return `${API_URL}/${imageUrl}`.replace(/\/\//g, "/");
+    if (imageUrl.startsWith("/uploads")) return `${API_HOST}${imageUrl}`;
+    return `${API_HOST}/${imageUrl}`.replace(/\/\//g, "/");
   };
 
   // Định dạng tên loại điểm đến sang tiếng Việt
@@ -265,7 +265,7 @@ const FeaturedDestinations = () => {
     const fetchDestinations = async () => {
       try {
         const response = await axios.get(
-          `${API_URL}/api/destinations/featured?limit=4`
+          `${API_BASE_URL}/destinations/featured?limit=4`
         );
         if (!response.data || response.data.length === 0) {
           setDestinations([]);

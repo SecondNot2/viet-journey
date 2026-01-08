@@ -6,9 +6,9 @@ import axios from "axios";
 import SectionContainer from "../common/SectionContainer";
 import ServiceCard from "../common/ServiceCard";
 // import TransportTypeTag from "./FeaturedTransport"; // unused
+import { API_BASE_URL, API_HOST } from "../../api";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
-const PLACEHOLDER_IMAGE = `${API_URL}/images/placeholder.png`;
+const PLACEHOLDER_IMAGE = `${API_HOST}/images/placeholder.png`;
 
 const HotPromotions = () => {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ const HotPromotions = () => {
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return PLACEHOLDER_IMAGE;
     if (imageUrl.startsWith("http")) return imageUrl;
-    return `${API_URL}/${imageUrl.replace(/^\//, "")}`;
+    return `${API_HOST}/${imageUrl.replace(/^\//, "")}`;
   };
 
   // eslint-disable-next-line no-unused-vars
@@ -149,11 +149,11 @@ const HotPromotions = () => {
 
         try {
           // Thử gọi API promotions/global trước
-          response = await axios.get(`${API_URL}/api/promotions/global`);
+          response = await axios.get(`${API_BASE_URL}/promotions/global`);
         } catch (globalError) {
           try {
             // Fallback: thử API promotions/services
-            response = await axios.get(`${API_URL}/api/promotions/services`);
+            response = await axios.get(`${API_BASE_URL}/promotions/services`);
           } catch (servicesError) {
             // Không có API nào hoạt động, set empty array
             setPromotions([]);

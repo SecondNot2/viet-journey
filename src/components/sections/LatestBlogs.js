@@ -10,8 +10,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import SectionContainer from "../common/SectionContainer";
-
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+import { API_BASE_URL, API_HOST } from "../../api";
 
 const LatestBlogs = () => {
   const navigate = useNavigate();
@@ -23,7 +22,7 @@ const LatestBlogs = () => {
     const fetchBlogs = async () => {
       try {
         // Thay đổi để lấy 4 bài viết thay vì 3
-        const response = await axios.get(`${API_URL}/api/blogs`, {
+        const response = await axios.get(`${API_BASE_URL}/blogs`, {
           params: { limit: 4 },
         });
 
@@ -68,28 +67,28 @@ const LatestBlogs = () => {
 
   // Hàm xử lý URL ảnh
   const getImageUrl = (imageUrl) => {
-    if (!imageUrl) return `${API_URL}/images/placeholder.png`;
+    if (!imageUrl) return `${API_HOST}/images/placeholder.png`;
     if (imageUrl.startsWith("http")) return imageUrl;
-    if (imageUrl.startsWith("/uploads")) return `${API_URL}${imageUrl}`;
-    return `${API_URL}/${imageUrl}`.replace(/\/\//g, "/");
+    if (imageUrl.startsWith("/uploads")) return `${API_HOST}${imageUrl}`;
+    return `${API_HOST}/${imageUrl}`.replace(/\/\//g, "/");
   };
 
   // eslint-disable-next-line no-unused-vars
   const getAvatarUrl = (avatarUrl) => {
     // Nếu không có avatar, dùng ảnh mặc định
     if (!avatarUrl) {
-      return `${API_URL}/images/default-destination.jpg`;
+      return `${API_HOST}/images/default-destination.jpg`;
     }
     // Nếu là URL đầy đủ (http/https), dùng trực tiếp
     if (avatarUrl.startsWith("http://") || avatarUrl.startsWith("https://")) {
       return avatarUrl;
     }
-    // Nếu bắt đầu bằng /uploads, thêm API_URL
+    // Nếu bắt đầu bằng /uploads, thêm API_HOST
     if (avatarUrl.startsWith("/uploads")) {
-      return `${API_URL}${avatarUrl}`;
+      return `${API_HOST}${avatarUrl}`;
     }
     // Nếu là tên file, thêm đường dẫn đầy đủ
-    return `${API_URL}/uploads/avatars/${avatarUrl}`;
+    return `${API_HOST}/uploads/avatars/${avatarUrl}`;
   };
 
   // Hàm format ngày tháng
@@ -120,7 +119,7 @@ const LatestBlogs = () => {
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = `${API_URL}/images/placeholder.png`;
+              e.target.src = `${API_HOST}/images/placeholder.png`;
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-70 transition-opacity"></div>

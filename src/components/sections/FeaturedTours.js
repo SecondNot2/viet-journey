@@ -4,8 +4,7 @@ import axios from "axios";
 import /* MapPin, Users, Star - unused */ "lucide-react";
 import SectionContainer from "../common/SectionContainer";
 import ServiceCard from "../common/ServiceCard";
-
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+import { API_BASE_URL } from "../../api";
 
 const FeaturedTours = () => {
   const navigate = useNavigate();
@@ -24,18 +23,18 @@ const FeaturedTours = () => {
 
         try {
           // Tải danh sách tour nổi bật
-          toursResponse = await axios.get(`${API_URL}/api/tours/featured`);
+          toursResponse = await axios.get(`${API_BASE_URL}/tours/featured`);
         } catch (featuredError) {
           // Fallback: lấy tours thông thường với limit
           toursResponse = await axios.get(
-            `${API_URL}/api/tours?limit=4&sort_by=rating&sort_order=desc`
+            `${API_BASE_URL}/tours?limit=4&sort_by=rating&sort_order=desc`
           );
         }
 
         try {
           // Tải danh sách khuyến mãi (không bắt buộc)
           promotionsResponse = await axios.get(
-            `${API_URL}/api/promotions/services`
+            `${API_BASE_URL}/promotions/services`
           );
         } catch (promoError) {
           promotionsResponse = { data: [] };
