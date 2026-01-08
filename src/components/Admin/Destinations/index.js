@@ -65,7 +65,7 @@ const AdminDestinations = () => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/destinations/admin/stats`);
+      const response = await fetch(`${API_URL}/destinations/admin/stats`);
       if (!response.ok) throw new Error("Failed to fetch stats");
 
       const data = await response.json();
@@ -99,7 +99,7 @@ const AdminDestinations = () => {
       });
 
       const response = await fetch(
-        `${API_URL}/api/destinations/admin/destinations?${params}`
+        `${API_URL}/destinations/admin/destinations?${params}`
       );
       if (!response.ok) throw new Error("Failed to fetch destinations");
 
@@ -165,7 +165,7 @@ const AdminDestinations = () => {
       onConfirm: async () => {
         try {
           const response = await fetch(
-            `${API_URL}/api/destinations/admin/destinations/${destinationId}`,
+            `${API_URL}/destinations/admin/destinations/${destinationId}`,
             {
               method: "DELETE",
             }
@@ -207,7 +207,7 @@ const AdminDestinations = () => {
   const handleSetInactive = async (destinationId) => {
     try {
       const response = await fetch(
-        `${API_URL}/api/destinations/admin/destinations/${destinationId}`,
+        `${API_URL}/destinations/admin/destinations/${destinationId}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

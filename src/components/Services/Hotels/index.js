@@ -351,7 +351,7 @@ const HotelSearch = () => {
       }
 
       console.debug("[DEBUG] Gọi API với params:", params);
-      const res = await axios.get(`${API_URL}/api/hotels`, { params });
+      const res = await axios.get(`${API_URL}/hotels`, { params });
       console.debug("[DEBUG] Kết quả API /api/hotels:", res.data);
 
       if (res.data && res.data.hotels) {
@@ -407,7 +407,7 @@ const HotelSearch = () => {
   const fetchLocationSuggestions = async (q) => {
     setLoadingLocationSuggest(true);
     try {
-      const res = await axios.get(`${API_URL}/api/hotels/locations/suggest`, {
+      const res = await axios.get(`${API_URL}/hotels/locations/suggest`, {
         params: { q },
       });
 

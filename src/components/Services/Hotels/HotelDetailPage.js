@@ -81,7 +81,7 @@ const HotelDetailPage = () => {
           queryParams.append("check_out", bookingDetails.checkOut);
 
         const response = await axios.get(
-          `${API_BASE_URL}/api/hotels/${id}${
+          `${API_BASE_URL}/hotels/${id}${
             queryParams.toString() ? "?" + queryParams.toString() : ""
           }`
         );
@@ -120,7 +120,7 @@ const HotelDetailPage = () => {
           if (user?.id) {
             try {
               const likedResponse = await axios.get(
-                `${API_BASE_URL}/api/reviews/liked`,
+                `${API_BASE_URL}/reviews/liked`,
                 {
                   params: { hotel_id: id },
                   withCredentials: true,
@@ -624,7 +624,7 @@ const HotelDetailPage = () => {
       setRatingError("");
 
       const response = await axios.post(
-        `${API_BASE_URL}/api/hotels/${id}/rating`,
+        `${API_BASE_URL}/hotels/${id}/rating`,
         {
           user_id: user.id,
           rating: rating,
@@ -646,7 +646,7 @@ const HotelDetailPage = () => {
   // Comment handlers
   const handleAddComment = async ({ comment, parent_id }) => {
     const response = await axios.post(
-      `${API_BASE_URL}/api/hotels/${id}/reviews`,
+      `${API_BASE_URL}/hotels/${id}/reviews`,
       {
         user_id: user?.id,
         comment,
@@ -665,7 +665,7 @@ const HotelDetailPage = () => {
 
   const handleEditComment = async (reviewId, editedText) => {
     await axios.put(
-      `${API_BASE_URL}/api/reviews/${reviewId}`,
+      `${API_BASE_URL}/reviews/${reviewId}`,
       {
         comment: editedText,
         rating: null,
@@ -687,7 +687,7 @@ const HotelDetailPage = () => {
   };
 
   const handleDeleteComment = async (reviewId) => {
-    await axios.delete(`${API_BASE_URL}/api/reviews/${reviewId}`, {
+    await axios.delete(`${API_BASE_URL}/reviews/${reviewId}`, {
       withCredentials: true,
     });
 
@@ -703,7 +703,7 @@ const HotelDetailPage = () => {
 
   const handleLikeComment = async (reviewId) => {
     const response = await axios.post(
-      `${API_BASE_URL}/api/reviews/${reviewId}/like`,
+      `${API_BASE_URL}/reviews/${reviewId}/like`,
       {},
       { withCredentials: true }
     );
@@ -742,7 +742,7 @@ const HotelDetailPage = () => {
       if (user?.id) queryParams.append("user_id", user.id);
 
       const response = await axios.get(
-        `${API_BASE_URL}/api/hotels/${id}${
+        `${API_BASE_URL}/hotels/${id}${
           queryParams.toString() ? "?" + queryParams.toString() : ""
         }`
       );
@@ -775,7 +775,7 @@ const HotelDetailPage = () => {
       // Fetch liked comments if user is logged in
       if (user?.id) {
         const likedResponse = await axios.get(
-          `${API_BASE_URL}/api/reviews/liked`,
+          `${API_BASE_URL}/reviews/liked`,
           {
             params: { hotel_id: id },
             withCredentials: true,

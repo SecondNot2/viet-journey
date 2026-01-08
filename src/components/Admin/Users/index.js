@@ -63,7 +63,7 @@ const AdminUsers = () => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/users/admin/stats`);
+      const response = await fetch(`${API_URL}/users/admin/stats`);
       if (!response.ok) throw new Error("Failed to fetch stats");
 
       const data = await response.json();
@@ -97,7 +97,7 @@ const AdminUsers = () => {
       });
 
       const response = await fetch(
-        `${API_URL}/api/users/admin/users?${params}`
+        `${API_URL}/users/admin/users?${params}`
       );
       if (!response.ok) throw new Error("Failed to fetch users");
 
@@ -162,7 +162,7 @@ const AdminUsers = () => {
       onConfirm: async () => {
         try {
           const response = await fetch(
-            `${API_URL}/api/users/admin/users/${userId}`,
+            `${API_URL}/users/admin/users/${userId}`,
             {
               method: "DELETE",
             }
@@ -208,7 +208,7 @@ const AdminUsers = () => {
   const handleBan = async (userId) => {
     try {
       const response = await fetch(
-        `${API_URL}/api/users/admin/users/${userId}`,
+        `${API_URL}/users/admin/users/${userId}`,
         {
           method: "PUT",
           headers: {

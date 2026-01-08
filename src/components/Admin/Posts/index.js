@@ -67,7 +67,7 @@ const AdminBlogs = () => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/blogs/admin/stats`);
+      const response = await fetch(`${API_URL}/blogs/admin/stats`);
       if (!response.ok) throw new Error("Failed to fetch stats");
 
       const data = await response.json();
@@ -80,7 +80,7 @@ const AdminBlogs = () => {
   // Fetch categories
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/blogs/admin/categories`);
+      const response = await fetch(`${API_URL}/blogs/admin/categories`);
       if (!response.ok) throw new Error("Failed to fetch categories");
 
       const data = await response.json();
@@ -93,7 +93,7 @@ const AdminBlogs = () => {
   // Fetch authors
   const fetchAuthors = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/blogs/admin/authors`);
+      const response = await fetch(`${API_URL}/blogs/admin/authors`);
       if (!response.ok) throw new Error("Failed to fetch authors");
 
       const data = await response.json();
@@ -127,7 +127,7 @@ const AdminBlogs = () => {
       });
 
       const response = await fetch(
-        `${API_URL}/api/blogs/admin/blogs?${params}`
+        `${API_URL}/blogs/admin/blogs?${params}`
       );
       if (!response.ok) throw new Error("Failed to fetch blogs");
 
@@ -194,7 +194,7 @@ const AdminBlogs = () => {
       onConfirm: async () => {
         try {
           const response = await fetch(
-            `${API_URL}/api/blogs/admin/blogs/${blogId}`,
+            `${API_URL}/blogs/admin/blogs/${blogId}`,
             {
               method: "DELETE",
             }

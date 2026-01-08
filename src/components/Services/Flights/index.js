@@ -190,7 +190,7 @@ const FlightSearch = () => {
   const fetchCities = async () => {
     setLoadingCities(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/flights/cities`);
+      const res = await axios.get(`${API_BASE_URL}/flights/cities`);
       if (res.data && res.data.from_locations && res.data.to_locations) {
         setCityOptions({
           from_locations: res.data.from_locations,
@@ -221,7 +221,7 @@ const FlightSearch = () => {
     setLoadingSuggestions(true);
     try {
       const res = await axios.get(
-        `${API_BASE_URL}/api/flights/locations/suggest`,
+        `${API_BASE_URL}/flights/locations/suggest`,
         {
           params: { q, field },
         }
@@ -259,7 +259,7 @@ const FlightSearch = () => {
       // ✅ Fetch destinations từ điểm đi này
       try {
         const res = await axios.get(
-          `${API_BASE_URL}/api/flights/destinations/${encodeURIComponent(
+          `${API_BASE_URL}/flights/destinations/${encodeURIComponent(
             location
           )}`
         );
@@ -274,7 +274,7 @@ const FlightSearch = () => {
       // ✅ Fetch origins đến điểm đến này
       try {
         const res = await axios.get(
-          `${API_BASE_URL}/api/flights/origins/${encodeURIComponent(location)}`
+          `${API_BASE_URL}/flights/origins/${encodeURIComponent(location)}`
         );
         if (res.data?.origins) {
           setSuggestions((prev) => ({ ...prev, from: res.data.origins }));
@@ -298,7 +298,7 @@ const FlightSearch = () => {
     setLoadingDestinations(true);
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/destinations/featured`
+        `${API_BASE_URL}/destinations/featured`
       );
       if (response.data && response.data.length > 0) {
         // Xử lý URL ảnh cho mỗi điểm đến
@@ -339,7 +339,7 @@ const FlightSearch = () => {
       );
 
       const response = await axios.get(
-        `${API_BASE_URL}/api/flights?${query.toString()}`
+        `${API_BASE_URL}/flights?${query.toString()}`
       );
 
       if (response.data && response.data.flights) {
@@ -504,7 +504,7 @@ const FlightSearch = () => {
         query.append("arrival_time_slots", params.arrivalTime.join(","));
       }
 
-      const apiUrl = `${API_BASE_URL}/api/flights?${query.toString()}`;
+      const apiUrl = `${API_BASE_URL}/flights?${query.toString()}`;
 
       // Gọi API
       const res = await axios.get(apiUrl);
@@ -637,7 +637,7 @@ const FlightSearch = () => {
   // Hàm tải danh sách hãng hàng không
   const loadAirlines = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/flights/airlines`);
+      const response = await axios.get(`${API_BASE_URL}/flights/airlines`);
 
       if (
         response.data &&
@@ -1362,7 +1362,7 @@ const FlightSearch = () => {
                       ) {
                         try {
                           const res = await axios.get(
-                            `${API_BASE_URL}/api/flights/origins/${encodeURIComponent(
+                            `${API_BASE_URL}/flights/origins/${encodeURIComponent(
                               searchParams.to_location
                             )}`
                           );
@@ -1490,7 +1490,7 @@ const FlightSearch = () => {
                       ) {
                         try {
                           const res = await axios.get(
-                            `${API_BASE_URL}/api/flights/destinations/${encodeURIComponent(
+                            `${API_BASE_URL}/flights/destinations/${encodeURIComponent(
                               searchParams.from_location
                             )}`
                           );

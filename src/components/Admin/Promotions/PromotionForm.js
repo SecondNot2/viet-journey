@@ -128,8 +128,8 @@ const PromotionForm = ({ promotion, onClose, onSave, viewMode, editMode }) => {
       };
 
       const url = isAddMode
-        ? `${API_URL}/api/promotions`
-        : `${API_URL}/api/promotions/${promotion.id}`;
+        ? `${API_URL}/promotions`
+        : `${API_URL}/promotions/${promotion.id}`;
 
       const method = isAddMode ? "POST" : "PUT";
 

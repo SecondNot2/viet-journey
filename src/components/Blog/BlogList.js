@@ -81,7 +81,7 @@ const BlogList = () => {
           params.search = searchQuery.trim();
         }
 
-        const response = await axios.get(`${API_URL}/api/blogs`, { params });
+        const response = await axios.get(`${API_URL}/blogs`, { params });
 
         // Handle both array response and object response with blogs property
         const blogsData = Array.isArray(response.data)

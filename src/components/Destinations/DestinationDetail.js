@@ -59,7 +59,7 @@ const DestinationDetail = () => {
         if (currentUserId) queryParams.append("user_id", currentUserId);
 
         const response = await axios.get(
-          `${API_URL}/api/destinations/${id}${
+          `${API_URL}/destinations/${id}${
             queryParams.toString() ? "?" + queryParams.toString() : ""
           }`
         );
@@ -183,7 +183,7 @@ const DestinationDetail = () => {
 
       // Gửi rating lên server (có thể là thêm mới hoặc cập nhật)
       const response = await axios.post(
-        `${API_URL}/api/destinations/${id}/rating`,
+        `${API_URL}/destinations/${id}/rating`,
         {
           user_id: currentUserId,
           rating: rating,
@@ -215,7 +215,7 @@ const DestinationDetail = () => {
   // Comment handlers - refactored to work with CommentSection component
   const handleAddComment = async ({ comment, parent_id }) => {
     const response = await axios.post(
-      `${API_URL}/api/destinations/${id}/reviews`,
+      `${API_URL}/destinations/${id}/reviews`,
       {
         user_id: currentUserId,
         comment,
@@ -232,7 +232,7 @@ const DestinationDetail = () => {
   };
 
   const handleEditComment = async (reviewId, editedText) => {
-    await axios.put(`${API_URL}/api/destinations/${id}/reviews/${reviewId}`, {
+    await axios.put(`${API_URL}/destinations/${id}/reviews/${reviewId}`, {
       comment: editedText,
       rating: null,
     });
@@ -251,7 +251,7 @@ const DestinationDetail = () => {
   };
 
   const handleDeleteComment = async (reviewId) => {
-    await axios.delete(`${API_URL}/api/destinations/${id}/reviews/${reviewId}`);
+    await axios.delete(`${API_URL}/destinations/${id}/reviews/${reviewId}`);
 
     setDestination({
       ...destination,
@@ -262,7 +262,7 @@ const DestinationDetail = () => {
 
   const handleLikeComment = async (reviewId) => {
     const response = await axios.post(
-      `${API_URL}/api/destinations/${id}/reviews/${reviewId}/like`,
+      `${API_URL}/destinations/${id}/reviews/${reviewId}/like`,
       {
         user_id: currentUserId,
       }
@@ -299,7 +299,7 @@ const DestinationDetail = () => {
       if (currentUserId) queryParams.append("user_id", currentUserId);
 
       const response = await axios.get(
-        `${API_URL}/api/destinations/${id}${
+        `${API_URL}/destinations/${id}${
           queryParams.toString() ? "?" + queryParams.toString() : ""
         }`
       );

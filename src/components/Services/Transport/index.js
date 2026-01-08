@@ -177,8 +177,8 @@ const Transport = () => {
     const fetchFilterOptions = async () => {
       try {
         const [vehicleNamesRes, companiesRes] = await Promise.all([
-          axios.get(`${API_URL}/api/transport/vehicle-names`),
-          axios.get(`${API_URL}/api/transport/companies`),
+          axios.get(`${API_URL}/transport/vehicle-names`),
+          axios.get(`${API_URL}/transport/companies`),
         ]);
         setVehicleNameOptions(vehicleNamesRes.data.vehicleNames || []);
         setCompanyOptions(companiesRes.data.companies || []);
@@ -245,7 +245,7 @@ const Transport = () => {
       // Gửi sort_by nguyên vẹn cho backend
       params.sort_by = currentSortBy;
 
-      const res = await axios.get(`${API_URL}/api/transport`, { params });
+      const res = await axios.get(`${API_URL}/transport`, { params });
 
       if (res.data && res.data.transports && res.data.pagination) {
         // 🔍 Debug: Log first transport to check date format
@@ -291,7 +291,7 @@ const Transport = () => {
     setLoadingLocationSuggest(true);
     try {
       const res = await axios.get(
-        `${API_URL}/api/transport/locations/suggest`,
+        `${API_URL}/transport/locations/suggest`,
         {
           params: { q, field }, // Pass field to backend
         }
@@ -337,7 +337,7 @@ const Transport = () => {
 
     setLoadingDates(true);
     try {
-      const res = await axios.get(`${API_URL}/api/transport/available-dates`, {
+      const res = await axios.get(`${API_URL}/transport/available-dates`, {
         params: {
           from_location: fromLocation,
           to_location: toLocation,
@@ -374,7 +374,7 @@ const Transport = () => {
 
     setLoadingTimes(true);
     try {
-      const res = await axios.get(`${API_URL}/api/transport/available-times`, {
+      const res = await axios.get(`${API_URL}/transport/available-times`, {
         params: {
           from_location: fromLocation,
           to_location: toLocation,
@@ -571,7 +571,7 @@ const Transport = () => {
 
     try {
       const res = await axios.get(
-        `${API_URL}/api/transport/destinations/from`,
+        `${API_URL}/transport/destinations/from`,
         {
           params: { from: fromLocation },
         }
@@ -598,7 +598,7 @@ const Transport = () => {
     if (!toLocation || toLocation.trim() === "") return;
 
     try {
-      const res = await axios.get(`${API_URL}/api/transport/origins/to`, {
+      const res = await axios.get(`${API_URL}/transport/origins/to`, {
         params: { to: toLocation },
       });
       const suggestions = [];

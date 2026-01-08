@@ -63,7 +63,7 @@ const AdminPromotions = () => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/promotions/admin/stats`);
+      const response = await fetch(`${API_URL}/promotions/admin/stats`);
       if (!response.ok) throw new Error("Failed to fetch stats");
 
       const data = await response.json();
@@ -97,7 +97,7 @@ const AdminPromotions = () => {
       });
 
       const response = await fetch(
-        `${API_URL}/api/promotions/admin/promotions?${params}`
+        `${API_URL}/promotions/admin/promotions?${params}`
       );
       if (!response.ok) throw new Error("Failed to fetch promotions");
 
@@ -170,7 +170,7 @@ const AdminPromotions = () => {
       onConfirm: async () => {
         try {
           const response = await fetch(
-            `${API_URL}/api/promotions/${promotionId}`,
+            `${API_URL}/promotions/${promotionId}`,
             {
               method: "DELETE",
             }

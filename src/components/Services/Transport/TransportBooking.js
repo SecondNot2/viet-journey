@@ -116,7 +116,7 @@ const TransportBooking = () => {
 
       try {
         setLoading(true);
-        const response = await axios.get(`${API_URL}/api/transport/${id}`);
+        const response = await axios.get(`${API_URL}/transport/${id}`);
         const fetchedTransport = response.data;
 
         // Map response data to match expected structure
@@ -418,7 +418,7 @@ const TransportBooking = () => {
 
       // Gọi API tạo booking
       const response = await axios.post(
-        `${API_URL}/api/bookings`,
+        `${API_URL}/bookings`,
         bookingData,
         {
           withCredentials: true,

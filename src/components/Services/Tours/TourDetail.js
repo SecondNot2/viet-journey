@@ -152,7 +152,7 @@ const TourDetail = () => {
           params.selected_date = bookingDetails.startDate;
         }
 
-        const response = await axios.get(`${API_URL}/api/tours/${id}`, {
+        const response = await axios.get(`${API_URL}/tours/${id}`, {
           params,
         });
 
@@ -297,7 +297,7 @@ const TourDetail = () => {
 
     try {
       const response = await axios.post(
-        `${API_URL}/api/tours/${id}/reviews`,
+        `${API_URL}/tours/${id}/reviews`,
         {
           user_id: user.id,
           rating: newReview.rating,
@@ -325,7 +325,7 @@ const TourDetail = () => {
       setReviewSuccess(true);
 
       // Reload tour to update rating stats
-      const tourResponse = await axios.get(`${API_URL}/api/tours/${id}`);
+      const tourResponse = await axios.get(`${API_URL}/tours/${id}`);
       setTour(tourResponse.data);
 
       setTimeout(() => {
@@ -350,7 +350,7 @@ const TourDetail = () => {
 
     try {
       const response = await axios.post(
-        `${API_URL}/api/tours/${id}/reviews/${reviewId}/like`,
+        `${API_URL}/tours/${id}/reviews/${reviewId}/like`,
         { user_id: user.id },
         { withCredentials: true }
       );
@@ -393,7 +393,7 @@ const TourDetail = () => {
 
     try {
       await axios.post(
-        `${API_URL}/api/tours/${id}/rating`,
+        `${API_URL}/tours/${id}/rating`,
         {
           rating,
           user_id: user.id,
@@ -406,7 +406,7 @@ const TourDetail = () => {
       showToast("Cảm ơn bạn đã đánh giá!", "success");
 
       // Reload tour to update rating
-      const response = await axios.get(`${API_URL}/api/tours/${id}`);
+      const response = await axios.get(`${API_URL}/tours/${id}`);
       setTour(response.data);
     } catch (err) {
       console.error("Error rating tour:", err);
@@ -430,7 +430,7 @@ const TourDetail = () => {
           : commentData;
 
       const response = await axios.post(
-        `${API_URL}/api/tours/${id}/reviews`,
+        `${API_URL}/tours/${id}/reviews`,
         {
           comment,
           parent_id,
@@ -443,7 +443,7 @@ const TourDetail = () => {
 
       // Reload reviews
       const reviewsResponse = await axios.get(
-        `${API_URL}/api/tours/${id}/reviews`
+        `${API_URL}/tours/${id}/reviews`
       );
       setReviews(reviewsResponse.data.reviews || []);
 
@@ -464,7 +464,7 @@ const TourDetail = () => {
 
     try {
       await axios.put(
-        `${API_URL}/api/tours/${id}/reviews/${commentId}`,
+        `${API_URL}/tours/${id}/reviews/${commentId}`,
         {
           comment: commentText,
           user_id: user.id,
@@ -476,7 +476,7 @@ const TourDetail = () => {
 
       // Reload reviews
       const reviewsResponse = await axios.get(
-        `${API_URL}/api/tours/${id}/reviews`
+        `${API_URL}/tours/${id}/reviews`
       );
       setReviews(reviewsResponse.data.reviews || []);
     } catch (err) {
@@ -502,7 +502,7 @@ const TourDetail = () => {
       onConfirm: async () => {
         try {
           await axios.delete(
-            `${API_URL}/api/tours/${id}/reviews/${commentId}`,
+            `${API_URL}/tours/${id}/reviews/${commentId}`,
             {
               data: { user_id: user.id },
               withCredentials: true,
@@ -513,13 +513,13 @@ const TourDetail = () => {
 
           // Reload reviews and liked reviews
           const reviewsResponse = await axios.get(
-            `${API_URL}/api/tours/${id}/reviews`
+            `${API_URL}/tours/${id}/reviews`
           );
           setReviews(reviewsResponse.data.reviews || []);
 
           if (user) {
             const likedResponse = await axios.get(
-              `${API_URL}/api/tours/${id}/reviews/liked`,
+              `${API_URL}/tours/${id}/reviews/liked`,
               { params: { user_id: user.id } }
             );
             setLikedReviews(new Set(likedResponse.data.liked_reviews || []));
@@ -541,24 +541,24 @@ const TourDetail = () => {
   // Handler for reloading tour data
   const handleReloadTour = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/tours/${id}`);
+      const response = await axios.get(`${API_URL}/tours/${id}`);
       setTour(response.data);
 
       const reviewsResponse = await axios.get(
-        `${API_URL}/api/tours/${id}/reviews`
+        `${API_URL}/tours/${id}/reviews`
       );
       setReviews(reviewsResponse.data.reviews || []);
 
       // Reload liked reviews and user rating if user is logged in
       if (user) {
         const likedResponse = await axios.get(
-          `${API_URL}/api/tours/${id}/reviews/liked`,
+          `${API_URL}/tours/${id}/reviews/liked`,
           { params: { user_id: user.id } }
         );
         setLikedReviews(new Set(likedResponse.data.liked_reviews || []));
 
         const ratingResponse = await axios.get(
-          `${API_URL}/api/tours/${id}/rating`,
+          `${API_URL}/tours/${id}/rating`,
           { params: { user_id: user.id } }
         );
         setUserRating(ratingResponse.data.rating || 0);
@@ -599,18 +599,18 @@ const TourDetail = () => {
       setReviewsLoading(true);
 
       // Fetch reviews
-      const reviewsPromise = axios.get(`${API_URL}/api/tours/${id}/reviews`);
+      const reviewsPromise = axios.get(`${API_URL}/tours/${id}/reviews`);
 
       // Fetch liked reviews if user is logged in
       const likedPromise = user
-        ? axios.get(`${API_URL}/api/tours/${id}/reviews/liked`, {
+        ? axios.get(`${API_URL}/tours/${id}/reviews/liked`, {
             params: { user_id: user.id },
           })
         : Promise.resolve({ data: { liked_reviews: [] } });
 
       // Fetch user's rating if user is logged in
       const ratingPromise = user
-        ? axios.get(`${API_URL}/api/tours/${id}/rating`, {
+        ? axios.get(`${API_URL}/tours/${id}/rating`, {
             params: { user_id: user.id },
           })
         : Promise.resolve({ data: { rating: null } });

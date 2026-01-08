@@ -58,7 +58,7 @@ const ScheduleForm = ({ tour, onClose, onSave }) => {
     setLoading(true);
     try {
       const response = await fetch(
-        `${API_URL}/api/tours/admin/tours/${tour.id}/schedules`
+        `${API_URL}/tours/admin/tours/${tour.id}/schedules`
       );
       if (!response.ok) throw new Error("Failed to fetch schedules");
 
@@ -153,7 +153,7 @@ const ScheduleForm = ({ tour, onClose, onSave }) => {
 
     try {
       const response = await fetch(
-        `${API_URL}/api/tours/admin/tours/${tour.id}/schedules`,
+        `${API_URL}/tours/admin/tours/${tour.id}/schedules`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -192,7 +192,7 @@ const ScheduleForm = ({ tour, onClose, onSave }) => {
       onConfirm: async () => {
         try {
           const response = await fetch(
-            `${API_URL}/api/tours/admin/schedules/${scheduleId}`,
+            `${API_URL}/tours/admin/schedules/${scheduleId}`,
             {
               method: "DELETE",
             }

@@ -62,7 +62,7 @@ const AdminBookings = () => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/bookings/admin/stats`);
+      const response = await fetch(`${API_URL}/bookings/admin/stats`);
       if (!response.ok) throw new Error("Failed to fetch stats");
 
       const data = await response.json();
@@ -96,7 +96,7 @@ const AdminBookings = () => {
       });
 
       const response = await fetch(
-        `${API_URL}/api/bookings/admin/bookings?${params}`
+        `${API_URL}/bookings/admin/bookings?${params}`
       );
       if (!response.ok) throw new Error("Failed to fetch bookings");
 
@@ -163,7 +163,7 @@ const AdminBookings = () => {
       onConfirm: async () => {
         try {
           const response = await fetch(
-            `${API_URL}/api/bookings/admin/bookings/${bookingId}/status`,
+            `${API_URL}/bookings/admin/bookings/${bookingId}/status`,
             {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
@@ -217,7 +217,7 @@ const AdminBookings = () => {
       onConfirm: async () => {
         try {
           const response = await fetch(
-            `${API_URL}/api/bookings/admin/bookings/${bookingId}/payment`,
+            `${API_URL}/bookings/admin/bookings/${bookingId}/payment`,
             {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
@@ -260,7 +260,7 @@ const AdminBookings = () => {
       onConfirm: async () => {
         try {
           const response = await fetch(
-            `${API_URL}/api/bookings/admin/bookings/${bookingId}`,
+            `${API_URL}/bookings/admin/bookings/${bookingId}`,
             {
               method: "DELETE",
             }

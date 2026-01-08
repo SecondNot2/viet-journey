@@ -107,17 +107,17 @@ const Dashboard = () => {
         reviewsRes,
         analyticsRes,
       ] = await Promise.all([
-        fetch(`${API_URL}/api/users/admin/stats`),
-        fetch(`${API_URL}/api/bookings/admin/stats`),
-        fetch(`${API_URL}/api/tours/admin/stats`),
-        fetch(`${API_URL}/api/hotels/admin/stats`),
-        fetch(`${API_URL}/api/flights/admin/stats`),
-        fetch(`${API_URL}/api/transport/admin/stats`),
-        fetch(`${API_URL}/api/destinations/admin/stats`),
-        fetch(`${API_URL}/api/blogs/admin/stats`),
-        fetch(`${API_URL}/api/promotions/admin/stats`),
-        fetch(`${API_URL}/api/reviews/admin/stats`),
-        fetch(`${API_URL}/api/bookings/admin/analytics?days=${dateRange}`),
+        fetch(`${API_URL}/users/admin/stats`),
+        fetch(`${API_URL}/bookings/admin/stats`),
+        fetch(`${API_URL}/tours/admin/stats`),
+        fetch(`${API_URL}/hotels/admin/stats`),
+        fetch(`${API_URL}/flights/admin/stats`),
+        fetch(`${API_URL}/transport/admin/stats`),
+        fetch(`${API_URL}/destinations/admin/stats`),
+        fetch(`${API_URL}/blogs/admin/stats`),
+        fetch(`${API_URL}/promotions/admin/stats`),
+        fetch(`${API_URL}/reviews/admin/stats`),
+        fetch(`${API_URL}/bookings/admin/analytics?days=${dateRange}`),
       ]);
 
       const [
@@ -168,14 +168,14 @@ const Dashboard = () => {
 
       // Fetch detailed analytics
       const detailedRes = await fetch(
-        `${API_URL}/api/bookings/admin/analytics/detailed?days=${dateRange}`
+        `${API_URL}/bookings/admin/analytics/detailed?days=${dateRange}`
       );
       const detailedData = await detailedRes.json();
       setDetailedAnalytics(detailedData);
 
       // Fetch comparison
       const comparisonRes = await fetch(
-        `${API_URL}/api/bookings/admin/analytics/comparison?days=${dateRange}`
+        `${API_URL}/bookings/admin/analytics/comparison?days=${dateRange}`
       );
       const comparisonData = await comparisonRes.json();
       setComparison(comparisonData);
@@ -205,7 +205,7 @@ const Dashboard = () => {
   const fetchRecentBookings = async () => {
     try {
       const response = await fetch(
-        `${API_URL}/api/bookings/admin/bookings?limit=5&sort_by=created_desc`
+        `${API_URL}/bookings/admin/bookings?limit=5&sort_by=created_desc`
       );
       if (!response.ok) throw new Error("Failed to fetch bookings");
 
@@ -220,7 +220,7 @@ const Dashboard = () => {
   const fetchRecentReviews = async () => {
     try {
       const response = await fetch(
-        `${API_URL}/api/reviews/admin/reviews?limit=5&sort_by=created_desc`
+        `${API_URL}/reviews/admin/reviews?limit=5&sort_by=created_desc`
       );
       if (!response.ok) throw new Error("Failed to fetch reviews");
 

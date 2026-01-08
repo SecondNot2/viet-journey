@@ -87,7 +87,7 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
 
   const fetchGuides = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/tours/admin/guides`);
+      const response = await fetch(`${API_URL}/tours/admin/guides`);
       if (!response.ok) throw new Error("Failed to fetch guides");
       const data = await response.json();
       setGuides(data.guides || []);
@@ -98,7 +98,7 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
 
   const fetchDestinations = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/tours/admin/destinations`);
+      const response = await fetch(`${API_URL}/tours/admin/destinations`);
       if (!response.ok) throw new Error("Failed to fetch destinations");
       const data = await response.json();
       setDestinations(data.destinations || []);
@@ -206,7 +206,7 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
     formDataUpload.append("folder", "tours");
 
     try {
-      const response = await fetch(`${API_URL}/api/upload`, {
+      const response = await fetch(`${API_URL}/upload`, {
         method: "POST",
         body: formDataUpload,
       });
@@ -281,8 +281,8 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
       };
 
       const url = tour
-        ? `${API_URL}/api/tours/admin/tours/${tour.id}`
-        : `${API_URL}/api/tours/admin/tours`;
+        ? `${API_URL}/tours/admin/tours/${tour.id}`
+        : `${API_URL}/tours/admin/tours`;
       const method = tour ? "PUT" : "POST";
 
       const response = await fetch(url, {

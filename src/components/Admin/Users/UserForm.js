@@ -62,7 +62,7 @@ const UserForm = ({ user, onClose, onSave, viewMode, editMode }) => {
   // Fetch roles
   const fetchRoles = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/users/admin/roles`);
+      const response = await fetch(`${API_URL}/users/admin/roles`);
       if (!response.ok) throw new Error("Failed to fetch roles");
 
       const data = await response.json();
@@ -121,8 +121,8 @@ const UserForm = ({ user, onClose, onSave, viewMode, editMode }) => {
       }
 
       const url = isAddMode
-        ? `${API_URL}/api/users`
-        : `${API_URL}/api/users/admin/users/${user.id}`;
+        ? `${API_URL}/users`
+        : `${API_URL}/users/admin/users/${user.id}`;
 
       const method = isAddMode ? "POST" : "PUT";
 

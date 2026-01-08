@@ -75,7 +75,7 @@ const AdminTours = () => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/tours/admin/stats`);
+      const response = await fetch(`${API_URL}/tours/admin/stats`);
       if (!response.ok) throw new Error("Failed to fetch stats");
 
       const data = await response.json();
@@ -109,7 +109,7 @@ const AdminTours = () => {
       });
 
       const response = await fetch(
-        `${API_URL}/api/tours/admin/tours?${params}`
+        `${API_URL}/tours/admin/tours?${params}`
       );
       if (!response.ok) throw new Error("Failed to fetch tours");
 
@@ -127,7 +127,7 @@ const AdminTours = () => {
   // Fetch tour types
   const fetchTourTypes = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/tours/admin/tour-types`);
+      const response = await fetch(`${API_URL}/tours/admin/tour-types`);
       if (!response.ok) throw new Error("Failed to fetch tour types");
 
       const data = await response.json();
@@ -187,7 +187,7 @@ const AdminTours = () => {
       onConfirm: async () => {
         try {
           const response = await fetch(
-            `${API_URL}/api/tours/admin/tours/${tourId}`,
+            `${API_URL}/tours/admin/tours/${tourId}`,
             {
               method: "DELETE",
             }
@@ -229,7 +229,7 @@ const AdminTours = () => {
   const handleSetInactive = async (tourId) => {
         try {
           const response = await fetch(
-        `${API_URL}/api/tours/admin/tours/${tourId}`,
+        `${API_URL}/tours/admin/tours/${tourId}`,
             {
               method: "PUT",
               headers: { "Content-Type": "application/json" },

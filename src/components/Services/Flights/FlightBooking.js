@@ -363,7 +363,7 @@ const FlightBooking = () => {
       console.log("[DEBUG] user_id value:", bookingPayload.user_id);
 
       const response = await axios.post(
-        `${API_BASE_URL}/api/bookings`,
+        `${API_BASE_URL}/bookings`,
         bookingPayload,
         { withCredentials: true }
       );
@@ -591,7 +591,7 @@ const FlightBooking = () => {
 
       // ✅ Gọi API tạo booking
       const response = await axios.post(
-        `${API_BASE_URL}/api/bookings`,
+        `${API_BASE_URL}/bookings`,
         apiBookingData,
         {
           withCredentials: true,

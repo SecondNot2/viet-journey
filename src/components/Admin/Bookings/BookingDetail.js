@@ -95,7 +95,7 @@ const BookingDetail = ({ booking, onClose, onUpdate }) => {
       onConfirm: async () => {
         try {
           const response = await fetch(
-            `${API_URL}/api/bookings/admin/bookings/${booking.id}/status`,
+            `${API_URL}/bookings/admin/bookings/${booking.id}/status`,
             {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
@@ -138,7 +138,7 @@ const BookingDetail = ({ booking, onClose, onUpdate }) => {
       onConfirm: async () => {
         try {
           const response = await fetch(
-            `${API_URL}/api/bookings/admin/bookings/${booking.id}/payment`,
+            `${API_URL}/bookings/admin/bookings/${booking.id}/payment`,
             {
               method: "PUT",
               headers: { "Content-Type": "application/json" },

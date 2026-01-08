@@ -52,7 +52,7 @@ const Promotions = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`${API_URL}/api/promotions`);
+      const res = await axios.get(`${API_URL}/promotions`);
       let filteredPromotions = res.data;
 
       // Lọc dữ liệu ở phía client

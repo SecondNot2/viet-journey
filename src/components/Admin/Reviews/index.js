@@ -67,7 +67,7 @@ const AdminReviews = () => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/reviews/admin/stats`);
+      const response = await fetch(`${API_URL}/reviews/admin/stats`);
       if (!response.ok) throw new Error("Failed to fetch stats");
 
       const data = await response.json();
@@ -101,7 +101,7 @@ const AdminReviews = () => {
       });
 
       const response = await fetch(
-        `${API_URL}/api/reviews/admin/reviews?${params}`
+        `${API_URL}/reviews/admin/reviews?${params}`
       );
       if (!response.ok) throw new Error("Failed to fetch reviews");
 
@@ -152,7 +152,7 @@ const AdminReviews = () => {
       onConfirm: async () => {
         try {
           const response = await fetch(
-            `${API_URL}/api/reviews/admin/reviews/${reviewId}/status`,
+            `${API_URL}/reviews/admin/reviews/${reviewId}/status`,
             {
               method: "PUT",
               headers: {
@@ -196,7 +196,7 @@ const AdminReviews = () => {
       onConfirm: async () => {
         try {
           const response = await fetch(
-            `${API_URL}/api/reviews/admin/reviews/${reviewId}/status`,
+            `${API_URL}/reviews/admin/reviews/${reviewId}/status`,
             {
               method: "PUT",
               headers: {
@@ -239,7 +239,7 @@ const AdminReviews = () => {
       onConfirm: async () => {
         try {
           const response = await fetch(
-            `${API_URL}/api/reviews/admin/reviews/${reviewId}`,
+            `${API_URL}/reviews/admin/reviews/${reviewId}`,
             {
               method: "DELETE",
             }

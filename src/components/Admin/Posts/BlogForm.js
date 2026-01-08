@@ -37,7 +37,7 @@ const BlogForm = ({ blog, onClose, onSave, viewMode, editMode }) => {
     const fetchData = async () => {
       try {
         // Fetch authors
-        const authorsRes = await fetch(`${API_URL}/api/blogs/admin/authors`);
+        const authorsRes = await fetch(`${API_URL}/blogs/admin/authors`);
         if (authorsRes.ok) {
           const authorsData = await authorsRes.json();
           setAuthors(authorsData);
@@ -45,7 +45,7 @@ const BlogForm = ({ blog, onClose, onSave, viewMode, editMode }) => {
 
         // Fetch categories
         const categoriesRes = await fetch(
-          `${API_URL}/api/blogs/admin/categories`
+          `${API_URL}/blogs/admin/categories`
         );
         if (categoriesRes.ok) {
           const categoriesData = await categoriesRes.json();
@@ -111,7 +111,7 @@ const BlogForm = ({ blog, onClose, onSave, viewMode, editMode }) => {
       const formDataUpload = new FormData();
       formDataUpload.append("image", file);
 
-      const response = await fetch(`${API_URL}/api/hotels/upload`, {
+      const response = await fetch(`${API_URL}/hotels/upload`, {
         method: "POST",
         body: formDataUpload,
       });
@@ -177,8 +177,8 @@ const BlogForm = ({ blog, onClose, onSave, viewMode, editMode }) => {
     setLoading(true);
     try {
       const url = blog
-        ? `${API_URL}/api/blogs/admin/blogs/${blog.id}`
-        : `${API_URL}/api/blogs/admin/blogs`;
+        ? `${API_URL}/blogs/admin/blogs/${blog.id}`
+        : `${API_URL}/blogs/admin/blogs`;
 
       const method = blog ? "PUT" : "POST";
 

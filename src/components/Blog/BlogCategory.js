@@ -39,7 +39,7 @@ const BlogCategory = () => {
       try {
         setLoading(true);
 
-        const response = await axios.get(`${API_URL}/api/blogs`, {
+        const response = await axios.get(`${API_URL}/blogs`, {
           params: { category: category },
         });
 

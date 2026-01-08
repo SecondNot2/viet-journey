@@ -94,7 +94,7 @@ const FlightDetailPage = () => {
         setLoading(true);
         setError(null);
 
-        const response = await axios.get(`${API_BASE_URL}/api/flights/${id}`);
+        const response = await axios.get(`${API_BASE_URL}/flights/${id}`);
 
         if (response.data) {
           // Xử lý dữ liệu trước khi set state

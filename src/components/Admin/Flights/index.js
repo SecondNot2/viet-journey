@@ -180,7 +180,7 @@ const FlightManagement = () => {
       });
 
       const res = await axios.get(
-        `${API_BASE_URL}/api/flights/admin/routes?${params}`
+        `${API_BASE_URL}/flights/admin/routes?${params}`
       );
 
       setRoutes(res.data.routes || []);
@@ -201,7 +201,7 @@ const FlightManagement = () => {
       });
 
       const res = await axios.get(
-        `${API_BASE_URL}/api/flights/admin/schedules?${params}`
+        `${API_BASE_URL}/flights/admin/schedules?${params}`
       );
 
       setSchedules(res.data.schedules || []);
@@ -216,7 +216,7 @@ const FlightManagement = () => {
 
   const fetchAirlines = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/flights/airlines`);
+      const res = await axios.get(`${API_BASE_URL}/flights/airlines`);
       setAirlines(res.data.airlines || []);
     } catch (error) {
       console.error("Error fetching airlines:", error);
@@ -256,7 +256,7 @@ const FlightManagement = () => {
       cancelText: "Hủy",
       onConfirm: async () => {
         try {
-          await axios.delete(`${API_BASE_URL}/api/flights/admin/routes/${id}`);
+          await axios.delete(`${API_BASE_URL}/flights/admin/routes/${id}`);
           toast.success("Xóa tuyến bay thành công!");
           fetchRoutes();
           setConfirmDialog({ ...confirmDialog, isOpen: false });
@@ -297,7 +297,7 @@ const FlightManagement = () => {
       cancelText: "Hủy",
       onConfirm: async () => {
         try {
-          await axios.put(`${API_BASE_URL}/api/flights/admin/routes/${id}`, {
+          await axios.put(`${API_BASE_URL}/flights/admin/routes/${id}`, {
             status: "inactive",
           });
           toast.success("Đã chuyển tuyến bay sang trạng thái Inactive");
@@ -322,12 +322,12 @@ const FlightManagement = () => {
       if (routeData.id) {
         // Update existing route
         await axios.put(
-          `${API_BASE_URL}/api/flights/admin/routes/${routeData.id}`,
+          `${API_BASE_URL}/flights/admin/routes/${routeData.id}`,
           routeData
         );
       } else {
         // Create new route
-        await axios.post(`${API_BASE_URL}/api/flights/admin/routes`, routeData);
+        await axios.post(`${API_BASE_URL}/flights/admin/routes`, routeData);
       }
       fetchRoutes();
     } catch (error) {
@@ -358,7 +358,7 @@ const FlightManagement = () => {
       onConfirm: async (reason) => {
         try {
           await axios.put(
-            `${API_BASE_URL}/api/flights/admin/schedules/${id}/cancel`,
+            `${API_BASE_URL}/flights/admin/schedules/${id}/cancel`,
             { cancellation_reason: reason }
           );
           toast.success("Đã hủy lịch bay thành công!");
@@ -391,7 +391,7 @@ const FlightManagement = () => {
       cancelText: "Hủy",
       onConfirm: async () => {
         try {
-          await axios.put(`${API_BASE_URL}/api/flights/admin/schedules/${id}`, {
+          await axios.put(`${API_BASE_URL}/flights/admin/schedules/${id}`, {
             status,
           });
           toast.success("Đã cập nhật trạng thái thành công!");
@@ -426,7 +426,7 @@ const FlightManagement = () => {
 
         try {
           const res = await axios.post(
-            `${API_BASE_URL}/api/flights/admin/generate-schedules`
+            `${API_BASE_URL}/flights/admin/generate-schedules`
           );
 
           // Hiển thị thông tin chi tiết

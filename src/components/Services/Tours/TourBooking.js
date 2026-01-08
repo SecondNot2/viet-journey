@@ -189,7 +189,7 @@ const TourBooking = () => {
         const params = {
           selected_date: bookingInfo.tourDetails.startDate,
         };
-        const response = await axios.get(`${API_URL}/api/tours/${tour.id}`, {
+        const response = await axios.get(`${API_URL}/tours/${tour.id}`, {
           params,
         });
 
@@ -430,7 +430,7 @@ const TourBooking = () => {
       };
 
       // Gọi API đặt tour
-      const response = await axios.post(`${API_URL}/api/bookings`, bookingData);
+      const response = await axios.post(`${API_URL}/bookings`, bookingData);
 
       // Chuyển đến trang thành công
       navigate("/tours/booking/success", {

@@ -97,7 +97,7 @@ const Destinations = () => {
     const fetchDestinations = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${API_URL}/api/destinations`, {
+        const response = await axios.get(`${API_URL}/destinations`, {
           params: {
             region: selectedFilters.region,
             type: selectedFilters.type,

@@ -256,7 +256,7 @@ const Tours = () => {
   // Fetch available tour types from DB
   const fetchAvailableTypes = async () => {
     try {
-      const res = await axios.get(`${API_URL}/api/tours/available-types`);
+      const res = await axios.get(`${API_URL}/tours/available-types`);
       setAvailableTypes(res.data.types || []);
     } catch (err) {
       console.error("[DEBUG] Error fetching available types:", err);
@@ -314,7 +314,7 @@ const Tours = () => {
       params.sort_order = sortOrder || "desc"; // Default to desc if order not specified
 
       console.debug("[DEBUG] Calling API /api/tours with params:", params);
-      const res = await axios.get(`${API_URL}/api/tours`, { params });
+      const res = await axios.get(`${API_URL}/tours`, { params });
       console.debug("[DEBUG] API Response /api/tours:", res.data);
 
       if (res.data && res.data.tours && res.data.pagination) {
@@ -355,7 +355,7 @@ const Tours = () => {
 
     setLoadingLocationSuggest(true);
     try {
-      const res = await axios.get(`${API_URL}/api/tours/locations/suggest`, {
+      const res = await axios.get(`${API_URL}/tours/locations/suggest`, {
         params: { q: q.trim() },
       });
 
@@ -379,7 +379,7 @@ const Tours = () => {
   const fetchTourSuggestions = async (q = "") => {
     setLoadingTourSuggestions(true);
     try {
-      const res = await axios.get(`${API_URL}/api/tours/suggestions`, {
+      const res = await axios.get(`${API_URL}/tours/suggestions`, {
         params: { q: q.trim() },
       });
 
@@ -404,7 +404,7 @@ const Tours = () => {
 
     setLoadingDates(true);
     try {
-      const res = await axios.get(`${API_URL}/api/tours/available-dates`, {
+      const res = await axios.get(`${API_URL}/tours/available-dates`, {
         params: {
           location: searchParams.destination.trim(),
           type: filters.type !== "all" ? filters.type : undefined,

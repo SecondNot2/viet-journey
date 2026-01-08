@@ -151,7 +151,7 @@ const DestinationForm = ({
     formDataUpload.append("image", file);
 
     try {
-      const response = await fetch(`${API_URL}/api/destinations/upload`, {
+      const response = await fetch(`${API_URL}/destinations/upload`, {
             method: "POST",
         body: formDataUpload,
       });
@@ -227,8 +227,8 @@ const DestinationForm = ({
       };
 
       const url = destination
-        ? `${API_URL}/api/destinations/admin/destinations/${destination.id}`
-        : `${API_URL}/api/destinations/admin/destinations`;
+        ? `${API_URL}/destinations/admin/destinations/${destination.id}`
+        : `${API_URL}/destinations/admin/destinations`;
       const method = destination ? "PUT" : "POST";
 
       const response = await fetch(url, {

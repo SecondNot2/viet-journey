@@ -261,7 +261,7 @@ const TransportDetailPage = () => {
         if (user?.id) queryParams.append("user_id", user.id);
 
         const response = await axios.get(
-          `${API_URL}/api/transport/${id}${
+          `${API_URL}/transport/${id}${
             queryParams.toString() ? "?" + queryParams.toString() : ""
           }`
         );
@@ -337,7 +337,7 @@ const TransportDetailPage = () => {
       setReviewError(null); // Reset review error
       try {
         const response = await axios.get(
-          `${API_URL}/api/reviews/search?service_type=transport&transport_id=${id}`
+          `${API_URL}/reviews/search?service_type=transport&transport_id=${id}`
         );
         setReviews(response.data || []);
         setReviewError(null);
@@ -370,7 +370,7 @@ const TransportDetailPage = () => {
       setRatingError("");
 
       const response = await axios.post(
-        `${API_URL}/api/transport/${id}/rating`,
+        `${API_URL}/transport/${id}/rating`,
         {
           user_id: user.id,
           rating: rating,
@@ -401,7 +401,7 @@ const TransportDetailPage = () => {
   // Comment handlers
   const handleAddComment = async ({ comment, parent_id }) => {
     const response = await axios.post(
-      `${API_URL}/api/transport/${id}/reviews`,
+      `${API_URL}/transport/${id}/reviews`,
       {
         user_id: user.id,
         comment,
@@ -418,7 +418,7 @@ const TransportDetailPage = () => {
   };
 
   const handleEditComment = async (reviewId, editedText) => {
-    await axios.put(`${API_URL}/api/transport/${id}/reviews/${reviewId}`, {
+    await axios.put(`${API_URL}/transport/${id}/reviews/${reviewId}`, {
       comment: editedText,
       rating: null,
     });
@@ -437,7 +437,7 @@ const TransportDetailPage = () => {
   };
 
   const handleDeleteComment = async (reviewId) => {
-    await axios.delete(`${API_URL}/api/transport/${id}/reviews/${reviewId}`);
+    await axios.delete(`${API_URL}/transport/${id}/reviews/${reviewId}`);
 
     setTransport({
       ...transport,
@@ -448,7 +448,7 @@ const TransportDetailPage = () => {
 
   const handleLikeComment = async (reviewId) => {
     const response = await axios.post(
-      `${API_URL}/api/transport/${id}/reviews/${reviewId}/like`,
+      `${API_URL}/transport/${id}/reviews/${reviewId}/like`,
       {
         user_id: user.id,
       }
@@ -483,7 +483,7 @@ const TransportDetailPage = () => {
       if (user?.id) queryParams.append("user_id", user.id);
 
       const response = await axios.get(
-        `${API_URL}/api/transport/${id}${
+        `${API_URL}/transport/${id}${
           queryParams.toString() ? "?" + queryParams.toString() : ""
         }`
       );
@@ -691,7 +691,7 @@ const TransportDetailPage = () => {
 
     try {
       const response = await axios.post(
-        `${API_URL}/api/reviews`,
+        `${API_URL}/reviews`,
         {
           transport_id: id, // Make sure backend expects transport_id
           rating: newReview.rating,

@@ -98,8 +98,8 @@ const HotelForm = ({ hotel, onClose, onSave, viewMode, editMode }) => {
     setLoading(true);
     try {
       const url = hotel
-        ? `${API_URL}/api/hotels/admin/hotels/${hotel.id}`
-        : `${API_URL}/api/hotels/admin/hotels`;
+        ? `${API_URL}/hotels/admin/hotels/${hotel.id}`
+        : `${API_URL}/hotels/admin/hotels`;
 
       const method = hotel ? "PUT" : "POST";
 
@@ -185,7 +185,7 @@ const HotelForm = ({ hotel, onClose, onSave, viewMode, editMode }) => {
     formDataUpload.append("image", file);
 
     try {
-      const response = await fetch(`${API_URL}/api/hotels/upload`, {
+      const response = await fetch(`${API_URL}/hotels/upload`, {
         method: "POST",
         body: formDataUpload,
       });

@@ -67,7 +67,7 @@ const ReviewForm = ({ review, onClose, onStatusChange }) => {
         setLoading(true);
         try {
           const response = await fetch(
-            `${API_URL}/api/reviews/admin/reviews/${review.id}/status`,
+            `${API_URL}/reviews/admin/reviews/${review.id}/status`,
             {
               method: "PUT",
               headers: {
@@ -111,7 +111,7 @@ const ReviewForm = ({ review, onClose, onStatusChange }) => {
         setLoading(true);
         try {
           const response = await fetch(
-            `${API_URL}/api/reviews/admin/reviews/${review.id}/status`,
+            `${API_URL}/reviews/admin/reviews/${review.id}/status`,
             {
               method: "PUT",
               headers: {

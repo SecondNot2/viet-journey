@@ -113,7 +113,7 @@ const BlogPost = () => {
         if (currentUserId) queryParams.append("user_id", currentUserId);
 
         const response = await axios.get(
-          `${API_URL}/api/blogs/${id}${
+          `${API_URL}/blogs/${id}${
             queryParams.toString() ? "?" + queryParams.toString() : ""
           }`
         );
@@ -138,7 +138,7 @@ const BlogPost = () => {
         }
 
         // Fetch related posts
-        const relatedResponse = await axios.get(`${API_URL}/api/blogs`, {
+        const relatedResponse = await axios.get(`${API_URL}/blogs`, {
           params: { limit: 3, category: response.data.category },
         });
 
@@ -172,7 +172,7 @@ const BlogPost = () => {
 
   // Hàm thêm bình luận - refactored to work with CommentSection
   const handleAddComment = async ({ comment, parent_id }) => {
-      const response = await axios.post(`${API_URL}/api/blogs/${id}/comments`, {
+      const response = await axios.post(`${API_URL}/blogs/${id}/comments`, {
         user_id: currentUserId,
       comment,
         rating: null,
@@ -189,7 +189,7 @@ const BlogPost = () => {
 
   // Hàm sửa bình luận - refactored
   const handleEditComment = async (commentId, editedText) => {
-    await axios.put(`${API_URL}/api/blogs/${id}/comments/${commentId}`, {
+    await axios.put(`${API_URL}/blogs/${id}/comments/${commentId}`, {
           user_id: currentUserId,
           comment: editedText,
     });
@@ -205,7 +205,7 @@ const BlogPost = () => {
 
   // Hàm xóa bình luận - refactored
   const handleDeleteComment = async (commentId) => {
-      await axios.delete(`${API_URL}/api/blogs/${id}/comments/${commentId}`, {
+      await axios.delete(`${API_URL}/blogs/${id}/comments/${commentId}`, {
         data: {
           user_id: currentUserId,
           is_admin: isAdmin,
@@ -231,7 +231,7 @@ const BlogPost = () => {
     try {
       const endpoint = isLiked ? "unlike" : "like";
       const response = await axios.post(
-        `${API_URL}/api/blogs/${id}/${endpoint}`,
+        `${API_URL}/blogs/${id}/${endpoint}`,
         { user_id: currentUserId }
       );
 
@@ -259,7 +259,7 @@ const BlogPost = () => {
       const endpoint = isLiked ? "unlike" : "like";
 
       const response = await axios.post(
-        `${API_URL}/api/blogs/${id}/comments/${commentId}/${endpoint}`,
+        `${API_URL}/blogs/${id}/comments/${commentId}/${endpoint}`,
         { user_id: currentUserId }
       );
 
@@ -288,7 +288,7 @@ const BlogPost = () => {
       if (currentUserId) queryParams.append("user_id", currentUserId);
 
       const response = await axios.get(
-        `${API_URL}/api/blogs/${id}${
+        `${API_URL}/blogs/${id}${
           queryParams.toString() ? "?" + queryParams.toString() : ""
         }`
       );

@@ -125,7 +125,7 @@ const PromotionServices = () => {
         console.log(
           "[DEBUG] Đang thử lấy dữ liệu từ /api/promotions/global..."
         );
-        response = await axios.get(`${API_URL}/api/promotions/global`);
+        response = await axios.get(`${API_URL}/promotions/global`);
       } catch (globalError) {
         console.log(
           "[DEBUG] API global lỗi, thử fallback sang /api/promotions/services..."
@@ -138,7 +138,7 @@ const PromotionServices = () => {
 
         try {
           // Fallback: thử API services
-          response = await axios.get(`${API_URL}/api/promotions/services`);
+          response = await axios.get(`${API_URL}/promotions/services`);
         } catch (servicesError) {
           console.error(
             "[DEBUG] Services error:",

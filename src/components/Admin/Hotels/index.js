@@ -119,7 +119,7 @@ const AdminHotels = () => {
       });
 
       const response = await fetch(
-        `${API_URL}/api/hotels/admin/hotels?${params}`
+        `${API_URL}/hotels/admin/hotels?${params}`
       );
       if (!response.ok) throw new Error("Failed to fetch hotels");
 
@@ -164,7 +164,7 @@ const AdminHotels = () => {
       });
 
       const response = await fetch(
-        `${API_URL}/api/hotels/admin/hotels/${selectedHotel.id}/rooms?${params}`
+        `${API_URL}/hotels/admin/hotels/${selectedHotel.id}/rooms?${params}`
       );
       if (!response.ok) throw new Error("Failed to fetch rooms");
 
@@ -182,7 +182,7 @@ const AdminHotels = () => {
   // Fetch locations
   const fetchLocations = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/hotels/admin/locations`);
+      const response = await fetch(`${API_URL}/hotels/admin/locations`);
       if (!response.ok) throw new Error("Failed to fetch locations");
 
       const data = await response.json();
@@ -195,7 +195,7 @@ const AdminHotels = () => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/hotels/admin/stats`);
+      const response = await fetch(`${API_URL}/hotels/admin/stats`);
       if (!response.ok) throw new Error("Failed to fetch stats");
 
       const data = await response.json();
@@ -255,7 +255,7 @@ const AdminHotels = () => {
       onConfirm: async () => {
     try {
       const response = await fetch(
-            `${API_URL}/api/hotels/admin/hotels/${hotelId}`,
+            `${API_URL}/hotels/admin/hotels/${hotelId}`,
         {
           method: "DELETE",
         }
@@ -297,7 +297,7 @@ const AdminHotels = () => {
   const handleSetInactive = async (hotelId) => {
     try {
       const response = await fetch(
-        `${API_URL}/api/hotels/admin/hotels/${hotelId}`,
+        `${API_URL}/hotels/admin/hotels/${hotelId}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -358,7 +358,7 @@ const AdminHotels = () => {
       onConfirm: async () => {
         try {
           const response = await fetch(
-            `${API_URL}/api/hotels/admin/rooms/${roomId}`,
+            `${API_URL}/hotels/admin/rooms/${roomId}`,
             {
               method: "DELETE",
             }
