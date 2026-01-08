@@ -29,6 +29,9 @@ export const AuthProvider = ({ children }) => {
           // Xóa thông tin user khỏi localStorage nếu có
           localStorage.removeItem("user");
           localStorage.removeItem("rememberedUser");
+        } else if (err.response && err.response.status === 401) {
+          // 401 là bình thường khi chưa đăng nhập, không cần log error
+          // console.debug("Người dùng chưa đăng nhập");
         } else if (err.code !== "ERR_NETWORK") {
           // Chỉ log lỗi nếu không phải lỗi network thông thường
           console.error("Lỗi khi kiểm tra xác thực:", err);
