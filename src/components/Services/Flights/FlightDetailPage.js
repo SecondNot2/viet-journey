@@ -10,14 +10,17 @@ import {
   Users,
 } from "lucide-react";
 import axios from "axios";
+import { API_URL, API_HOST } from "../../../config/api";
 import {
   formatDateLong,
   extractTime,
   formatDateDDMMYYYY,
 } from "../../../utils/dateHelpers";
 
+// Alias for backward compatibility
+const API_BASE_URL = API_URL;
+
 // Cấu hình URL cơ sở cho axios
-const API_BASE_URL = "http://localhost:5000";
 
 // Sample flight data - replace with actual API call
 const sampleFlight = {

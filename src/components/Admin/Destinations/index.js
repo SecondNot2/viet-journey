@@ -16,8 +16,8 @@ import {
 import toast from "react-hot-toast";
 import ConfirmDialog from "../../common/ConfirmDialog";
 import DestinationForm from "./DestinationForm";
+import { API_URL, API_HOST } from "../../../config/api";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const AdminDestinations = () => {
   const [loading, setLoading] = useState(false);

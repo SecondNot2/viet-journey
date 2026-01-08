@@ -42,8 +42,8 @@ import {
 } from "lucide-react";
 import Toast from "../../common/Toast";
 import CommentSection from "../../common/CommentSection";
+import { API_URL, API_HOST } from "../../../config/api";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const HotelDetail = ({
   hotel,

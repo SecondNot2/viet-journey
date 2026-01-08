@@ -21,8 +21,10 @@ import {
 import { toast, Toaster } from "react-hot-toast";
 import RouteForm from "./RouteForm";
 import ConfirmDialog from "../../common/ConfirmDialog";
+import { API_URL, API_HOST } from "../../../config/api";
 
-const API_BASE_URL = "http://localhost:5000";
+// Alias for backward compatibility
+const API_BASE_URL = API_URL;
 
 const FlightManagement = () => {
   // Tab state

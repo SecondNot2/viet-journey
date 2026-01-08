@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import Toast from "../../common/Toast";
 import CommentSection from "../../common/CommentSection";
+import { API_URL, API_HOST } from "../../../config/api";
 
 // Helper Functions
 export const formatPrice = (price) => {
@@ -109,7 +110,6 @@ export const getTransportLabel = (type) => {
 };
 
 // Thêm API_URL
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 // Hàm xử lý đường dẫn hình ảnh
 const getImageUrl = (imagePath) => {

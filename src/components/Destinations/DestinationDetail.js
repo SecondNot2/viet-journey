@@ -1,3 +1,4 @@
+import { API_URL, API_HOST } from "../../config/api";
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -21,7 +22,7 @@ import ImageGallery from "../common/ImageGallery";
 import CommentSection from "../common/CommentSection";
 import { useAuth } from "../../contexts/AuthContext";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 
 const DestinationDetail = () => {
   const { id } = useParams();

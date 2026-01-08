@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
 import axios from "axios";
+import { API_URL, API_HOST } from "../../../config/api";
 import {
   Calendar,
   Users,
@@ -30,8 +31,6 @@ import {
   Check,
   AlertCircle,
 } from "lucide-react";
-
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const TourBooking = () => {
   const navigate = useNavigate();
@@ -1581,9 +1580,7 @@ const TourBooking = () => {
                 </p>
                 <div className="aspect-square max-w-[250px] mx-auto bg-white rounded-lg flex items-center justify-center p-2">
                   <img
-                    src={`${
-                      process.env.REACT_APP_API_URL || "http://localhost:5000"
-                    }/uploads/QR/bank.jpg`}
+                    src={`${API_HOST}/uploads/QR/bank.jpg`}
                     alt="QR Code MBBank"
                     className="w-full h-full object-contain rounded-lg"
                     onError={(e) => {
@@ -1637,9 +1634,7 @@ const TourBooking = () => {
             </div>
             <div className="aspect-square max-w-[200px] mx-auto bg-white rounded-lg flex items-center justify-center p-2">
               <img
-                src={`${
-                  process.env.REACT_APP_API_URL || "http://localhost:5000"
-                }/uploads/QR/bank.jpg`}
+                src={`${API_HOST}/uploads/QR/bank.jpg`}
                 alt="QR Code VNPay Test"
                 className="w-full h-full object-contain rounded-lg"
                 onError={(e) => {
@@ -1679,9 +1674,7 @@ const TourBooking = () => {
             </div>
             <div className="aspect-square max-w-[200px] mx-auto bg-white rounded-lg flex items-center justify-center p-2">
               <img
-                src={`${
-                  process.env.REACT_APP_API_URL || "http://localhost:5000"
-                }/uploads/QR/bank.jpg`}
+                src={`${API_HOST}/uploads/QR/bank.jpg`}
                 alt="QR Code Momo Test"
                 className="w-full h-full object-contain rounded-lg"
                 onError={(e) => {

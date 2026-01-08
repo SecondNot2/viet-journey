@@ -1,3 +1,4 @@
+import { API_URL, API_HOST } from "../../../config/api";
 import React, { useState, useEffect } from "react";
 import {
   ArrowLeft,
@@ -13,7 +14,7 @@ import {
 import toast from "react-hot-toast";
 import ConfirmDialog from "../../common/ConfirmDialog";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 
 const ScheduleForm = ({ tour, onClose, onSave }) => {
   const [loading, setLoading] = useState(false);

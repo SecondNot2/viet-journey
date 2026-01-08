@@ -13,6 +13,7 @@ import {
   ChevronRight,
   AlertCircle,
 } from "lucide-react";
+import { API_URL } from "../../config/api";
 
 const Reviews = () => {
   const [activeTab, setActiveTab] = useState("all");
@@ -28,15 +29,12 @@ const Reviews = () => {
       try {
         setLoading(true);
         // Lấy reviews của user hiện tại
-        const response = await axios.get(
-          "http://localhost:5000/api/reviews/user",
-          {
-            withCredentials: true,
-            params: {
-              type: activeTab !== "all" ? activeTab : undefined,
-            },
-          }
-        );
+        const response = await axios.get(`${API_URL}/reviews/user`, {
+          withCredentials: true,
+          params: {
+            type: activeTab !== "all" ? activeTab : undefined,
+          },
+        });
 
         if (!response.data) {
           throw new Error("Không thể lấy dữ liệu đánh giá");
@@ -177,7 +175,7 @@ const Reviews = () => {
   const handleDeleteReview = async (reviewId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa đánh giá này?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/reviews/${reviewId}`, {
+        await axios.delete(`${API_URL}/reviews/${reviewId}`, {
           withCredentials: true,
         });
 

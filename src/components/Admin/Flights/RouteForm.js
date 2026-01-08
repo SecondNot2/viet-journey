@@ -1,3 +1,4 @@
+import { API_URL, API_HOST } from "../../../config/api";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -13,7 +14,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:5000";
+
 
 const RouteForm = ({ route, onClose, onSave, viewMode: initialViewMode }) => {
   const [viewMode, setViewMode] = useState(initialViewMode);

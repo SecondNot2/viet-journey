@@ -1,3 +1,4 @@
+import { API_URL, API_HOST } from "../../config/api";
 import React, { useState } from "react";
 import {
   MessageCircle,
@@ -13,7 +14,7 @@ import Toast from "./Toast";
 import ConfirmModal from "./ConfirmModal";
 import EditCommentModal from "./EditCommentModal";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 
 const CommentSection = ({
   comments = [],

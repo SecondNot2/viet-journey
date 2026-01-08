@@ -10,7 +10,10 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import SectionContainer from "../common/SectionContainer";
-import { API_BASE_URL, API_HOST } from "../../api";
+import { API_URL, API_HOST } from "../../config/api";
+
+// Alias for backward compatibility
+const API_BASE_URL = API_URL;
 
 const LatestBlogs = () => {
   const navigate = useNavigate();

@@ -1,7 +1,10 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../api";
+import { API_URL } from "../config/api";
+
+// Alias for backward compatibility
+const API_BASE_URL = API_URL;
 
 const AuthContext = createContext(null);
 

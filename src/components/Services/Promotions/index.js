@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL, API_HOST } from "../../../config/api";
 import {
   Tag,
   Star,
@@ -15,7 +16,6 @@ import {
   MapPin,
 } from "lucide-react";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 const PLACEHOLDER_IMAGE = `${API_URL}/images/placeholder.png`;
 
 const serviceTypeOptions = [

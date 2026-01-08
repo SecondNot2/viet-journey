@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_URL } from "../../../config/api";
 import {
   ArrowLeft,
   Save,
@@ -73,9 +74,7 @@ const PostForm = ({ post, onClose, onSave, viewMode: initialViewMode }) => {
     setSuccessMessage("");
 
     try {
-      const url = post
-        ? `http://localhost:5000/api/blogs/${post.id}`
-        : "http://localhost:5000/api/blogs";
+      const url = post ? `${API_URL}/blogs/${post.id}` : `${API_URL}/blogs`;
 
       const method = post ? "PUT" : "POST";
 

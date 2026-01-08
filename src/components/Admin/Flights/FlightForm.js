@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_URL } from "../../../config/api";
 import {
   ArrowLeft,
   Save,
@@ -147,8 +148,8 @@ const FlightForm = ({ flight, onClose, onSave, viewMode: initialViewMode }) => {
 
     try {
       const url = flight
-        ? `http://localhost:5000/api/flights/${flight.id}`
-        : "http://localhost:5000/api/flights";
+        ? `${API_URL}/flights/${flight.id}`
+        : `${API_URL}/flights`;
 
       const method = flight ? "PUT" : "POST";
 

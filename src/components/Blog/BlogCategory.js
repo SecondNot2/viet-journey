@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_URL, API_HOST } from "../../config/api";
 import {
   Calendar,
   Clock,
@@ -16,7 +17,6 @@ import {
   MapPin,
 } from "lucide-react";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const BlogCategory = () => {
   const { category } = useParams();

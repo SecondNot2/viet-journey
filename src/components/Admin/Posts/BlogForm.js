@@ -1,3 +1,4 @@
+import { API_URL, API_HOST } from "../../../config/api";
 import React, { useState, useEffect } from "react";
 import {
   ArrowLeft,
@@ -8,7 +9,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 
 const BlogForm = ({ blog, onClose, onSave, viewMode, editMode }) => {
   const isAddMode = !blog && !viewMode;

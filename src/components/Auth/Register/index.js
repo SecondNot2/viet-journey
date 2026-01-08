@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
+import { API_URL } from "../../../config/api";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -90,7 +91,7 @@ const Register = () => {
       }
 
       // Gửi request đăng ký
-      const response = await fetch("http://localhost:5000/api/users", {
+      const response = await fetch(`${API_URL}/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -114,21 +115,18 @@ const Register = () => {
       setSuccess("Đăng ký thành công! Đang tự động đăng nhập...");
 
       // Tự động đăng nhập sau khi đăng ký
-      const loginResponse = await fetch(
-        "http://localhost:5000/api/users/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            username: formData.username.trim(),
-            password: formData.password,
-            remember: true,
-          }),
-        }
-      );
+      const loginResponse = await fetch(`${API_URL}/users/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          username: formData.username.trim(),
+          password: formData.password,
+          remember: true,
+        }),
+      });
 
       const loginData = await loginResponse.json();
 

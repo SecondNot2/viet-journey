@@ -20,6 +20,7 @@ import {
   PauseCircle,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { API_URL } from "../../../config/api";
 
 const TripManagement = ({ onBack }) => {
   const [trips, setTrips] = useState([]);
@@ -71,7 +72,7 @@ const TripManagement = ({ onBack }) => {
       params.append("limit", "1000");
 
       const response = await fetch(
-        `http://localhost:5000/api/transport/admin/trips?${params.toString()}`
+        `${API_URL}/transport/admin/trips?${params.toString()}`
       );
 
       if (!response.ok) {
@@ -176,7 +177,7 @@ const TripManagement = ({ onBack }) => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/transport/admin/trips/${tripId}/cancel`,
+        `${API_URL}/transport/admin/trips/${tripId}/cancel`,
         {
           method: "PUT",
           headers: {
@@ -216,7 +217,7 @@ const TripManagement = ({ onBack }) => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/transport/admin/trips/${selectedTrip.id}`,
+        `${API_URL}/transport/admin/trips/${selectedTrip.id}`,
         {
           method: "PUT",
           headers: {

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_URL, API_HOST } from "../../../config/api";
 import {
   MapPin,
   Users,
@@ -38,7 +39,6 @@ import {
 } from "lucide-react";
 
 // --- Configuration ---
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 const PLACEHOLDER_IMAGE = "/images/placeholder.jpg"; // Ensure this image exists in your public folder
 
 // --- Helper Functions ---

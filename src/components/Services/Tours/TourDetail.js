@@ -5,6 +5,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import CommentSection from "../../common/CommentSection";
 import ConfirmModal from "../../common/ConfirmModal";
 import Toast from "../../common/Toast";
+import { API_URL, API_HOST } from "../../../config/api";
 import {
   MapPin,
   Clock,
@@ -47,7 +48,6 @@ import {
   ChevronUp,
 } from "lucide-react";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const TourDetail = () => {
   const { user } = useAuth();

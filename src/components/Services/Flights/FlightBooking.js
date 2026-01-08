@@ -33,10 +33,9 @@ import { useAuth } from "../../../contexts/AuthContext";
 import axios from "axios";
 import Toast from "../../common/Toast";
 import ConfirmModal from "../../common/ConfirmModal";
+import { API_URL, API_HOST } from "../../../config/api";
 
-const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL || "http://localhost:5000";
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+const API_BASE_URL = API_HOST;
 
 const FlightBooking = () => {
   const navigate = useNavigate();

@@ -20,6 +20,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import axios from "axios";
+import { API_URL } from "../../config/api";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -44,12 +45,9 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/users/profile",
-          {
-            withCredentials: true,
-          }
-        );
+        const response = await axios.get(`${API_URL}/users/profile`, {
+          withCredentials: true,
+        });
         setUserData(response.data.data || response.data);
         setLoading(false);
       } catch (err) {
@@ -90,7 +88,7 @@ const Profile = () => {
 
     try {
       const response = await axios.put(
-        "http://localhost:5000/api/users/change-password",
+        `${API_URL}/users/change-password`,
         {
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,
@@ -124,7 +122,7 @@ const Profile = () => {
   const handleLogout = async () => {
     try {
       await axios.post(
-        "http://localhost:5000/api/users/logout",
+        `${API_URL}/users/logout`,
         {},
         {
           withCredentials: true,

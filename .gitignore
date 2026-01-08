@@ -45,9 +45,13 @@ yarn-error.log*
 # database files (legacy)
 # *.sql
 
+# scripts
+scripts/
+
 # misc
 localhost.log
 cleanup_audit.md
+DEPLOY_CHECKLIST.md
 
 # Postman
 .postman/

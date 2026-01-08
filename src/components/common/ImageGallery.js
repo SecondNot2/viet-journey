@@ -1,7 +1,8 @@
+import { API_URL, API_HOST } from "../../config/api";
 import React, { useState } from "react";
 import { Camera, Eye, ChevronLeft, ChevronRight, X } from "lucide-react";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 
 const ImageGallery = ({ images = [], title = "" }) => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);

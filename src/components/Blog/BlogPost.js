@@ -38,8 +38,8 @@ import Toast from "../common/Toast";
 import ImageGallery from "../common/ImageGallery";
 import CommentSection from "../common/CommentSection";
 import { useAuth } from "../../contexts/AuthContext";
+import { API_URL, API_HOST } from "../../config/api";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const BlogPost = () => {
   const { id } = useParams();

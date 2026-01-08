@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { API_URL } from "../../config/api";
 
 const BookingHistory = () => {
   const { user } = useAuth();
@@ -38,7 +39,7 @@ const BookingHistory = () => {
 
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/bookings/user/${user.id}`,
+          `${API_URL}/bookings/user/${user.id}`,
           {
             withCredentials: true,
             params: {
@@ -266,7 +267,7 @@ const BookingHistory = () => {
   const handleCancelBooking = async (bookingId) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/bookings/${bookingId}/status`,
+        `${API_URL}/bookings/${bookingId}/status`,
         {
           status: "cancelled",
         },

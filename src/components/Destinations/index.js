@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { API_URL, API_HOST } from "../../config/api";
 import {
   MapPin,
   Users,
@@ -23,7 +24,6 @@ import {
   User,
 } from "lucide-react";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 const PLACEHOLDER_IMAGE = `${API_URL}/images/placeholder.png`;
 
 const typeOptions = [

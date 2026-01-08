@@ -22,6 +22,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { API_URL, API_HOST } from "../../config/api";
 import {
   LineChart,
   Line,
@@ -38,7 +39,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const COLORS = {
   tour: "#3b82f6", // blue

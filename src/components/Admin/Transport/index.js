@@ -25,6 +25,7 @@ import { toast, Toaster } from "react-hot-toast";
 import RouteForm from "./RouteForm";
 import TripManagement from "./TripManagement";
 import ConfirmDialog from "../../common/ConfirmDialog";
+import { API_URL } from "../../../config/api";
 
 const TransportManagement = () => {
   // State cho tab navigation
@@ -86,7 +87,7 @@ const TransportManagement = () => {
       params.append("limit", "1000"); // Load all cho filtering ở client
 
       const response = await fetch(
-        `http://localhost:5000/api/transport/admin/routes?${params.toString()}`
+        `${API_URL}/transport/admin/routes?${params.toString()}`
       );
 
       if (!response.ok) {
@@ -214,7 +215,7 @@ const TransportManagement = () => {
   const handleSetInactive = async (routeId) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/transport/admin/routes/${routeId}`,
+        `${API_URL}/transport/admin/routes/${routeId}`,
         {
           method: "PUT",
           headers: {
@@ -269,7 +270,7 @@ const TransportManagement = () => {
       onConfirm: async () => {
         try {
           const response = await fetch(
-            `http://localhost:5000/api/transport/admin/routes/${routeId}`,
+            `${API_URL}/transport/admin/routes/${routeId}`,
             {
               method: "DELETE",
             }
@@ -370,8 +371,8 @@ const TransportManagement = () => {
   const handleSaveRoute = async (routeData) => {
     try {
       const url = routeData.id
-        ? `http://localhost:5000/api/transport/admin/routes/${routeData.id}`
-        : "http://localhost:5000/api/transport/admin/routes";
+        ? `${API_URL}/transport/admin/routes/${routeData.id}`
+        : `${API_URL}/transport/admin/routes`;
 
       const method = routeData.id ? "PUT" : "POST";
 
@@ -423,7 +424,7 @@ const TransportManagement = () => {
 
           // Call backend endpoint to trigger generation
           const response = await fetch(
-            "http://localhost:5000/api/transport/admin/generate-trips",
+            `${API_URL}/transport/admin/generate-trips`,
             {
               method: "POST",
               headers: {

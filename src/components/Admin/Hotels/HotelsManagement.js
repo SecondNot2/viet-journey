@@ -13,6 +13,7 @@ import {
   Eye,
 } from "lucide-react";
 import HotelForm from "./HotelForm";
+import { API_URL } from "../../../config/api";
 
 const HotelsManagement = () => {
   const [hotels, setHotels] = useState([]);
@@ -29,7 +30,7 @@ const HotelsManagement = () => {
   const fetchHotels = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5000/api/hotels");
+      const response = await fetch(`${API_URL}/hotels");
       if (!response.ok) {
         throw new Error("Failed to fetch hotels");
       }
@@ -49,7 +50,7 @@ const HotelsManagement = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/hotels/${id}`, {
+      const response = await fetch(`${API_URL}/hotels/${id}`, {
         method: "DELETE",
       });
 

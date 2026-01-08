@@ -23,8 +23,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "../../../contexts/AuthContext";
-
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+import { API_URL, API_HOST } from "../../../config/api";
 
 const HotelBooking = () => {
   const navigate = useNavigate();
@@ -262,7 +261,7 @@ const HotelBooking = () => {
         parseInt(bookingData.guests?.children || 0);
       const roomCount = bookingData.rooms?.length || 0;
 
-      const res = await axios.post("http://localhost:5000/api/bookings", {
+      const res = await axios.post(`${API_URL}/bookings`, {
         hotel_id: bookingData.hotel.id,
         user_id: user?.id,
         booking_date: new Date().toISOString().slice(0, 10),

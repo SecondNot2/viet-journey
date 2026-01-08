@@ -20,9 +20,12 @@ import {
   Tag,
 } from "lucide-react";
 import axios from "axios";
+import { API_URL, API_HOST } from "../../../config/api";
+
+// Alias for backward compatibility
+const API_BASE_URL = API_URL;
 
 // Cấu hình URL cơ sở cho axios
-const API_BASE_URL = "http://localhost:5000";
 axios.defaults.baseURL = API_BASE_URL;
 
 // Dữ liệu mẫu cho các chuyến bay
