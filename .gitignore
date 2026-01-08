@@ -49,9 +49,6 @@ yarn-error.log*
 localhost.log
 cleanup_audit.md
 
-# utils
-utils
-
 # Postman
 .postman/
 postman/
