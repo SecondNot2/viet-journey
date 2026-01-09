@@ -196,18 +196,29 @@ const Transport = () => {
     const initialFromLocation = urlParams.get("from") || "";
 
     if (initialToLocation || initialFromLocation) {
+      // Cập nhật state cho UI display
       setSearchParams({
         from_location: initialFromLocation,
         to_location: initialToLocation,
         date: "",
+        time: "",
       });
-      // Tự động trigger search khi có URL param
-      setFilters((prev) => ({
-        ...prev,
+
+      const newFilters = {
+        ...DEFAULT_FILTERS,
         to_location: initialToLocation,
         from_location: initialFromLocation,
-      }));
+      };
+
+      setFilters(newFilters);
       setHasSearched(true);
+
+      // ✅ Gọi fetchTransports trực tiếp với params từ URL
+      // Tránh race condition khi dựa vào effect dependencies
+      fetchTransports(newFilters, sortBy);
+    } else {
+      // Không có URL params, fetch tất cả
+      fetchTransports(filters, sortBy);
     }
   }, []);
 

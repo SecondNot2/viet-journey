@@ -200,6 +200,8 @@ router.get("/", async (req, res) => {
     const {
       origin,
       destination,
+      from_location,
+      to_location,
       departure_date,
       page = 1,
       limit = 10,
@@ -207,14 +209,14 @@ router.get("/", async (req, res) => {
     const supabase = db.getClient();
     const parsedPage = parseInt(page);
     const parsedLimit = parseInt(limit);
-    const offset = (parsedPage - 1) * parsedLimit;
 
+    // Query all scheduled flights with routes
     let query = supabase
       .from("flight_schedules")
       .select(
         `
         *,
-        flight_routes (
+        flight_routes!inner (
           flight_number, airline, airline_image,
           from_location, to_location, aircraft,
           base_price, duration, baggage, amenities, trip_type
@@ -228,14 +230,46 @@ router.get("/", async (req, res) => {
       query = query.eq("flight_date", departure_date);
     }
 
-    const { data, count, error } = await query
-      .order("departure_datetime", { ascending: true })
-      .range(offset, offset + parsedLimit - 1);
+    const { data, error } = await query.order("departure_datetime", {
+      ascending: true,
+    });
 
     if (error) throw error;
 
+    // Apply location filters in JavaScript (for nested fields)
+    let filteredFlights = data || [];
+
+    // Filter by origin/from_location
+    const fromFilter = origin || from_location;
+    if (fromFilter) {
+      filteredFlights = filteredFlights.filter((s) =>
+        s.flight_routes?.from_location
+          ?.toLowerCase()
+          .includes(fromFilter.toLowerCase())
+      );
+    }
+
+    // Filter by destination/to_location
+    const toFilter = destination || to_location;
+    if (toFilter) {
+      filteredFlights = filteredFlights.filter((s) =>
+        s.flight_routes?.to_location
+          ?.toLowerCase()
+          .includes(toFilter.toLowerCase())
+      );
+    }
+
+    // Apply pagination after filtering
+    const total = filteredFlights.length;
+    const total_pages = Math.ceil(total / parsedLimit);
+    const offset = (parsedPage - 1) * parsedLimit;
+    const paginatedFlights = filteredFlights.slice(
+      offset,
+      offset + parsedLimit
+    );
+
     // Flatten nested flight_routes data for frontend compatibility
-    const flattenedFlights = (data || []).map((schedule) => ({
+    const flattenedFlights = paginatedFlights.map((schedule) => ({
       // Schedule fields
       id: schedule.id,
       schedule_id: schedule.id,
@@ -262,10 +296,6 @@ router.get("/", async (req, res) => {
       amenities: schedule.flight_routes?.amenities,
       trip_type: schedule.flight_routes?.trip_type || "one_way",
     }));
-
-    // Return with pagination object
-    const total = count || 0;
-    const total_pages = Math.ceil(total / parsedLimit);
 
     res.json({
       flights: flattenedFlights,

@@ -129,9 +129,15 @@ const FlightSearch = () => {
   });
   const [flights, setFlights] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [searchPerformed, setSearchPerformed] = useState(false);
-  // Thêm biến để theo dõi đã tìm kiếm thực sự hay chưa (sử dụng nút tìm kiếm)
-  const [hasSearched, setHasSearched] = useState(false);
+  // ✅ Init searchPerformed/hasSearched dựa trên URL params để tránh race condition
+  const [searchPerformed, setSearchPerformed] = useState(
+    !!(initialToLocation || initialFromLocation)
+  );
+  const [hasSearched, setHasSearched] = useState(
+    !!(initialToLocation || initialFromLocation)
+  );
+  // Track để effects khác biết init đã hoàn thành
+  const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState(null);
   const [noFlightsMessage, setNoFlightsMessage] = useState("");
   const [showPassengerModal, setShowPassengerModal] = useState(false);
@@ -320,7 +326,19 @@ const FlightSearch = () => {
     fetchCities();
     loadAirlines(); // Tải danh sách hãng bay
     fetchPopularDestinations();
-    loadAllFlights(); // Tải tất cả chuyến bay ngay khi vào trang
+
+    // Kiểm tra URL params - nếu có thì search theo params, không thì load all
+    if (initialToLocation || initialFromLocation) {
+      // Có URL params từ trang khác (blog), tự động trigger search
+      fetchFlights({
+        from: initialFromLocation,
+        to: initialToLocation,
+        ...filters,
+      }).finally(() => setIsInitialized(true));
+    } else {
+      // Không có URL params, load tất cả chuyến bay
+      loadAllFlights().finally(() => setIsInitialized(true));
+    }
   }, []);
 
   // Hàm tải tất cả chuyến bay khi mới vào trang
@@ -925,6 +943,9 @@ const FlightSearch = () => {
 
   // Theo dõi thay đổi của trang hiện tại để tải dữ liệu
   useEffect(() => {
+    // Skip effect này nếu chưa initialized (tránh race condition với mount effect)
+    if (!isInitialized) return;
+
     if (searchPerformed) {
       // Đã thực hiện tìm kiếm, tải lại với thông số tìm kiếm nếu đã tìm kiếm thực sự
       const searchOptions = hasSearched
