@@ -102,6 +102,7 @@ app.use("/api/blogs", blogsModule.routes);
 app.use("/api/transport", transportModule.routes);
 app.use("/api/promotions", promotionsModule.routes);
 app.use("/api/reviews", reviewsModule.routes);
+app.use("/api/wishlist", require("./modules/wishlist/wishlist.routes"));
 
 // ========================================
 // ERROR HANDLING

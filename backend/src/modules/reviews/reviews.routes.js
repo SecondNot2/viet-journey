@@ -202,6 +202,93 @@ router.get("/user", authenticateToken, async (req, res) => {
   }
 });
 
+// ========================================
+// LIKE ROUTES
+// ========================================
+
+// Get liked reviews by user
+router.get("/liked", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    // We ignore limit/page for now as this is just used for "is liked" checks
+    const supabase = db.getClient();
+
+    // Simple query: get all review_ids liked by this user
+    const { data, error } = await supabase
+      .from("reviewlikes")
+      .select("review_id")
+      .eq("user_id", userId);
+
+    if (error) throw error;
+    res.json(data || []);
+  } catch (error) {
+    console.error("Error fetching liked reviews:", error);
+    res.status(500).json({ error: "Lỗi khi lấy danh sách yêu thích" });
+  }
+});
+
+// Toggle like review
+router.post("/:id/like", authenticateToken, async (req, res) => {
+  try {
+    const reviewId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    if (isNaN(reviewId)) {
+      return res.status(400).json({ error: "Review ID không hợp lệ" });
+    }
+
+    const supabase = db.getClient();
+
+    // Check if like exists
+    const { data: existing, error: checkError } = await supabase
+      .from("reviewlikes")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("review_id", reviewId)
+      .single();
+
+    if (checkError && checkError.code !== "PGRST116") throw checkError;
+
+    let liked = false;
+    let newCount = 0;
+
+    // Get current count
+    const { data: review } = await supabase
+      .from("reviews")
+      .select("likes_count")
+      .eq("id", reviewId)
+      .single();
+
+    const currentCount = review?.likes_count || 0;
+
+    if (existing) {
+      // Unlike
+      await supabase.from("reviewlikes").delete().eq("id", existing.id);
+      newCount = Math.max(0, currentCount - 1);
+      liked = false;
+    } else {
+      // Like
+      await supabase.from("reviewlikes").insert({
+        user_id: userId,
+        review_id: reviewId,
+      });
+      newCount = currentCount + 1;
+      liked = true;
+    }
+
+    // Update count in reviews table
+    await supabase
+      .from("reviews")
+      .update({ likes_count: newCount })
+      .eq("id", reviewId);
+
+    res.json({ success: true, liked, likes_count: newCount });
+  } catch (error) {
+    console.error("Error toggling like:", error);
+    res.status(500).json({ error: "Lỗi khi thực hiện like/unlike" });
+  }
+});
+
 // Get review by ID
 router.get("/:id", async (req, res) => {
   try {

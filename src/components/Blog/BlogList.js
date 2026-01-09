@@ -21,7 +21,6 @@ import {
   BookOpen,
 } from "lucide-react";
 
-
 const BlogList = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -103,16 +102,16 @@ const BlogList = () => {
 
   // Hàm xử lý URL ảnh
   const getImageUrl = (imageUrl) => {
-    if (!imageUrl) return `${API_URL}/images/placeholder.png`;
+    if (!imageUrl) return `${API_HOST}/images/placeholder.png`;
     if (imageUrl.startsWith("http")) return imageUrl;
-    if (imageUrl.startsWith("/uploads")) return `${API_URL}${imageUrl}`;
-    return `${API_URL}/${imageUrl}`.replace(/\/\//g, "/");
+    if (imageUrl.startsWith("/uploads")) return `${API_HOST}${imageUrl}`;
+    return `${API_HOST}/${imageUrl}`.replace(/\/\//g, "/");
   };
 
   // Hàm xử lý URL avatar
   const getAvatarUrl = (avatarUrl) => {
     // Nếu không có avatar, dùng ảnh mặc định
-    if (!avatarUrl) return `${API_URL}/images/default-destination.jpg`;
+    if (!avatarUrl) return `${API_HOST}/images/default-destination.jpg`;
     // Nếu là URL đầy đủ (http/https), dùng trực tiếp
     if (avatarUrl.startsWith("http://") || avatarUrl.startsWith("https://")) {
       return avatarUrl;
@@ -331,7 +330,7 @@ const BlogList = () => {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = `${API_URL}/images/placeholder.png`;
+                      e.target.src = `${API_HOST}/images/placeholder.png`;
                     }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-70 transition-opacity"></div>

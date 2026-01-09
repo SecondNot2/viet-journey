@@ -101,11 +101,13 @@ const FlightDetailPage = () => {
           const flightData = {
             ...response.data,
             // Đảm bảo có đường dẫn hình ảnh hãng bay đầy đủ
-            airlineLogo: response.data.airline_image?.startsWith("http")
-              ? response.data.airline_image
-              : response.data.airline_image?.startsWith("/")
-              ? `${API_BASE_URL}${response.data.airline_image}`
-              : "/images/airlines/default.png",
+            airlineLogo: response.data.airline_image
+              ? response.data.airline_image.startsWith("http")
+                ? response.data.airline_image
+                : response.data.airline_image.startsWith("/")
+                ? `${API_HOST}${response.data.airline_image}`
+                : `${API_HOST}/${response.data.airline_image}`
+              : `${API_HOST}/images/placeholder.png`,
             // Chuyển đổi các trường thời gian (backend trả về departure_datetime/arrival_datetime)
             departure_time: response.data.departure_datetime,
             arrival_time: response.data.arrival_datetime,
@@ -746,6 +748,10 @@ const FlightDetailPage = () => {
                         src={flight.airlineLogo}
                         alt={flight.airline}
                         className="h-5 w-5 object-contain"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = `${API_HOST}/images/placeholder.png`;
+                        }}
                       />
                       <span className="font-medium">{flight.airline}</span>
                     </div>

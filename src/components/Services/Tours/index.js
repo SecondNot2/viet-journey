@@ -39,13 +39,13 @@ import {
 } from "lucide-react";
 
 // --- Configuration ---
-const PLACEHOLDER_IMAGE = "/images/placeholder.jpg"; // Ensure this image exists in your public folder
+const PLACEHOLDER_IMAGE = `${API_HOST}/images/placeholder.png`;
 
 // --- Helper Functions ---
 const getImageUrl = (imagePath) => {
   if (!imagePath) return PLACEHOLDER_IMAGE;
   if (imagePath.startsWith("http")) return imagePath;
-  return `${API_URL}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
+  return `${API_HOST}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
 };
 
 const formatPrice = (price) => {

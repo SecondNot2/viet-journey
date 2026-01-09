@@ -56,3 +56,4 @@ DEPLOY_CHECKLIST.md
 # Postman
 .postman/
 postman/
+.vercel

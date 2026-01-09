@@ -283,10 +283,10 @@ const FlightSearch = () => {
 
   // Hàm xử lý URL ảnh
   const getImageUrl = (imageUrl) => {
-    if (!imageUrl) return `${API_BASE_URL}/images/placeholder.png`;
+    if (!imageUrl) return `${API_HOST}/images/placeholder.png`;
     if (imageUrl.startsWith("http")) return imageUrl;
-    if (imageUrl.startsWith("/uploads")) return `${API_BASE_URL}${imageUrl}`;
-    return `${API_BASE_URL}/${imageUrl}`.replace(/\/\//g, "/");
+    if (imageUrl.startsWith("/uploads")) return `${API_HOST}${imageUrl}`;
+    return `${API_HOST}/${imageUrl}`.replace(/\/\//g, "/");
   };
 
   // Load danh sách điểm đến phổ biến
@@ -787,21 +787,16 @@ const FlightSearch = () => {
     }
 
     // ✅ Xử lý đường dẫn hình ảnh hãng hàng không (từ airlines table hoặc flights cũ)
-    let airlineImagePath = `${API_BASE_URL}/images/placeholder.png`; // Đường dẫn mặc định
+    let airlineImagePath = `${API_HOST}/images/placeholder.png`; // Đường dẫn mặc định
     const airlineImage = flight.airline_image; // Từ JOIN với airlines table
 
     if (airlineImage) {
-      // Kiểm tra nếu đường dẫn bắt đầu bằng "http" hoặc "/"
       if (airlineImage.startsWith("http")) {
-        // Đường dẫn tuyệt đối đầy đủ, giữ nguyên
         airlineImagePath = airlineImage;
-      } else if (airlineImage.startsWith("/uploads/")) {
-        // Đường dẫn trong database dạng /uploads/flights/vietnam_airlines.jpg
-        // Thêm API_BASE_URL vào trước để tạo đường dẫn đầy đủ
-        airlineImagePath = `${API_BASE_URL}${airlineImage}`;
+      } else if (airlineImage.startsWith("/")) {
+        airlineImagePath = `${API_HOST}${airlineImage}`;
       } else {
-        // Đường dẫn khác, thêm API_BASE_URL
-        airlineImagePath = `${API_BASE_URL}${airlineImage}`;
+        airlineImagePath = `${API_HOST}/${airlineImage}`;
       }
     }
 
@@ -2413,7 +2408,7 @@ const FlightSearch = () => {
                             className="w-24 h-24 object-contain rounded border border-gray-100 p-1 bg-white shadow-sm"
                             onError={(e) => {
                               // Fallback sang placeholder nếu ảnh không load được
-                              e.target.src = `${API_BASE_URL}/images/placeholder.png`;
+                              e.target.src = `${API_HOST}/images/placeholder.png`;
                               e.target.onerror = null; // Tránh lặp vô hạn
                             }}
                           />

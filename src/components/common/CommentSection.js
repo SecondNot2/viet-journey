@@ -14,8 +14,6 @@ import Toast from "./Toast";
 import ConfirmModal from "./ConfirmModal";
 import EditCommentModal from "./EditCommentModal";
 
-
-
 const CommentSection = ({
   comments = [],
   commentCount = 0,
@@ -66,7 +64,7 @@ const CommentSection = ({
   // Hàm xử lý URL avatar
   const getAvatarUrl = (avatarUrl) => {
     if (!avatarUrl) {
-      return `${API_URL}/images/default-destination.jpg`;
+      return `${API_HOST}/images/default-destination.jpg`;
     }
     if (avatarUrl.startsWith("http://") || avatarUrl.startsWith("https://")) {
       return avatarUrl;
@@ -196,12 +194,12 @@ const CommentSection = ({
           <div className="bg-gray-50 rounded-2xl p-6 mb-8">
             <div className="flex items-start gap-4">
               <img
-                src={`${API_URL}/images/default-destination.jpg`}
+                src={`${API_HOST}/images/default-destination.jpg`}
                 alt="Your avatar"
                 className="w-12 h-12 rounded-full"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = `${API_URL}/images/default-destination.jpg`;
+                  e.target.src = `${API_HOST}/images/default-destination.jpg`;
                 }}
               />
               <div className="flex-1">
@@ -262,7 +260,7 @@ const CommentSection = ({
                         className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src = `${API_URL}/images/default-destination.jpg`;
+                          e.target.src = `${API_HOST}/images/default-destination.jpg`;
                         }}
                       />
                       <div className="flex-1">
@@ -339,12 +337,12 @@ const CommentSection = ({
                             </div>
                             <div className="flex items-start gap-3">
                               <img
-                                src={`${API_URL}/images/default-destination.jpg`}
+                                src={`${API_HOST}/images/default-destination.jpg`}
                                 alt="Your avatar"
                                 className="w-10 h-10 rounded-full border-2 border-white shadow-sm"
                                 onError={(e) => {
                                   e.target.onerror = null;
-                                  e.target.src = `${API_URL}/images/default-destination.jpg`;
+                                  e.target.src = `${API_HOST}/images/default-destination.jpg`;
                                 }}
                               />
                               <div className="flex-1">
@@ -463,7 +461,7 @@ const CommentSection = ({
                                 className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
                                 onError={(e) => {
                                   e.target.onerror = null;
-                                  e.target.src = `${API_URL}/images/default-destination.jpg`;
+                                  e.target.src = `${API_HOST}/images/default-destination.jpg`;
                                 }}
                               />
                               <div className="flex-1">

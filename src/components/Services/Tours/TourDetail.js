@@ -48,7 +48,6 @@ import {
   ChevronUp,
 } from "lucide-react";
 
-
 const TourDetail = () => {
   const { user } = useAuth();
   const { id } = useParams();
@@ -96,6 +95,17 @@ const TourDetail = () => {
     onConfirm: null,
     type: "danger",
   });
+
+  // Helper function for image URLs
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return `${API_HOST}/images/placeholder.png`;
+    if (imagePath.startsWith("http")) return imagePath; // Absolute URL
+    if (imagePath.startsWith("/uploads")) return `${API_HOST}${imagePath}`;
+    return `${API_HOST}/${imagePath.replace(/^\/+/, "")}`;
+  };
+
+  // State for image carousel
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   // Rating states
   const [userRating, setUserRating] = useState(0);
@@ -442,9 +452,7 @@ const TourDetail = () => {
       showToast("Bình luận đã được thêm thành công!", "success");
 
       // Reload reviews
-      const reviewsResponse = await axios.get(
-        `${API_URL}/tours/${id}/reviews`
-      );
+      const reviewsResponse = await axios.get(`${API_URL}/tours/${id}/reviews`);
       setReviews(reviewsResponse.data.reviews || []);
 
       return response.data;
@@ -475,9 +483,7 @@ const TourDetail = () => {
       showToast("Bình luận đã được cập nhật!", "success");
 
       // Reload reviews
-      const reviewsResponse = await axios.get(
-        `${API_URL}/tours/${id}/reviews`
-      );
+      const reviewsResponse = await axios.get(`${API_URL}/tours/${id}/reviews`);
       setReviews(reviewsResponse.data.reviews || []);
     } catch (err) {
       console.error("Error editing comment:", err);
@@ -501,13 +507,10 @@ const TourDetail = () => {
       type: "danger",
       onConfirm: async () => {
         try {
-          await axios.delete(
-            `${API_URL}/tours/${id}/reviews/${commentId}`,
-            {
-              data: { user_id: user.id },
-              withCredentials: true,
-            }
-          );
+          await axios.delete(`${API_URL}/tours/${id}/reviews/${commentId}`, {
+            data: { user_id: user.id },
+            withCredentials: true,
+          });
 
           showToast("Bình luận đã được xóa!", "success");
 
@@ -544,9 +547,7 @@ const TourDetail = () => {
       const response = await axios.get(`${API_URL}/tours/${id}`);
       setTour(response.data);
 
-      const reviewsResponse = await axios.get(
-        `${API_URL}/tours/${id}/reviews`
-      );
+      const reviewsResponse = await axios.get(`${API_URL}/tours/${id}/reviews`);
       setReviews(reviewsResponse.data.reviews || []);
 
       // Reload liked reviews and user rating if user is logged in
@@ -1709,6 +1710,21 @@ const TourDetail = () => {
                                         >
                                           <div className="overflow-hidden">
                                             <div className="p-4 bg-gray-50 space-y-4 text-sm border-t border-gray-100">
+                                              {schedule.image && (
+                                                <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                                                  <img
+                                                    src={getImageUrl(
+                                                      schedule.image
+                                                    )}
+                                                    alt={`${schedule.title} image`}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                      e.target.onerror = null;
+                                                      e.target.src = `${API_HOST}/images/placeholder.png`;
+                                                    }}
+                                                  />
+                                                </div>
+                                              )}
                                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                 {schedule.accommodation && (
                                                   <div className="flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-100">

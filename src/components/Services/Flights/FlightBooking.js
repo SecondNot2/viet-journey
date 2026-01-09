@@ -1845,7 +1845,7 @@ const FlightBooking = () => {
               </div>
               <div className="aspect-square max-w-[200px] mx-auto bg-white rounded-lg flex items-center justify-center p-2">
                 <img
-                  src={`${API_URL}/uploads/QR/bank.jpg`}
+                  src={`${API_HOST}/uploads/QR/bank.jpg`}
                   alt={`QR Code ${
                     selectedPaymentMethod === "vnpay" ? "VNPay" : "Momo"
                   } Test`}
@@ -1908,6 +1908,10 @@ const FlightBooking = () => {
           src={bookingData?.flight?.airlineLogo}
           alt={bookingData?.flight?.airline}
           className="w-32 h-32 object-contain rounded-xl bg-gray-50 p-4"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = `${API_HOST}/images/placeholder.png`;
+          }}
         />
         <div>
           <h3 className="font-semibold text-xl mb-2">

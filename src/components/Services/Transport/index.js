@@ -41,13 +41,13 @@ import {
 } from "lucide-react";
 
 // --- Configuration ---
-const PLACEHOLDER_IMAGE = "/images/placeholder.jpg";
+const PLACEHOLDER_IMAGE = `${API_HOST}/images/placeholder.png`;
 
 // --- Helper Functions ---
 const getImageUrl = (imagePath) => {
   if (!imagePath) return PLACEHOLDER_IMAGE;
   if (imagePath.startsWith("http")) return imagePath;
-  return `${API_URL}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
+  return `${API_HOST}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
 };
 
 const formatPrice = (price) => {
@@ -290,12 +290,9 @@ const Transport = () => {
   const fetchLocationSuggestions = async (q, field) => {
     setLoadingLocationSuggest(true);
     try {
-      const res = await axios.get(
-        `${API_URL}/transport/locations/suggest`,
-        {
-          params: { q, field }, // Pass field to backend
-        }
-      );
+      const res = await axios.get(`${API_URL}/transport/locations/suggest`, {
+        params: { q, field }, // Pass field to backend
+      });
       const suggestions = [];
       if (res.data.locations) {
         res.data.locations.forEach((location) => {
@@ -570,12 +567,9 @@ const Transport = () => {
     if (!fromLocation || fromLocation.trim() === "") return;
 
     try {
-      const res = await axios.get(
-        `${API_URL}/transport/destinations/from`,
-        {
-          params: { from: fromLocation },
-        }
-      );
+      const res = await axios.get(`${API_URL}/transport/destinations/from`, {
+        params: { from: fromLocation },
+      });
       const suggestions = [];
       if (res.data.locations) {
         res.data.locations.forEach((location) => {

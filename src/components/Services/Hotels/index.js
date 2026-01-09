@@ -32,7 +32,7 @@ import {
   Tv,
 } from "lucide-react";
 
-const PLACEHOLDER_IMAGE = `${API_URL}/images/placeholder.jpg`;
+const PLACEHOLDER_IMAGE = `${API_HOST}/images/placeholder.png`;
 
 const ratingOptions = [
   { value: "", label: "Tất cả" },
@@ -1479,7 +1479,7 @@ const HotelSearch = () => {
                               hotel.images && hotel.images[0]
                                 ? hotel.images[0].startsWith("http")
                                   ? hotel.images[0]
-                                  : `${API_URL}${hotel.images[0]}`
+                                  : `${API_HOST}${hotel.images[0]}`
                                 : PLACEHOLDER_IMAGE
                             }
                             alt={hotel.name}

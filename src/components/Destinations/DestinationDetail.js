@@ -22,8 +22,6 @@ import ImageGallery from "../common/ImageGallery";
 import CommentSection from "../common/CommentSection";
 import { useAuth } from "../../contexts/AuthContext";
 
-
-
 const DestinationDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -47,6 +45,79 @@ const DestinationDetail = () => {
 
   const currentUserId = user?.id || null;
   const isAdmin = user?.role === "admin";
+
+  // Wishlist Logic
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+
+  useEffect(() => {
+    if (currentUserId && id) {
+      checkWishlistStatus();
+    }
+  }, [currentUserId, id]);
+
+  const checkWishlistStatus = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/wishlist/check`, {
+        params: { type: "destination", id: id },
+        withCredentials: true,
+      });
+      setIsWishlisted(response.data.isWishlisted);
+    } catch (error) {
+      console.error("Error checking wishlist:", error);
+    }
+  };
+
+  const handleWishlistToggle = async () => {
+    if (!currentUserId) {
+      showToast("Vui lòng đăng nhập để lưu yêu thích", "warning");
+      return;
+    }
+
+    try {
+      setWishlistLoading(true);
+      if (isWishlisted) {
+        // Remove logic - we need the wishlist ID properly, but for now our API might need to be smart or we fetch it.
+        // Actually, querying via DELETE /wishlist/item?type=x&id=y would be easier, but our current route is DELETE /:id (primary key).
+        // Let's refactor backend route slightly to allow delete by item or just fetch ID first.
+        // The check endpoint returns wishlistId.
+
+        const checkRes = await axios.get(`${API_URL}/wishlist/check`, {
+          params: { type: "destination", id: id },
+          withCredentials: true,
+        });
+
+        if (checkRes.data.wishlistId) {
+          await axios.delete(
+            `${API_URL}/wishlist/${checkRes.data.wishlistId}`,
+            {
+              withCredentials: true,
+            }
+          );
+          setIsWishlisted(false);
+          showToast("Đã xóa khỏi danh sách yêu thích", "info");
+        }
+      } else {
+        // Add
+        await axios.post(
+          `${API_URL}/wishlist`,
+          {
+            item_type: "destination",
+            item_id: id,
+          },
+          {
+            withCredentials: true,
+          }
+        );
+        setIsWishlisted(true);
+        showToast("Đã thêm vào danh sách yêu thích", "success");
+      }
+    } catch (error) {
+      console.error("Wishlist toggle error:", error);
+      showToast("Không thể cập nhật danh sách yêu thích", "error");
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
 
   // Fetch dữ liệu điểm đến từ API
   useEffect(() => {
@@ -92,10 +163,10 @@ const DestinationDetail = () => {
   };
 
   const getImageUrl = (imageUrl) => {
-    if (!imageUrl) return `${API_URL}/images/placeholder.png`;
+    if (!imageUrl) return `${API_HOST}/images/placeholder.png`;
     if (imageUrl.startsWith("http")) return imageUrl;
-    if (imageUrl.startsWith("/uploads")) return `${API_URL}${imageUrl}`;
-    return `${API_URL}/${imageUrl}`.replace(/\/\//g, "/");
+    if (imageUrl.startsWith("/uploads")) return `${API_HOST}${imageUrl}`;
+    return `${API_HOST}/${imageUrl}`.replace(/\/\//g, "/");
   };
 
   const getGalleryImages = () => {
@@ -128,7 +199,7 @@ const DestinationDetail = () => {
     }
 
     if (images.length === 0) {
-      images.push(`${API_URL}/images/placeholder.png`);
+      images.push(`${API_HOST}/images/placeholder.png`);
     }
 
     return images;
@@ -214,15 +285,12 @@ const DestinationDetail = () => {
 
   // Comment handlers - refactored to work with CommentSection component
   const handleAddComment = async ({ comment, parent_id }) => {
-    const response = await axios.post(
-      `${API_URL}/destinations/${id}/reviews`,
-      {
-        user_id: currentUserId,
-        comment,
-        rating: null,
-        parent_id,
-      }
-    );
+    const response = await axios.post(`${API_URL}/destinations/${id}/reviews`, {
+      user_id: currentUserId,
+      comment,
+      rating: null,
+      parent_id,
+    });
 
     setDestination({
       ...destination,
@@ -367,8 +435,7 @@ const DestinationDetail = () => {
             alt={destination.name}
             className="w-full h-full object-cover"
             onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = `${API_URL}/images/placeholder.png`;
+              e.target.src = `${API_HOST}/images/placeholder.png`;
             }}
           />
           <div className="absolute inset-0 bg-black/40" />
@@ -409,12 +476,13 @@ const DestinationDetail = () => {
               </div>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setIsWishlisted(!isWishlisted)}
+                  onClick={handleWishlistToggle}
+                  disabled={wishlistLoading}
                   className={`p-3 rounded-xl backdrop-blur-sm transition-all ${
                     isWishlisted
                       ? "bg-red-500 text-white"
                       : "bg-black/20 text-white hover:bg-black/30"
-                  }`}
+                  } ${wishlistLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <Heart
                     className={`w-5 h-5 ${isWishlisted ? "fill-current" : ""}`}
@@ -527,7 +595,20 @@ const DestinationDetail = () => {
                       className="flex items-start gap-4 p-4 rounded-xl bg-gray-50"
                     >
                       <div className="flex-1">
-                        <h3 className="font-medium mb-1">{activity}</h3>
+                        {typeof activity === "object" && activity !== null ? (
+                          <>
+                            <h3 className="font-medium mb-1">
+                              {activity.title || activity.name || "Hoạt động"}
+                            </h3>
+                            {activity.description && (
+                              <p className="text-sm text-gray-600 mt-1">
+                                {activity.description}
+                              </p>
+                            )}
+                          </>
+                        ) : (
+                          <h3 className="font-medium mb-1">{activity}</h3>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -559,8 +640,7 @@ const DestinationDetail = () => {
                           alt={tour.title}
                           className="w-24 h-24 rounded-lg object-cover"
                           onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = `${API_URL}/images/placeholder.png`;
+                            e.target.src = `${API_HOST}/images/placeholder.png`;
                           }}
                         />
                       )}

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_HOST } from "../../../config/api";
 import {
   Plane,
   Clock,
@@ -209,6 +210,10 @@ const FlightDetail = ({ flight, onBook }) => {
                         src={flight.airlineLogo}
                         alt={flight.airline}
                         className="h-8"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = `${API_HOST}/images/placeholder.png`;
+                        }}
                       />
                       <div>
                         <h3 className="font-semibold text-lg">

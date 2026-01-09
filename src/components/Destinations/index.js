@@ -78,11 +78,11 @@ const Destinations = () => {
 
   // Hàm xử lý URL ảnh
   const getImageUrl = (imageUrl) => {
-    if (!imageUrl) return `${API_URL}/images/placeholder.png`;
+    if (!imageUrl) return `${API_HOST}/images/placeholder.png`;
     if (imageUrl.startsWith("http")) return imageUrl;
     // Đảm bảo đường dẫn bắt đầu bằng /
     const cleanPath = imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`;
-    return `${API_URL}${cleanPath}`;
+    return `${API_HOST}${cleanPath}`;
   };
 
   // Hàm format giá

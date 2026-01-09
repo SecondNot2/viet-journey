@@ -97,7 +97,7 @@ const HotelDetailPage = () => {
               typeof response.data.amenities === "string"
                 ? JSON.parse(response.data.amenities)
                 : response.data.amenities,
-            rooms: response.data.rooms?.map((room) => ({
+            rooms: response.data.hotelrooms?.map((room) => ({
               ...room,
               amenities:
                 typeof room.amenities === "string"
@@ -757,7 +757,7 @@ const HotelDetailPage = () => {
             typeof response.data.amenities === "string"
               ? JSON.parse(response.data.amenities)
               : response.data.amenities,
-          rooms: response.data.rooms?.map((room) => ({
+          rooms: response.data.hotelrooms?.map((room) => ({
             ...room,
             amenities:
               typeof room.amenities === "string"
@@ -774,13 +774,10 @@ const HotelDetailPage = () => {
 
       // Fetch liked comments if user is logged in
       if (user?.id) {
-        const likedResponse = await axios.get(
-          `${API_BASE_URL}/reviews/liked`,
-          {
-            params: { hotel_id: id },
-            withCredentials: true,
-          }
-        );
+        const likedResponse = await axios.get(`${API_BASE_URL}/reviews/liked`, {
+          params: { hotel_id: id },
+          withCredentials: true,
+        });
         const likedSet = new Set(likedResponse.data.map((r) => r.review_id));
         setLikedComments(likedSet);
       }

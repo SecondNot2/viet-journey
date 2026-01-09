@@ -44,7 +44,6 @@ import Toast from "../../common/Toast";
 import CommentSection from "../../common/CommentSection";
 import { API_URL, API_HOST } from "../../../config/api";
 
-
 const HotelDetail = ({
   hotel,
   bookingDetails = {
@@ -119,6 +118,14 @@ const HotelDetail = ({
     });
   };
 
+  // Helper function for image URLs
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return `${API_HOST}/images/placeholder.png`;
+    if (imagePath.startsWith("http")) return imagePath;
+    if (imagePath.startsWith("/uploads")) return `${API_HOST}${imagePath}`;
+    return `${API_HOST}/${imagePath.replace(/^\/+/, "")}`;
+  };
+
   const handleBooking = (room) => {
     if (!bookingDetails.checkIn || !bookingDetails.checkOut) {
       alert("Vui lòng chọn ngày nhận phòng và trả phòng");
@@ -187,9 +194,9 @@ const HotelDetail = ({
   // Ảnh hiện tại
   const getCurrentImage = () => {
     if (selectedRoom?.images && selectedRoom.images.length > 0) {
-      return selectedRoom.images[currentImageIndex];
+      return getImageUrl(selectedRoom.images[currentImageIndex]);
     }
-    return "https://via.placeholder.com/800x500?text=Không+có+ảnh";
+    return `${API_HOST}/images/placeholder.png`;
   };
 
   // Hàm tính số đêm
@@ -1213,13 +1220,12 @@ const HotelDetail = ({
                                 onClick={() => openRoomDetails(room)}
                               >
                                 <img
-                                  src={room.images[0]}
+                                  src={getImageUrl(room.images[0])}
                                   alt={room.name}
                                   className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
                                   onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src =
-                                      "https://via.placeholder.com/150?text=Không+có+ảnh";
+                                    e.target.onerror = null; // Prevent infinite loop
+                                    e.target.src = `${API_HOST}/images/placeholder.png`;
                                   }}
                                 />
                                 {room.images.length > 1 && (
@@ -1569,8 +1575,7 @@ const HotelDetail = ({
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src =
-                          "https://via.placeholder.com/800x500?text=Không+có+ảnh";
+                        e.target.src = `${API_HOST}/images/placeholder.png`;
                       }}
                     />
                   ) : (
@@ -1622,8 +1627,7 @@ const HotelDetail = ({
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src =
-                              "https://via.placeholder.com/80?text=Lỗi";
+                            e.target.src = `${API_HOST}/images/placeholder.png`;
                           }}
                         />
                       </div>
