@@ -53,15 +53,21 @@ router.get("/user/:userId", async (req, res) => {
       .select(
         `
         *,
-        tours (title, location, duration, image),
-        hotels (name, location, images),
+        tours (
+          title, location, duration, image, price,
+          guides (id, name, phone, email, avatar)
+        ),
+        hotels (
+          name, location, images,
+          hotelrooms (id, name, price, capacity, amenities)
+        ),
         flight_schedules (
-          schedule_code, flight_date, departure_datetime, arrival_datetime,
-          flight_routes (airline, flight_number, from_location, to_location, duration)
+          schedule_code, flight_date, departure_datetime, arrival_datetime, seat_classes,
+          flight_routes (airline, flight_number, from_location, to_location, duration, aircraft, airline_image)
         ),
         transport_trips (
-          trip_code, trip_date, departure_datetime, arrival_datetime,
-          transport_routes (company, type, from_location, to_location, duration, image)
+          trip_code, trip_date, departure_datetime, arrival_datetime, total_seats, available_seats,
+          transport_routes (company, type, vehicle_name, from_location, to_location, duration, image, seats, amenities)
         )
       `
       )
@@ -216,13 +222,11 @@ router.post("/", async (req, res) => {
     }
 
     console.log("[DEBUG] Booking created successfully:", data.id);
-    res
-      .status(201)
-      .json({
-        booking_id: data.id,
-        id: data.id,
-        message: "Đặt chỗ thành công",
-      });
+    res.status(201).json({
+      booking_id: data.id,
+      id: data.id,
+      message: "Đặt chỗ thành công",
+    });
   } catch (error) {
     console.error("Error creating booking:", error);
     res.status(500).json({ error: error.message || "Lỗi khi tạo đặt chỗ" });

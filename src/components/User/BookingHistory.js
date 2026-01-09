@@ -27,7 +27,7 @@ const BookingHistory = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -52,42 +52,73 @@ const BookingHistory = () => {
         const formattedBookings = (response.data.data || response.data).map(
           (booking) => {
             let title, location, duration, image, price, guests;
+            let guideInfo = null;
+            let roomInfo = null;
+            let transportInfo = null;
+            let flightInfo = null;
 
             if (booking.tour_id && booking.tours) {
-              title = booking.tours.title || "Tour du lịch";
-              location = booking.tours.location || "Chưa cập nhật";
-              duration = booking.tours.duration
-                ? `${booking.tours.duration} ngày`
+              const tour = booking.tours;
+              title = tour.title || "Tour du lịch";
+              location = tour.location || "Chưa cập nhật";
+              duration = tour.duration
+                ? `${tour.duration} ngày`
                 : "3 ngày 2 đêm";
               image =
-                booking.tours.image ||
+                tour.image ||
                 "https://images.unsplash.com/photo-1512291313931-d4291048e7b6";
-              price = booking.tour_price || booking.total_price;
-              guests = booking.number_of_guests || 1;
+              price = booking.total_price || tour.price;
+              guests = booking.guest_count || 1;
+
+              // Lấy thông tin hướng dẫn viên từ tours.guides
+              if (tour.guides) {
+                guideInfo = {
+                  name: tour.guides.name || "Chưa phân công",
+                  phone: tour.guides.phone,
+                  email: tour.guides.email,
+                };
+              }
             } else if (booking.hotel_id && booking.hotels) {
-              title = booking.hotels.name || "Khách sạn";
-              location = booking.hotels.location || "Chưa cập nhật";
-              // Calculate duration from dates if not provided
+              const hotel = booking.hotels;
+              title = hotel.name || "Khách sạn";
+              location = hotel.location || "Chưa cập nhật";
+
+              // Tính số đêm từ check_in và check_out
+              const checkInDate = booking.check_in
+                ? new Date(booking.check_in)
+                : null;
+              const checkOutDate = booking.check_out
+                ? new Date(booking.check_out)
+                : null;
               const nights =
-                booking.duration ||
-                (booking.end_date && booking.booking_date
+                checkInDate && checkOutDate
                   ? Math.round(
-                      (new Date(booking.end_date) -
-                        new Date(booking.booking_date)) /
-                        (1000 * 60 * 60 * 24)
+                      (checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)
                     )
-                  : 1);
+                  : 1;
               duration = `${nights} đêm`;
+
               image =
-                (booking.hotels.images && booking.hotels.images[0]) ||
+                (hotel.images && hotel.images[0]) ||
                 "https://images.unsplash.com/photo-1566073771259-6a8506099945";
-              price = booking.hotel_price || booking.total_price;
-              guests = booking.number_of_guests || 1;
+              price = booking.total_price;
+              guests = booking.guest_count || 1;
+
+              // Lấy thông tin phòng từ hotels.hotelrooms
+              if (hotel.hotelrooms && hotel.hotelrooms.length > 0) {
+                const room = hotel.hotelrooms[0];
+                roomInfo = {
+                  name: room.name || "Phòng tiêu chuẩn",
+                  capacity: room.capacity,
+                  amenities: room.amenities,
+                };
+              }
             } else if (
               booking.flight_id &&
               booking.flight_schedules?.flight_routes
             ) {
-              const route = booking.flight_schedules.flight_routes;
+              const schedule = booking.flight_schedules;
+              const route = schedule.flight_routes;
               title = `${route.airline || "Chuyến bay"} ${
                 route.flight_number || ""
               }`;
@@ -97,21 +128,34 @@ const BookingHistory = () => {
               duration = route.duration
                 ? `${Math.floor(route.duration / 60)}h ${route.duration % 60}m`
                 : "1h 20m";
-              image =
-                "https://images.unsplash.com/photo-1436491865332-7a61a109cc05";
-              price = booking.flight_price || booking.total_price;
-              guests = booking.number_of_guests || 1;
+              // Kiểm tra airline_image có phải URL hợp lệ không
+              const isValidImageUrl =
+                route.airline_image &&
+                (route.airline_image.startsWith("http://") ||
+                  route.airline_image.startsWith("https://") ||
+                  route.airline_image.startsWith("/"));
+              image = isValidImageUrl
+                ? route.airline_image
+                : "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=200&h=200&fit=crop";
+              price = booking.total_price;
+              guests = booking.guest_count || 1;
 
-              // Map specific flight details
-              booking.departure_time =
-                booking.flight_schedules.departure_datetime;
-              booking.arrival_time = booking.flight_schedules.arrival_datetime;
-              booking.flight_number = route.flight_number;
+              // Lấy thông tin chuyến bay chi tiết
+              flightInfo = {
+                flightNumber: route.flight_number,
+                airline: route.airline,
+                aircraft: route.aircraft,
+                departureTime: schedule.departure_datetime,
+                arrivalTime: schedule.arrival_datetime,
+                seatClass: booking.seat_class || "Economy",
+                seatClasses: schedule.seat_classes,
+              };
             } else if (
               booking.transport_id &&
               booking.transport_trips?.transport_routes
             ) {
-              const route = booking.transport_trips.transport_routes;
+              const trip = booking.transport_trips;
+              const route = trip.transport_routes;
               title = `${route.company || ""} - ${route.type || "Vận chuyển"}`;
               location = `${route.from_location || ""} → ${
                 route.to_location || ""
@@ -122,8 +166,20 @@ const BookingHistory = () => {
               image =
                 route.image ||
                 "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957";
-              price = booking.transport_price || booking.total_price;
-              guests = booking.number_of_guests || 1;
+              price = booking.total_price;
+              guests = booking.guest_count || 1;
+
+              // Lấy thông tin vận chuyển chi tiết
+              transportInfo = {
+                vehicleName: route.vehicle_name,
+                company: route.company,
+                type: route.type,
+                departureTime: trip.departure_datetime,
+                arrivalTime: trip.arrival_datetime,
+                totalSeats: trip.total_seats,
+                availableSeats: trip.available_seats,
+                amenities: route.amenities,
+              };
             }
 
             // Xử lý ngày tháng
@@ -134,22 +190,25 @@ const BookingHistory = () => {
               ? bookingDate.toLocaleDateString("vi-VN")
               : "Chưa cập nhật";
 
-            const endDate = booking.end_date
-              ? new Date(booking.end_date)
-              : null;
-            const formattedEndDate = endDate
-              ? endDate.toLocaleDateString("vi-VN")
+            // Check-in / Check-out cho hotel
+            const checkIn = booking.check_in
+              ? new Date(booking.check_in).toLocaleDateString("vi-VN")
+              : formattedBookingDate;
+            const checkOut = booking.check_out
+              ? new Date(booking.check_out).toLocaleDateString("vi-VN")
               : "Chưa cập nhật";
 
-            // Xử lý thời gian bay
+            // Xử lý thời gian cho flight/transport
             const departureTime =
-              booking.flight_id && booking.departure_time
-                ? new Date(booking.departure_time)
-                : null;
+              flightInfo?.departureTime || transportInfo?.departureTime;
             const arrivalTime =
-              booking.flight_id && booking.arrival_time
-                ? new Date(booking.arrival_time)
-                : null;
+              flightInfo?.arrivalTime || transportInfo?.arrivalTime;
+            const formattedDeparture = departureTime
+              ? new Date(departureTime).toLocaleTimeString("vi-VN")
+              : "Chưa cập nhật";
+            const formattedArrival = arrivalTime
+              ? new Date(arrivalTime).toLocaleTimeString("vi-VN")
+              : "Chưa cập nhật";
 
             return {
               ...booking,
@@ -167,26 +226,113 @@ const BookingHistory = () => {
                 : booking.flight_id
                 ? "flight"
                 : "transport",
-              details: {
-                bookingCode: booking.id || "Chưa có",
-                paymentMethod: booking.payment_status || "Chưa thanh toán",
-                checkIn: formattedBookingDate,
-                checkOut: formattedEndDate,
-                flightNumber: booking.flight_number || "Chưa cập nhật",
-                departure: departureTime
-                  ? departureTime.toLocaleTimeString("vi-VN")
-                  : "Chưa cập nhật",
-                arrival: arrivalTime
-                  ? arrivalTime.toLocaleTimeString("vi-VN")
-                  : "Chưa cập nhật",
-                seat: booking.seat_number || "Chưa cập nhật",
-                gate: booking.gate || "Chưa cập nhật",
-                roomType: booking.room_type || "Chưa cập nhật",
-                bedType: booking.bed_type || "Chưa cập nhật",
-                guide: booking.guide_name || "Chưa phân công",
-                pickupLocation: booking.pickup_location || "Chưa cập nhật",
-                notes: booking.notes || "Không có ghi chú",
-              },
+              details: (() => {
+                // Helper function to parse notes JSON safely
+                let parsedNotes = null;
+                try {
+                  if (booking.notes && typeof booking.notes === "string") {
+                    parsedNotes = JSON.parse(booking.notes);
+                  }
+                } catch (e) {
+                  // notes is plain text, not JSON
+                  parsedNotes = null;
+                }
+
+                // Helper function to format payment method
+                const formatPaymentMethod = (method) => {
+                  const methods = {
+                    cash: "Tiền mặt",
+                    credit_card: "Thẻ tín dụng",
+                    atm: "Thẻ ATM",
+                    transfer: "Chuyển khoản",
+                    momo: "Ví MoMo",
+                    vnpay: "VNPay",
+                    zalopay: "ZaloPay",
+                  };
+                  return methods[method] || method || "Chưa chọn";
+                };
+
+                // Helper function to format payment status
+                const formatPaymentStatus = (status) => {
+                  const statuses = {
+                    pending: "Chờ thanh toán",
+                    paid: "Đã thanh toán",
+                    refunded: "Đã hoàn tiền",
+                    failed: "Thanh toán thất bại",
+                  };
+                  return statuses[status] || status || "Chưa xác định";
+                };
+
+                // Extract payment method from parsed notes or booking data
+                const paymentMethod = parsedNotes?.payment?.method || null;
+
+                // Extract pickup/special requirements
+                const pickupLocation =
+                  parsedNotes?.pickupLocation ||
+                  parsedNotes?.pickup_location ||
+                  (typeof booking.notes === "string" && !parsedNotes
+                    ? booking.notes
+                    : null);
+                const specialRequirements =
+                  parsedNotes?.specialRequirements ||
+                  parsedNotes?.special_requirements ||
+                  null;
+
+                return {
+                  bookingCode: booking.id || "Chưa có",
+                  paymentMethod: formatPaymentMethod(paymentMethod),
+                  paymentStatus: formatPaymentStatus(booking.payment_status),
+                  // Hotel & Tour
+                  checkIn: checkIn,
+                  checkOut: checkOut,
+                  // Tour specific
+                  guide: guideInfo?.name || "Chưa phân công",
+                  guidePhone: guideInfo?.phone,
+                  guideEmail: guideInfo?.email,
+                  pickupLocation: pickupLocation || "Chưa cập nhật",
+                  specialRequirements: specialRequirements || "Không có",
+                  // Hotel specific
+                  roomType: roomInfo?.name || "Chưa cập nhật",
+                  roomCapacity: roomInfo?.capacity,
+                  bedType: roomInfo?.name?.toLowerCase().includes("double")
+                    ? "Giường đôi"
+                    : roomInfo?.name?.toLowerCase().includes("twin")
+                    ? "2 Giường đơn"
+                    : roomInfo?.name?.toLowerCase().includes("king")
+                    ? "Giường King"
+                    : roomInfo?.name
+                    ? "Giường tiêu chuẩn"
+                    : "Chưa cập nhật",
+                  roomCount: booking.room_count || 1,
+                  // Flight specific
+                  flightNumber: flightInfo?.flightNumber || "Chưa cập nhật",
+                  airline: flightInfo?.airline,
+                  aircraft: flightInfo?.aircraft || "Chưa cập nhật",
+                  seatClass:
+                    flightInfo?.seatClass || booking.seat_class || "Economy",
+                  departure: formattedDeparture,
+                  arrival: formattedArrival,
+                  seat:
+                    parsedNotes?.seat ||
+                    parsedNotes?.seatNumber ||
+                    "Chưa cập nhật",
+                  gate: parsedNotes?.gate || "Chưa cập nhật",
+                  // Transport specific
+                  vehicleName: transportInfo?.vehicleName || "Chưa cập nhật",
+                  transportCompany: transportInfo?.company,
+                  transportType: transportInfo?.type,
+                  transportDeparture: formattedDeparture,
+                  transportArrival: formattedArrival,
+                  transportAmenities: transportInfo?.amenities,
+                  // General
+                  notes:
+                    specialRequirements ||
+                    (typeof booking.notes === "string" && !parsedNotes
+                      ? booking.notes
+                      : "Không có ghi chú"),
+                  passengerCount: booking.passenger_count,
+                };
+              })(),
             };
           }
         );
@@ -213,8 +359,12 @@ const BookingHistory = () => {
     switch (status) {
       case "completed":
         return "bg-emerald-50 text-emerald-600";
-      case "upcoming":
+      case "confirmed":
         return "bg-blue-50 text-blue-600";
+      case "upcoming":
+        return "bg-sky-50 text-sky-600";
+      case "pending":
+        return "bg-amber-50 text-amber-600";
       case "cancelled":
         return "bg-red-50 text-red-600";
       default:
@@ -226,8 +376,12 @@ const BookingHistory = () => {
     switch (status) {
       case "completed":
         return "Đã hoàn thành";
+      case "confirmed":
+        return "Đã xác nhận";
       case "upcoming":
         return "Sắp tới";
+      case "pending":
+        return "Chờ xác nhận";
       case "cancelled":
         return "Đã hủy";
       default:
@@ -429,6 +583,21 @@ const BookingHistory = () => {
                       src={booking.image}
                       alt={booking.title}
                       className="w-24 h-24 rounded-lg object-cover"
+                      onError={(e) => {
+                        // Fallback images for each type
+                        const fallbackImages = {
+                          tour: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=200&h=200&fit=crop",
+                          hotel:
+                            "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=200&h=200&fit=crop",
+                          flight:
+                            "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=200&h=200&fit=crop",
+                          transport:
+                            "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=200&h=200&fit=crop",
+                        };
+                        e.target.onerror = null; // Prevent infinite loop
+                        e.target.src =
+                          fallbackImages[booking.type] || fallbackImages.tour;
+                      }}
                     />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
@@ -499,6 +668,22 @@ const BookingHistory = () => {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-600">
+                              Trạng thái thanh toán:
+                            </span>
+                            <span
+                              className={`font-medium ${
+                                booking.payment_status === "paid"
+                                  ? "text-emerald-600"
+                                  : booking.payment_status === "failed"
+                                  ? "text-red-600"
+                                  : "text-amber-600"
+                              }`}
+                            >
+                              {booking.details.paymentStatus}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">
                               Phương thức thanh toán:
                             </span>
                             <span className="font-medium">
@@ -536,6 +721,12 @@ const BookingHistory = () => {
                                 </span>
                               </div>
                               <div className="flex justify-between">
+                                <span className="text-gray-600">Hạng ghế:</span>
+                                <span className="font-medium">
+                                  {booking.details.seatClass}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
                                 <span className="text-gray-600">Cổng:</span>
                                 <span className="font-medium">
                                   {booking.details.gate}
@@ -565,6 +756,32 @@ const BookingHistory = () => {
                                 </span>
                                 <span className="font-medium">
                                   {booking.details.bedType}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Số phòng:</span>
+                                <span className="font-medium">
+                                  {booking.details.roomCount}
+                                </span>
+                              </div>
+                            </>
+                          )}
+                          {booking.type === "transport" && (
+                            <>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">
+                                  Tên xe/tàu:
+                                </span>
+                                <span className="font-medium">
+                                  {booking.details.vehicleName}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">
+                                  Hãng vận chuyển:
+                                </span>
+                                <span className="font-medium">
+                                  {booking.details.transportCompany}
                                 </span>
                               </div>
                             </>
@@ -607,6 +824,24 @@ const BookingHistory = () => {
                                 <span className="text-gray-600">Hạ cánh:</span>
                                 <span className="font-medium">
                                   {booking.details.arrival}
+                                </span>
+                              </div>
+                            </>
+                          )}
+                          {booking.type === "transport" && (
+                            <>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">
+                                  Khởi hành:
+                                </span>
+                                <span className="font-medium">
+                                  {booking.details.transportDeparture}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Đến nơi:</span>
+                                <span className="font-medium">
+                                  {booking.details.transportArrival}
                                 </span>
                               </div>
                             </>
