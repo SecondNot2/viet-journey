@@ -9,10 +9,11 @@ import {
   Hotel,
   Plane,
   Bus,
+  BookOpen, // Added for Blog
 } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "../../contexts/AuthContext";
-import { API_URL } from "../../config/api";
+import { API_URL, API_HOST } from "../../config/api";
 import Toast from "../common/Toast";
 
 const Wishlist = () => {
@@ -34,25 +35,78 @@ const Wishlist = () => {
 
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/wishlist`, {
+
+      // 1. Fetch Backend Wishlist
+      const wishlistResponse = await axios.get(`${API_URL}/wishlist`, {
         withCredentials: true,
       });
-      setWishlistItems(response.data);
+      const backendItems = wishlistResponse.data || [];
+
+      // 2. Fetch LocalStorage Saved Blogs
+      const savedBlogIds = JSON.parse(
+        localStorage.getItem("saved_blogs") || "[]"
+      );
+      let blogItems = [];
+
+      if (savedBlogIds.length > 0) {
+        // Fetch all blogs and filter (optimization: create bulk fetch API later)
+        // For now, fast enough for small numbers
+        try {
+          const blogsResponse = await axios.get(`${API_URL}/blogs`);
+          const allBlogs = Array.isArray(blogsResponse.data)
+            ? blogsResponse.data
+            : blogsResponse.data.blogs || [];
+
+          blogItems = allBlogs
+            .filter((blog) => savedBlogIds.includes(blog.id))
+            .map((blog) => ({
+              wishlist_id: `blog-${blog.id}`, // Fake ID for key
+              id: blog.id,
+              type: "blog",
+              name: blog.title,
+              image: blog.image,
+              location: "Blog du lịch",
+              price: 0,
+              rating: 0,
+            }));
+        } catch (blogErr) {
+          console.error("Error fetching saved blogs:", blogErr);
+        }
+      }
+
+      setWishlistItems([...backendItems, ...blogItems]);
       setLoading(false);
     } catch (err) {
       console.error("Error fetching wishlist:", err);
+      // Still show blogs if backend fails?
+      // Better to show error
       setError("Không thể tải danh sách yêu thích");
       setLoading(false);
     }
   };
 
-  const handleRemoveItem = async (id) => {
+  const handleRemoveItem = async (item) => {
     try {
-      await axios.delete(`${API_URL}/wishlist/${id}`, {
+      if (item.type === "blog") {
+        // Remove from local storage
+        const savedBlogs = JSON.parse(
+          localStorage.getItem("saved_blogs") || "[]"
+        );
+        const newSaved = savedBlogs.filter((id) => id !== item.id);
+        localStorage.setItem("saved_blogs", JSON.stringify(newSaved));
+
+        setWishlistItems((prev) =>
+          prev.filter((i) => i.wishlist_id !== item.wishlist_id)
+        );
+        showToast("Đã xóa bài viết khỏi danh sách yêu thích", "success");
+        return;
+      }
+
+      await axios.delete(`${API_URL}/wishlist/${item.wishlist_id}`, {
         withCredentials: true,
       });
       setWishlistItems((prev) =>
-        prev.filter((item) => item.wishlist_id !== id)
+        prev.filter((i) => i.wishlist_id !== item.wishlist_id)
       );
       showToast("Đã xóa khỏi danh sách yêu thích", "success");
     } catch (err) {
@@ -83,6 +137,8 @@ const Wishlist = () => {
         return <Plane size={16} />;
       case "transport":
         return <Bus size={16} />;
+      case "blog":
+        return <BookOpen size={16} />;
       default:
         return <Heart size={16} />;
     }
@@ -98,6 +154,8 @@ const Wishlist = () => {
         return "Vé Máy Bay";
       case "transport":
         return "Di Chuyển";
+      case "blog":
+        return "Bài Viết";
       default:
         return "Khác";
     }
@@ -109,6 +167,8 @@ const Wishlist = () => {
         return `/tours/${item.id}`;
       case "hotel":
         return `/hotels/${item.id}`;
+      case "blog":
+        return `/blog/post/${item.id}`;
       // Add other types when pages are ready
       default:
         return "#";
@@ -116,9 +176,18 @@ const Wishlist = () => {
   };
 
   const getImageUrl = (image) => {
-    if (!image) return `${API_URL}/images/placeholder.png`;
+    if (!image) return `${API_HOST}/images/placeholder.png`;
     if (image.startsWith("http")) return image;
-    return `${API_URL}/${image}`.replace(/\/\//g, "/");
+
+    const cleanPath = image.replace(/^\/+/, "");
+
+    // If path already points to our static folders
+    if (cleanPath.startsWith("uploads") || cleanPath.startsWith("images")) {
+      return `${API_HOST}/${cleanPath}`;
+    }
+
+    // Default fallback: assume it's in images folder (common for seeds)
+    return `${API_HOST}/images/${cleanPath}`;
   };
 
   if (loading) {
@@ -191,7 +260,7 @@ const Wishlist = () => {
                     />
                   </Link>
                   <button
-                    onClick={() => handleRemoveItem(item.wishlist_id)}
+                    onClick={() => handleRemoveItem(item)}
                     className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full text-red-500 hover:bg-red-50 transition-colors shadow-sm"
                     title="Xóa khỏi danh sách"
                   >
@@ -230,12 +299,21 @@ const Wishlist = () => {
 
                   <div className="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between">
                     <div>
-                      <span className="text-xs text-gray-500 block">
-                        Giá từ
-                      </span>
-                      <span className="text-emerald-600 font-bold">
-                        {formatPrice(item.price)}
-                      </span>
+                      {item.type !== "blog" && (
+                        <>
+                          <span className="text-xs text-gray-500 block">
+                            Giá từ
+                          </span>
+                          <span className="text-emerald-600 font-bold">
+                            {formatPrice(item.price)}
+                          </span>
+                        </>
+                      )}
+                      {item.type === "blog" && (
+                        <span className="text-sm text-gray-500 italic">
+                          Đọc ngay
+                        </span>
+                      )}
                     </div>
                     <Link
                       to={getLink(item)}

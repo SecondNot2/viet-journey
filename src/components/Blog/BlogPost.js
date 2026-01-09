@@ -44,8 +44,15 @@ const BlogPost = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth(); // Lấy user từ AuthContext
-
   const [isWishlisted, setIsWishlisted] = useState(false);
+
+  useEffect(() => {
+    // Check local storage for bookmark
+    const savedBlogs = JSON.parse(localStorage.getItem("saved_blogs") || "[]");
+    if (id && savedBlogs.includes(parseInt(id))) {
+      setIsWishlisted(true);
+    }
+  }, [id]);
   const [isLiked, setIsLiked] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [post, setPost] = useState(null);
@@ -141,7 +148,7 @@ const BlogPost = () => {
           params: { limit: 3, category: response.data.category },
         });
 
-        const filtered = relatedResponse.data.filter(
+        const filtered = (relatedResponse.data.blogs || []).filter(
           (p) => p.id !== parseInt(id)
         );
         setRelatedPosts(filtered.slice(0, 2));
@@ -251,6 +258,63 @@ const BlogPost = () => {
     }
   };
 
+  // Hàm xử lý lưu bài viết (Bookmark)
+  const handleBookmark = () => {
+    const savedBlogs = JSON.parse(localStorage.getItem("saved_blogs") || "[]");
+    const blogId = parseInt(id);
+
+    let newSavedBlogs;
+    if (isWishlisted) {
+      newSavedBlogs = savedBlogs.filter((bid) => bid !== blogId);
+      showToast("Đã bỏ lưu bài viết", "success");
+    } else {
+      newSavedBlogs = [...savedBlogs, blogId];
+      showToast("Đã lưu bài viết", "success");
+    }
+
+    localStorage.setItem("saved_blogs", JSON.stringify(newSavedBlogs));
+    setIsWishlisted(!isWishlisted);
+  };
+
+  // Hàm chia sẻ
+  const handleShare = async (platform) => {
+    const url = window.location.href;
+    const title = post?.title || "VietJourney Blog";
+
+    if (platform === "copy") {
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast("Đã sao chép liên kết vào clipboard", "success");
+      } catch (err) {
+        showToast("Không thể sao chép liên kết", "error");
+      }
+      return;
+    }
+
+    let shareUrl = "";
+    switch (platform) {
+      case "facebook":
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+          url
+        )}`;
+        break;
+      case "twitter":
+        shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+          url
+        )}&text=${encodeURIComponent(title)}`;
+        break;
+      case "linkedin":
+        shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(
+          url
+        )}&title=${encodeURIComponent(title)}`;
+        break;
+      default:
+        return;
+    }
+
+    window.open(shareUrl, "_blank", "width=600,height=400");
+  };
+
   // Hàm xử lý like/unlike comment - refactored with toast
   const handleLikeComment = async (commentId) => {
     const isLiked = likedComments.has(commentId);
@@ -305,8 +369,13 @@ const BlogPost = () => {
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return `${API_HOST}/images/placeholder.png`;
     if (imageUrl.startsWith("http")) return imageUrl;
+
+    // Nếu bắt đầu bằng /uploads, dùng trực tiếp
     if (imageUrl.startsWith("/uploads")) return `${API_HOST}${imageUrl}`;
-    return `${API_HOST}/${imageUrl}`.replace(/\/\//g, "/");
+
+    // Nếu không, giả định là đường dẫn tương đối cần thêm /uploads/images/ hoặc check logic backend
+    // Thử fallback về /uploads/images nếu không có slash đầu tiên
+    return `${API_HOST}/uploads/images/${imageUrl}`;
   };
 
   // Hàm xử lý URL avatar
@@ -326,6 +395,28 @@ const BlogPost = () => {
     // Nếu là tên file, thêm đường dẫn đầy đủ
     return `${API_HOST}/uploads/avatars/${avatarUrl}`;
   };
+
+  // Helper get author info
+  const getAuthorInfo = (postData) => {
+    const user = postData?.users;
+    // Check nested userprofiles
+    const profile = Array.isArray(user?.userprofiles)
+      ? user.userprofiles[0]
+      : user?.userprofiles;
+
+    return {
+      name:
+        profile?.full_name ||
+        user?.username ||
+        postData?.author_name ||
+        "Tác giả",
+      avatar: profile?.avatar || postData?.author_avatar,
+    };
+  };
+
+  const { name: authorName, avatar: authorAvatar } = post
+    ? getAuthorInfo(post)
+    : {};
 
   // Tạo gallery từ image chính và extract từ content
   const getGalleryImages = () => {
@@ -351,10 +442,20 @@ const BlogPost = () => {
 
     // Nếu không có ảnh nào, trả về placeholder
     if (images.length === 0) {
-      return [`${API_HOST}/images/placeholder.png`];
+      return [`${API_HOST}/images/banner-placeholder.png`];
     }
 
     return images;
+  };
+
+  // Helper tính thời gian đọc
+  const calculateReadTime = (content) => {
+    if (!content) return "5 phút";
+    const wordsPerMinute = 200;
+    const text = content.replace(/<[^>]*>/g, ""); // Remove HTML and counting words
+    const words = text.trim().split(/\s+/).length;
+    const minutes = Math.ceil(words / wordsPerMinute);
+    return `${minutes} phút`;
   };
 
   const handleImageNavigation = (direction) => {
@@ -429,6 +530,10 @@ const BlogPost = () => {
             src={galleryImages[activeImageIndex]}
             alt={post.title}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = `${API_HOST}/images/banner-placeholder.png`;
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
         </div>
@@ -451,7 +556,8 @@ const BlogPost = () => {
                     {post.category || "Bài viết"}
                   </span>
                   <span className="inline-flex items-center px-3 py-1.5 bg-black/20 rounded-lg text-white text-sm font-medium backdrop-blur-sm border border-white/20">
-                    <Clock className="w-4 h-4 mr-2" />5 phút
+                    <Clock className="w-4 h-4 mr-2" />
+                    {post.read_time || calculateReadTime(post.content)}
                   </span>
                 </div>
                 <h1 className="text-4xl font-bold text-white mb-4">
@@ -460,8 +566,8 @@ const BlogPost = () => {
                 <div className="flex flex-wrap items-center gap-4 text-white/90">
                   <div className="flex items-center gap-2">
                     <img
-                      src={getAvatarUrl(post.author_avatar)}
-                      alt={post.author_name || "Tác giả"}
+                      src={getAvatarUrl(authorAvatar)}
+                      alt={authorName || "Tác giả"}
                       className="w-10 h-10 rounded-full border-2 border-white/30"
                       onError={(e) => {
                         e.target.onerror = null;
@@ -470,7 +576,7 @@ const BlogPost = () => {
                     />
                     <div>
                       <div className="font-medium">
-                        {post.author_name || "Tác giả"}
+                        {authorName || "Tác giả"}
                       </div>
                       <div className="text-sm text-white/70">
                         {new Date(post.created_at).toLocaleDateString("vi-VN")}
@@ -495,7 +601,7 @@ const BlogPost = () => {
               </div>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setIsWishlisted(!isWishlisted)}
+                  onClick={handleBookmark}
                   className={`p-3 rounded-xl backdrop-blur-sm transition-all ${
                     isWishlisted
                       ? "bg-red-500 text-white"
@@ -518,7 +624,10 @@ const BlogPost = () => {
                     className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`}
                   />
                 </button>
-                <button className="p-3 rounded-xl bg-black/20 text-white hover:bg-black/30 backdrop-blur-sm transition-all">
+                <button
+                  onClick={() => handleShare("copy")}
+                  className="p-3 rounded-xl bg-black/20 text-white hover:bg-black/30 backdrop-blur-sm transition-all"
+                >
                   <Share2 className="w-5 h-5" />
                 </button>
               </div>
@@ -554,8 +663,8 @@ const BlogPost = () => {
             <div className="bg-white rounded-2xl shadow-sm p-6">
               <div className="flex items-center gap-4">
                 <img
-                  src={getAvatarUrl(post.author_avatar)}
-                  alt={post.author_name || "Tác giả"}
+                  src={getAvatarUrl(authorAvatar)}
+                  alt={authorName || "Tác giả"}
                   className="w-12 h-12 rounded-full"
                   onError={(e) => {
                     e.target.onerror = null;
@@ -563,16 +672,15 @@ const BlogPost = () => {
                   }}
                 />
                 <div>
-                  <h3 className="font-medium">
-                    {post.author_name || "Tác giả"}
-                  </h3>
+                  <h3 className="font-medium">{authorName || "Tác giả"}</h3>
                   <div className="flex items-center gap-4 text-sm text-gray-500">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
                       {new Date(post.created_at).toLocaleDateString("vi-VN")}
                     </div>
                     <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />5 phút
+                      <Clock className="w-4 h-4" />
+                      {post.read_time || calculateReadTime(post.content)}
                     </div>
                   </div>
                 </div>
@@ -591,13 +699,22 @@ const BlogPost = () => {
             <div className="bg-white rounded-2xl shadow-sm p-6">
               <h3 className="font-medium mb-4">Tags</h3>
               <div className="flex flex-wrap gap-2">
-                <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-200 transition-colors cursor-pointer">
+                <span
+                  onClick={() => navigate(`/blog?category=${post.category}`)}
+                  className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-200 transition-colors cursor-pointer"
+                >
                   #{post.category || "Bài viết"}
                 </span>
-                <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-200 transition-colors cursor-pointer">
+                <span
+                  onClick={() => navigate(`/blog?category=Du lịch`)}
+                  className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-200 transition-colors cursor-pointer"
+                >
                   #Du lịch
                 </span>
-                <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-200 transition-colors cursor-pointer">
+                <span
+                  onClick={() => navigate(`/blog?category=Việt Nam`)}
+                  className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-200 transition-colors cursor-pointer"
+                >
                   #Việt Nam
                 </span>
               </div>
@@ -641,7 +758,9 @@ const BlogPost = () => {
                           )}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />5 phút
+                          <Clock className="w-4 h-4" />
+                          {relatedPost.read_time ||
+                            calculateReadTime(relatedPost.content)}
                         </span>
                       </div>
                     </div>
@@ -662,6 +781,7 @@ const BlogPost = () => {
               onDeleteComment={handleDeleteComment}
               onLikeComment={handleLikeComment}
               onReloadComments={reloadPost}
+              hideRating={true}
             />
           </div>
 
@@ -761,15 +881,24 @@ const BlogPost = () => {
               <div className="bg-white rounded-2xl shadow-sm p-6">
                 <h3 className="text-lg font-semibold mb-4">Chia sẻ bài viết</h3>
                 <div className="flex flex-col gap-2">
-                  <button className="flex items-center justify-center gap-3 bg-blue-600 text-white px-4 py-3 rounded-xl hover:bg-blue-700 transition-colors">
+                  <button
+                    onClick={() => handleShare("facebook")}
+                    className="flex items-center justify-center gap-3 bg-blue-600 text-white px-4 py-3 rounded-xl hover:bg-blue-700 transition-colors"
+                  >
                     <Facebook className="w-5 h-5" />
                     <span className="font-medium">Chia sẻ lên Facebook</span>
                   </button>
-                  <button className="flex items-center justify-center gap-3 bg-blue-400 text-white px-4 py-3 rounded-xl hover:bg-blue-500 transition-colors">
+                  <button
+                    onClick={() => handleShare("twitter")}
+                    className="flex items-center justify-center gap-3 bg-blue-400 text-white px-4 py-3 rounded-xl hover:bg-blue-500 transition-colors"
+                  >
                     <Twitter className="w-5 h-5" />
                     <span className="font-medium">Chia sẻ lên Twitter</span>
                   </button>
-                  <button className="flex items-center justify-center gap-3 bg-blue-700 text-white px-4 py-3 rounded-xl hover:bg-blue-800 transition-colors">
+                  <button
+                    onClick={() => handleShare("linkedin")}
+                    className="flex items-center justify-center gap-3 bg-blue-700 text-white px-4 py-3 rounded-xl hover:bg-blue-800 transition-colors"
+                  >
                     <Linkedin className="w-5 h-5" />
                     <span className="font-medium">Chia sẻ lên LinkedIn</span>
                   </button>
@@ -783,19 +912,34 @@ const BlogPost = () => {
                   Tags
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  <span className="bg-white text-emerald-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-emerald-100 transition-colors cursor-pointer shadow-sm">
+                  <span
+                    onClick={() => navigate(`/blog?category=${post.category}`)}
+                    className="bg-white text-emerald-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-emerald-100 transition-colors cursor-pointer shadow-sm"
+                  >
                     #{post.category || "Bài viết"}
                   </span>
-                  <span className="bg-white text-emerald-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-emerald-100 transition-colors cursor-pointer shadow-sm">
+                  <span
+                    onClick={() => navigate(`/blog?category=Du lịch`)}
+                    className="bg-white text-emerald-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-emerald-100 transition-colors cursor-pointer shadow-sm"
+                  >
                     #Du lịch
                   </span>
-                  <span className="bg-white text-emerald-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-emerald-100 transition-colors cursor-pointer shadow-sm">
+                  <span
+                    onClick={() => navigate(`/blog?category=Việt Nam`)}
+                    className="bg-white text-emerald-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-emerald-100 transition-colors cursor-pointer shadow-sm"
+                  >
                     #Việt Nam
                   </span>
-                  <span className="bg-white text-emerald-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-emerald-100 transition-colors cursor-pointer shadow-sm">
+                  <span
+                    onClick={() => navigate(`/blog?category=Khám phá`)}
+                    className="bg-white text-emerald-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-emerald-100 transition-colors cursor-pointer shadow-sm"
+                  >
                     #Khám phá
                   </span>
-                  <span className="bg-white text-emerald-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-emerald-100 transition-colors cursor-pointer shadow-sm">
+                  <span
+                    onClick={() => navigate(`/blog?category=Trải nghiệm`)}
+                    className="bg-white text-emerald-700 px-4 py-2 rounded-full text-sm font-medium hover:bg-emerald-100 transition-colors cursor-pointer shadow-sm"
+                  >
                     #Trải nghiệm
                   </span>
                 </div>

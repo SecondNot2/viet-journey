@@ -36,8 +36,26 @@ const LatestBlogs = () => {
         }
 
         // Handle both array response and object with blogs property
-        const blogsData = response.data.blogs || response.data;
-        setBlogs(Array.isArray(blogsData) ? blogsData.slice(0, 4) : []); // Lấy 4 bài viết đầu tiên
+        const rawBlogsData = response.data.blogs || response.data;
+        const blogsList = Array.isArray(rawBlogsData)
+          ? rawBlogsData.slice(0, 4)
+          : [];
+
+        // Transform data to ensure author info
+        const blogsData = blogsList.map((blog) => {
+          const user = blog.users;
+          const profile = Array.isArray(user?.userprofiles)
+            ? user.userprofiles[0]
+            : user?.userprofiles;
+          return {
+            ...blog,
+            author_name:
+              profile?.full_name || user?.username || blog.author_name,
+            author_avatar: profile?.avatar || blog.author_avatar,
+          };
+        });
+
+        setBlogs(blogsData);
         setLoading(false);
       } catch (err) {
         console.error("[ERROR] Lỗi khi tải dữ liệu bài viết:", err);
@@ -72,8 +90,12 @@ const LatestBlogs = () => {
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return `${API_HOST}/images/placeholder.png`;
     if (imageUrl.startsWith("http")) return imageUrl;
+
+    // Nếu bắt đầu bằng /uploads, dùng trực tiếp
     if (imageUrl.startsWith("/uploads")) return `${API_HOST}${imageUrl}`;
-    return `${API_HOST}/${imageUrl}`.replace(/\/\//g, "/");
+
+    // Nếu không, giả định là đường dẫn tương đối cần thêm /uploads/images/ hoặc check logic backend
+    return `${API_HOST}/uploads/images/${imageUrl}`;
   };
 
   // eslint-disable-next-line no-unused-vars
@@ -106,6 +128,16 @@ const LatestBlogs = () => {
     if (!text) return "";
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + "...";
+  };
+
+  // Helper tính thời gian đọc
+  const calculateReadTime = (content) => {
+    if (!content) return "5 phút";
+    const wordsPerMinute = 200;
+    const text = content.replace(/<[^>]*>/g, "");
+    const words = text.trim().split(/\s+/).length;
+    const minutes = Math.ceil(words / wordsPerMinute);
+    return `${minutes} phút`;
   };
 
   // Component BlogCard tùy chỉnh cho blog
@@ -164,7 +196,7 @@ const LatestBlogs = () => {
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
-                {blog.read_time || "5 phút"}
+                {blog.read_time || calculateReadTime(blog.content)}
               </div>
             </div>
           </div>

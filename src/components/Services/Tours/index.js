@@ -317,19 +317,19 @@ const Tours = () => {
       const res = await axios.get(`${API_URL}/tours`, { params });
       console.debug("[DEBUG] API Response /api/tours:", res.data);
 
-      if (res.data && res.data.tours && res.data.pagination) {
-        setTours(res.data.tours);
-        setPagination(res.data.pagination);
-      } else {
-        // Handle cases where the structure might be different or empty
-        setTours(res.data?.tours || []);
-        setPagination(
-          res.data?.pagination || { page: 1, total_pages: 1, total: 0 }
-        );
-        if (!res.data?.tours || res.data.tours.length === 0) {
-          console.log("No tours found matching criteria.");
-          // Optionally set an error or message state here if needed
-        }
+      const toursData = res.data.tours || [];
+      const totalCount = res.data.total || 0;
+      const totalPages = Math.ceil(totalCount / currentFilters.limit);
+
+      setTours(toursData);
+      setPagination({
+        page: currentFilters.page,
+        total_pages: totalPages || 1,
+        total: totalCount,
+      });
+
+      if (toursData.length === 0) {
+        console.log("No tours found matching criteria.");
       }
     } catch (err) {
       console.error("[DEBUG] Error fetching tours:", err);

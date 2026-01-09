@@ -17,13 +17,33 @@ import {
   MapPin,
 } from "lucide-react";
 
-
 const BlogCategory = () => {
   const { category } = useParams();
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [savedBlogs, setSavedBlogs] = useState([]);
+
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem("saved_blogs") || "[]");
+    setSavedBlogs(saved);
+  }, []);
+
+  const handleBookmark = (e, blogId) => {
+    e.stopPropagation();
+    const currentSaved = JSON.parse(
+      localStorage.getItem("saved_blogs") || "[]"
+    );
+    let newSaved;
+    if (currentSaved.includes(blogId)) {
+      newSaved = currentSaved.filter((id) => id !== blogId);
+    } else {
+      newSaved = [...currentSaved, blogId];
+    }
+    localStorage.setItem("saved_blogs", JSON.stringify(newSaved));
+    setSavedBlogs(newSaved);
+  };
 
   const categories = {
     food: "Ẩm thực",
@@ -43,7 +63,25 @@ const BlogCategory = () => {
           params: { category: category },
         });
 
-        setPosts(response.data);
+        const rawPostsData = Array.isArray(response.data)
+          ? response.data
+          : response.data?.blogs || [];
+
+        // Transform data to ensure author info
+        const postsData = rawPostsData.map((post) => {
+          const user = post.users;
+          const profile = Array.isArray(user?.userprofiles)
+            ? user.userprofiles[0]
+            : user?.userprofiles;
+          return {
+            ...post,
+            author_name:
+              profile?.full_name || user?.username || post.author_name,
+            author_avatar: profile?.avatar || post.author_avatar,
+          };
+        });
+
+        setPosts(postsData);
         setError(null);
       } catch (err) {
         console.error("[ERROR] Lỗi khi tải bài viết theo danh mục:", err);
@@ -61,26 +99,26 @@ const BlogCategory = () => {
 
   // Hàm xử lý URL ảnh
   const getImageUrl = (imageUrl) => {
-    if (!imageUrl) return `${API_URL}/images/placeholder.png`;
+    if (!imageUrl) return `${API_HOST}/images/placeholder.png`;
     if (imageUrl.startsWith("http")) return imageUrl;
-    if (imageUrl.startsWith("/uploads")) return `${API_URL}${imageUrl}`;
-    return `${API_URL}/${imageUrl}`.replace(/\/\//g, "/");
+    if (imageUrl.startsWith("/uploads")) return `${API_HOST}${imageUrl}`;
+    return `${API_HOST}/${imageUrl}`.replace(/\/\//g, "/");
   };
 
   // Hàm xử lý URL avatar
   const getAvatarUrl = (avatarUrl) => {
     // Nếu không có avatar, dùng ảnh mặc định
-    if (!avatarUrl) return `${API_URL}/images/default-destination.jpg`;
+    if (!avatarUrl) return `${API_HOST}/images/default-destination.jpg`;
     // Nếu là URL đầy đủ (http/https), dùng trực tiếp
     if (avatarUrl.startsWith("http://") || avatarUrl.startsWith("https://")) {
       return avatarUrl;
     }
-    // Nếu bắt đầu bằng /uploads, thêm API_URL
+    // Nếu bắt đầu bằng /uploads, thêm API_HOST
     if (avatarUrl.startsWith("/uploads")) {
-      return `${API_URL}${avatarUrl}`;
+      return `${API_HOST}${avatarUrl}`;
     }
     // Nếu là tên file, thêm đường dẫn đầy đủ
-    return `${API_URL}/uploads/avatars/${avatarUrl}`;
+    return `${API_HOST}/uploads/avatars/${avatarUrl}`;
   };
 
   // Hàm cắt ngắn text
@@ -90,6 +128,16 @@ const BlogCategory = () => {
     const cleanText = text.replace(/<[^>]*>/g, "");
     if (cleanText.length <= maxLength) return cleanText;
     return cleanText.substring(0, maxLength) + "...";
+  };
+
+  // Helper tính thời gian đọc
+  const calculateReadTime = (content) => {
+    if (!content) return "5 phút";
+    const wordsPerMinute = 200;
+    const text = content.replace(/<[^>]*>/g, "");
+    const words = text.trim().split(/\s+/).length;
+    const minutes = Math.ceil(words / wordsPerMinute);
+    return `${minutes} phút`;
   };
 
   return (
@@ -118,7 +166,7 @@ const BlogCategory = () => {
             </div>
 
             <h1 className="text-5xl font-bold text-white mb-6 leading-tight">
-              {categories[category] || "Danh mục không tồn tại"}
+              {categories[category] || category}
             </h1>
             <p className="text-emerald-50 text-xl max-w-3xl mx-auto leading-relaxed">
               Khám phá những bài viết về {categories[category]?.toLowerCase()}{" "}
@@ -200,7 +248,7 @@ const BlogCategory = () => {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = `${API_URL}/images/placeholder.png`;
+                      e.target.src = `${API_HOST}/images/placeholder.png`;
                     }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-70 transition-opacity"></div>
@@ -212,13 +260,18 @@ const BlogCategory = () => {
                   </div>
                   <div className="absolute top-4 right-4">
                     <button
-                      className="p-2 rounded-full bg-white bg-opacity-20 text-white hover:bg-opacity-30 backdrop-blur-sm transition-all"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Handle bookmark
-                      }}
+                      className={`p-2 rounded-full backdrop-blur-sm transition-all ${
+                        savedBlogs.includes(post.id)
+                          ? "bg-red-500 text-white"
+                          : "bg-white/20 text-white hover:bg-white/30"
+                      }`}
+                      onClick={(e) => handleBookmark(e, post.id)}
                     >
-                      <Bookmark className="w-4 h-4" />
+                      <Bookmark
+                        className={`w-4 h-4 ${
+                          savedBlogs.includes(post.id) ? "fill-current" : ""
+                        }`}
+                      />
                     </button>
                   </div>
                 </div>
@@ -238,7 +291,8 @@ const BlogCategory = () => {
                         {new Date(post.created_at).toLocaleDateString("vi-VN")}
                       </div>
                       <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />5 phút
+                        <Clock className="w-4 h-4" />
+                        {post.read_time || calculateReadTime(post.content)}
                       </div>
                     </div>
                   </div>
@@ -259,7 +313,10 @@ const BlogCategory = () => {
                           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                           onClick={(e) => {
                             e.stopPropagation();
-                            // Handle share
+                            navigator.clipboard.writeText(
+                              `${window.location.origin}/blog/post/${post.id}`
+                            );
+                            alert("Đã sao chép liên kết bài viết!");
                           }}
                         >
                           <Share2 className="w-4 h-4" />

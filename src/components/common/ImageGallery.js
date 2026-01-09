@@ -2,8 +2,6 @@ import { API_URL, API_HOST } from "../../config/api";
 import React, { useState } from "react";
 import { Camera, Eye, ChevronLeft, ChevronRight, X } from "lucide-react";
 
-
-
 const ImageGallery = ({ images = [], title = "" }) => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [modalImageIndex, setModalImageIndex] = useState(0);
@@ -12,7 +10,7 @@ const ImageGallery = ({ images = [], title = "" }) => {
   const galleryImages =
     Array.isArray(images) && images.length > 0
       ? images
-      : [`${API_URL}/images/placeholder.png`];
+      : [`${API_HOST}/images/placeholder.png`];
 
   // Mở modal xem ảnh phóng to
   const handleOpenImageModal = (index) => {
@@ -61,7 +59,7 @@ const ImageGallery = ({ images = [], title = "" }) => {
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = `${API_URL}/images/placeholder.png`;
+                  e.target.src = `${API_HOST}/images/placeholder.png`;
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -118,7 +116,7 @@ const ImageGallery = ({ images = [], title = "" }) => {
               className="max-w-full max-h-[90vh] object-contain rounded-lg"
               onError={(e) => {
                 e.target.onerror = null;
-                e.target.src = `${API_URL}/images/placeholder.png`;
+                e.target.src = `${API_HOST}/images/placeholder.png`;
               }}
             />
 

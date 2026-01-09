@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { API_URL, API_HOST } from "../../config/api";
 import {
@@ -20,11 +20,70 @@ import {
   TrendingUp,
   BookOpen,
 } from "lucide-react";
+import Toast from "../common/Toast";
 
 const BlogList = () => {
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedCategory, setSelectedCategory] = useState(
+    searchParams.get("category") || "all"
+  );
+  const [searchQuery, setSearchQuery] = useState(
+    searchParams.get("search") || ""
+  );
+  const [loading, setLoading] = useState(true);
+  const [savedBlogs, setSavedBlogs] = useState([]);
+  const [error, setError] = useState(null);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+  };
+
+  useEffect(() => {
+    // Load bookmarks
+    const saved = JSON.parse(localStorage.getItem("saved_blogs") || "[]");
+    setSavedBlogs(saved);
+  }, []);
+
+  useEffect(() => {
+    const categoryQuery = searchParams.get("category");
+    if (categoryQuery) setSelectedCategory(categoryQuery);
+
+    const textQuery = searchParams.get("search");
+    if (textQuery) setSearchQuery(textQuery);
+  }, [searchParams]);
+
+  const updateFilters = (key, value) => {
+    const current = Object.fromEntries([...searchParams]);
+    if (value && value !== "all" && value !== "") {
+      current[key] = value;
+    } else {
+      delete current[key];
+    }
+    setSearchParams(current);
+    if (key === "category") setSelectedCategory(value || "all");
+    if (key === "search") setSearchQuery(value || "");
+  };
+
+  const handleBookmark = (e, blogId) => {
+    e.stopPropagation();
+    const currentSaved = JSON.parse(
+      localStorage.getItem("saved_blogs") || "[]"
+    );
+    let newSaved;
+    if (currentSaved.includes(blogId)) {
+      newSaved = currentSaved.filter((id) => id !== blogId);
+    } else {
+      newSaved = [...currentSaved, blogId];
+    }
+    localStorage.setItem("saved_blogs", JSON.stringify(newSaved));
+    setSavedBlogs(newSaved);
+    showToast(
+      newSaved.includes(blogId) ? "Đã lưu bài viết" : "Đã bỏ lưu bài viết",
+      "success"
+    );
+  };
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState({
     sortBy: "latest",
@@ -32,8 +91,8 @@ const BlogList = () => {
     author: "all",
   });
   const [blogs, setBlogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // loading removed here
+  // error removed here
 
   const categories = [
     { id: "all", name: "Tất cả" },
@@ -83,9 +142,24 @@ const BlogList = () => {
         const response = await axios.get(`${API_URL}/blogs`, { params });
 
         // Handle both array response and object response with blogs property
-        const blogsData = Array.isArray(response.data)
+        const rawBlogsData = Array.isArray(response.data)
           ? response.data
           : response.data?.blogs || response.data?.data || [];
+
+        // Transform data to ensure author info
+        const blogsData = rawBlogsData.map((blog) => {
+          const user = blog.users;
+          const profile = Array.isArray(user?.userprofiles)
+            ? user.userprofiles[0]
+            : user?.userprofiles;
+          return {
+            ...blog,
+            author_name:
+              profile?.full_name || user?.username || blog.author_name,
+            author_avatar: profile?.avatar || blog.author_avatar,
+          };
+        });
+
         setBlogs(blogsData);
         setError(null);
       } catch (err) {
@@ -116,12 +190,12 @@ const BlogList = () => {
     if (avatarUrl.startsWith("http://") || avatarUrl.startsWith("https://")) {
       return avatarUrl;
     }
-    // Nếu bắt đầu bằng /uploads, thêm API_URL
+    // Nếu bắt đầu bằng /uploads, thêm API_HOST
     if (avatarUrl.startsWith("/uploads")) {
-      return `${API_URL}${avatarUrl}`;
+      return `${API_HOST}${avatarUrl}`;
     }
     // Nếu là tên file, thêm đường dẫn đầy đủ
-    return `${API_URL}/uploads/avatars/${avatarUrl}`;
+    return `${API_HOST}/uploads/avatars/${avatarUrl}`;
   };
 
   // Hàm cắt ngắn text
@@ -131,6 +205,16 @@ const BlogList = () => {
     const cleanText = text.replace(/<[^>]*>/g, "");
     if (cleanText.length <= maxLength) return cleanText;
     return cleanText.substring(0, maxLength) + "...";
+  };
+
+  // Hàm tính thời gian đọc
+  const calculateReadTime = (content) => {
+    if (!content) return "5 phút";
+    const wordsPerMinute = 200;
+    const text = content.replace(/<[^>]*>/g, ""); // Remove HTML
+    const words = text.trim().split(/\s+/).length;
+    const minutes = Math.ceil(words / wordsPerMinute);
+    return `${minutes} phút`;
   };
 
   const clearFilters = () => {
@@ -196,13 +280,13 @@ const BlogList = () => {
                 type="text"
                 placeholder="Nhập từ khóa, tên tác giả, chủ đề..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => updateFilters("search", e.target.value)}
                 className="w-full pl-12 pr-4 py-4 text-base border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-50 hover:bg-white transition-colors"
               />
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               {searchQuery && (
                 <button
-                  onClick={() => setSearchQuery("")}
+                  onClick={() => updateFilters("search", "")}
                   className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 flex items-center justify-center"
                 >
                   ×
@@ -221,7 +305,7 @@ const BlogList = () => {
               {categories.map((category) => (
                 <button
                   key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
+                  onClick={() => updateFilters("category", category.id)}
                   className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                     selectedCategory === category.id
                       ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200"
@@ -248,7 +332,8 @@ const BlogList = () => {
                   {searchQuery && selectedCategory !== "all" && " • "}
                   {selectedCategory !== "all" &&
                     `Danh mục: ${
-                      categories.find((c) => c.id === selectedCategory)?.name
+                      categories.find((c) => c.id === selectedCategory)?.name ||
+                      selectedCategory
                     }`}
                 </p>
               </div>
@@ -342,13 +427,18 @@ const BlogList = () => {
                   </div>
                   <div className="absolute top-4 right-4">
                     <button
-                      className="p-2 rounded-full bg-white bg-opacity-20 text-white hover:bg-opacity-30 backdrop-blur-sm transition-all"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Handle bookmark
-                      }}
+                      className={`p-2 rounded-full backdrop-blur-sm transition-all ${
+                        savedBlogs.includes(post.id)
+                          ? "bg-red-500 text-white"
+                          : "bg-white/20 text-white hover:bg-white/30"
+                      }`}
+                      onClick={(e) => handleBookmark(e, post.id)}
                     >
-                      <Bookmark className="w-4 h-4" />
+                      <Bookmark
+                        className={`w-4 h-4 ${
+                          savedBlogs.includes(post.id) ? "fill-current" : ""
+                        }`}
+                      />
                     </button>
                   </div>
                   <div className="absolute bottom-4 left-4 text-white">
@@ -374,7 +464,8 @@ const BlogList = () => {
                         {new Date(post.created_at).toLocaleDateString("vi-VN")}
                       </div>
                       <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />5 phút
+                        <Clock className="w-4 h-4" />
+                        {post.read_time || calculateReadTime(post.content)}
                       </div>
                     </div>
                   </div>
@@ -395,7 +486,11 @@ const BlogList = () => {
                           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                           onClick={(e) => {
                             e.stopPropagation();
-                            // Handle share
+                            navigator.clipboard.writeText(
+                              `${window.location.origin}/blog/post/${post.id}`
+                            );
+                            // Simple alert or toast if available, but for now just copy
+                            alert("Đã sao chép liên kết bài viết!");
                           }}
                         >
                           <Share2 className="w-4 h-4" />
@@ -434,6 +529,14 @@ const BlogList = () => {
               Xem tất cả bài viết
             </button>
           </div>
+        )}
+        {/* Toast Notification */}
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
         )}
       </div>
     </div>

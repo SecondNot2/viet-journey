@@ -25,6 +25,7 @@ const CommentSection = ({
   onDeleteComment,
   onLikeComment,
   onReloadComments,
+  hideRating = false,
 }) => {
   const [newComment, setNewComment] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
@@ -70,9 +71,9 @@ const CommentSection = ({
       return avatarUrl;
     }
     if (avatarUrl.startsWith("/uploads")) {
-      return `${API_URL}${avatarUrl}`;
+      return `${API_HOST}${avatarUrl}`;
     }
-    return `${API_URL}/uploads/avatars/${avatarUrl}`;
+    return `${API_HOST}/uploads/avatars/${avatarUrl}`;
   };
 
   // Hàm thêm bình luận
@@ -280,7 +281,7 @@ const CommentSection = ({
                               }
                             )}
                           </span>
-                          {comment.rating && (
+                          {!hideRating && comment.rating && (
                             <div className="flex items-center gap-1 ml-2">
                               <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                               <span className="text-sm font-medium text-gray-700">
