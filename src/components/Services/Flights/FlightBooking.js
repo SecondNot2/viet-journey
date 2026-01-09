@@ -35,7 +35,8 @@ import Toast from "../../common/Toast";
 import ConfirmModal from "../../common/ConfirmModal";
 import { API_URL, API_HOST } from "../../../config/api";
 
-const API_BASE_URL = API_HOST;
+// API_URL cho REST endpoints (e.g. /api/bookings), API_HOST cho static assets
+const API_BASE_URL = API_URL;
 
 const FlightBooking = () => {
   const navigate = useNavigate();
@@ -43,13 +44,13 @@ const FlightBooking = () => {
   const { user } = useAuth();
   const bookingData = location.state;
 
-  // 🔍 DEBUG: Log user khi component mount
+  // Validate booking data on mount
   useEffect(() => {
-    console.log("[FlightBooking] Component mounted");
-    console.log("[FlightBooking] User from AuthContext:", user);
-    console.log("[FlightBooking] user?.id:", user?.id);
-    console.log("[FlightBooking] bookingData:", bookingData);
-  }, []);
+    if (!bookingData) {
+      navigate("/flights");
+      return;
+    }
+  }, [bookingData, navigate]);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -173,6 +174,57 @@ const FlightBooking = () => {
       setPassengerCount(bookingData.passengers);
     }
   }, [bookingData, navigate]);
+
+  // ✅ Auto-fill contact info and first passenger from user profile when logged in
+  useEffect(() => {
+    if (user) {
+      // Parse full_name into firstName and lastName
+      let firstName = "";
+      let lastName = "";
+      if (user.full_name) {
+        const nameParts = user.full_name.trim().split(" ");
+        if (nameParts.length >= 2) {
+          // First word is last name (họ), rest is first name (tên và tên đệm)
+          lastName = nameParts[0];
+          firstName = nameParts.slice(1).join(" ");
+        } else {
+          firstName = user.full_name;
+        }
+      }
+
+      // Determine title based on gender
+      let title = "";
+      if (user.gender === "male") {
+        title = "mr";
+      } else if (user.gender === "female") {
+        title = "ms";
+      }
+
+      // Update contact info
+      setBookingInfo((prev) => {
+        const newPassengers = [...prev.passengers];
+        // Auto-fill first passenger if exists
+        if (newPassengers.length > 0) {
+          newPassengers[0] = {
+            ...newPassengers[0],
+            title: title || newPassengers[0].title,
+            firstName: firstName || newPassengers[0].firstName,
+            lastName: lastName || newPassengers[0].lastName,
+          };
+        }
+
+        return {
+          ...prev,
+          passengers: newPassengers,
+          contact: {
+            ...prev.contact,
+            email: user.email || prev.contact.email,
+            phone: user.phone_number || prev.contact.phone,
+          },
+        };
+      });
+    }
+  }, [user]);
 
   const { flight } = location.state || {};
 

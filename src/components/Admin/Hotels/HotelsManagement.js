@@ -13,7 +13,9 @@ import {
   Eye,
 } from "lucide-react";
 import HotelForm from "./HotelForm";
-import { API_URL } from "../../../config/api";
+import { API_URL, API_HOST } from "../../../config/api";
+
+const PLACEHOLDER_IMAGE = `${API_HOST}/images/placeholder.png`;
 
 const HotelsManagement = () => {
   const [hotels, setHotels] = useState([]);
@@ -30,12 +32,13 @@ const HotelsManagement = () => {
   const fetchHotels = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/hotels");
+      const response = await fetch(`${API_URL}/hotels`);
       if (!response.ok) {
         throw new Error("Failed to fetch hotels");
       }
       const data = await response.json();
-      setHotels(data);
+      // API trả về { hotels: [...], pagination: {...} }
+      setHotels(data.hotels || []);
     } catch (error) {
       console.error("Error fetching hotels:", error);
       toast.error("Lỗi khi tải danh sách khách sạn");
@@ -159,12 +162,20 @@ const HotelsManagement = () => {
               <div className="relative">
                 <img
                   src={
-                    hotel.images
-                      ? JSON.parse(hotel.images)[0]
-                      : "https://via.placeholder.com/300x200"
+                    hotel.images &&
+                    Array.isArray(hotel.images) &&
+                    hotel.images.length > 0
+                      ? hotel.images[0].startsWith("http")
+                        ? hotel.images[0]
+                        : `${API_HOST}${hotel.images[0]}`
+                      : PLACEHOLDER_IMAGE
                   }
                   alt={hotel.name}
                   className="w-full h-48 object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = PLACEHOLDER_IMAGE;
+                  }}
                 />
                 <div className="absolute top-2 right-2 flex gap-2">
                   <button
@@ -197,7 +208,7 @@ const HotelsManagement = () => {
                 </div>
                 <div className="flex items-center gap-2 text-gray-600">
                   <DollarSign className="w-5 h-5" />
-                  <span>{formatPrice(hotel.price)}</span>
+                  <span>{formatPrice(hotel.min_price)}</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-600">
                   <Star className="w-5 h-5 text-yellow-400" />

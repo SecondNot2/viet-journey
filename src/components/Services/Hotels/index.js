@@ -1511,26 +1511,37 @@ const HotelSearch = () => {
                             </div>
                             <div className="flex flex-col items-end">
                               {isPromo ? (
-                                <>
-                                  <div className="text-2xl font-bold text-orange-600">
-                                    {formatPrice(hotel.discounted_price)}
-                                  </div>
-                                  <div className="flex flex-col items-end">
-                                    <p className="text-sm text-gray-400 line-through">
-                                      {formatPrice(hotel.price)}
-                                    </p>
-                                    {daysRemaining !== null && (
-                                      <p className="text-xs text-orange-500">
-                                        {daysRemaining > 0
-                                          ? `Còn ${daysRemaining} ngày`
-                                          : "Sắp kết thúc"}
-                                      </p>
-                                    )}
-                                  </div>
-                                </>
+                                (() => {
+                                  // Tính giá sau khuyến mãi dựa trên min_price
+                                  const originalPrice = hotel.min_price;
+                                  const discountedPrice =
+                                    calculateDiscountedPrice(
+                                      originalPrice,
+                                      hotel.promotion
+                                    );
+                                  return (
+                                    <>
+                                      <div className="text-2xl font-bold text-orange-600">
+                                        {formatPrice(discountedPrice)}
+                                      </div>
+                                      <div className="flex flex-col items-end">
+                                        <p className="text-sm text-gray-400 line-through">
+                                          {formatPrice(originalPrice)}
+                                        </p>
+                                        {daysRemaining !== null && (
+                                          <p className="text-xs text-orange-500">
+                                            {daysRemaining > 0
+                                              ? `Còn ${daysRemaining} ngày`
+                                              : "Sắp kết thúc"}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </>
+                                  );
+                                })()
                               ) : (
                                 <div className="text-2xl font-bold text-emerald-600">
-                                  {formatPrice(hotel.price)}
+                                  {formatPrice(hotel.min_price)}
                                 </div>
                               )}
                               <p className="text-sm text-gray-500 mt-1">/đêm</p>

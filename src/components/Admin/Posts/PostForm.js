@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { API_URL } from "../../../config/api";
+import { API_URL, API_HOST } from "../../../config/api";
+
+const PLACEHOLDER_IMAGE = `${API_HOST}/images/placeholder.png`;
 import {
   ArrowLeft,
   Save,
@@ -175,9 +177,13 @@ const PostForm = ({ post, onClose, onSave, viewMode: initialViewMode }) => {
               <div className="relative group">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl blur opacity-50 group-hover:opacity-75 transition duration-1000"></div>
                 <img
-                  src={post.image || "https://via.placeholder.com/800x400"}
+                  src={post.image || PLACEHOLDER_IMAGE}
                   alt={post.title}
                   className="relative w-full h-48 object-cover rounded-2xl shadow-xl"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = PLACEHOLDER_IMAGE;
+                  }}
                 />
               </div>
             </div>
@@ -299,9 +305,13 @@ const PostForm = ({ post, onClose, onSave, viewMode: initialViewMode }) => {
               <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl blur opacity-50 group-hover:opacity-75 transition duration-1000"></div>
               <div className="relative">
                 <img
-                  src={imagePreview || "https://via.placeholder.com/800x400"}
+                  src={imagePreview || PLACEHOLDER_IMAGE}
                   alt="Preview"
                   className="w-full h-48 object-cover rounded-2xl shadow-xl"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = PLACEHOLDER_IMAGE;
+                  }}
                 />
                 {imagePreview && (
                   <button

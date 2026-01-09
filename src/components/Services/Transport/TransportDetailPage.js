@@ -29,7 +29,6 @@ import {
   ThumbsUp,
 } from "lucide-react";
 
-
 // Helper Functions
 const calculateDiscountedPrice = (originalPrice, promotion) => {
   if (!promotion || promotion.status !== "active") return originalPrice;
@@ -336,10 +335,10 @@ const TransportDetailPage = () => {
       setReviewsLoading(true);
       setReviewError(null); // Reset review error
       try {
-        const response = await axios.get(
-          `${API_URL}/reviews/search?service_type=transport&transport_id=${id}`
-        );
-        setReviews(response.data || []);
+        // Use the new transport-specific reviews endpoint
+        const response = await axios.get(`${API_URL}/transport/${id}/reviews`);
+        // Response format: { reviews: [...] }
+        setReviews(response.data?.reviews || response.data || []);
         setReviewError(null);
       } catch (err) {
         console.error("Lỗi khi lấy đánh giá:", err);
@@ -369,13 +368,10 @@ const TransportDetailPage = () => {
       setUserRating(rating);
       setRatingError("");
 
-      const response = await axios.post(
-        `${API_URL}/transport/${id}/rating`,
-        {
-          user_id: user.id,
-          rating: rating,
-        }
-      );
+      const response = await axios.post(`${API_URL}/transport/${id}/rating`, {
+        user_id: user.id,
+        rating: rating,
+      });
 
       if (response.data.old_rating) {
         showToast(
@@ -400,15 +396,12 @@ const TransportDetailPage = () => {
 
   // Comment handlers
   const handleAddComment = async ({ comment, parent_id }) => {
-    const response = await axios.post(
-      `${API_URL}/transport/${id}/reviews`,
-      {
-        user_id: user.id,
-        comment,
-        rating: null,
-        parent_id,
-      }
-    );
+    const response = await axios.post(`${API_URL}/transport/${id}/reviews`, {
+      user_id: user.id,
+      comment,
+      rating: null,
+      parent_id,
+    });
 
     setTransport({
       ...transport,
@@ -690,23 +683,20 @@ const TransportDetailPage = () => {
     setReviewSuccess(false);
 
     try {
+      // Use the new transport-specific reviews endpoint
       const response = await axios.post(
-        `${API_URL}/reviews`,
+        `${API_URL}/transport/${id}/reviews`,
         {
-          transport_id: id, // Make sure backend expects transport_id
+          user_id: user.id,
           rating: newReview.rating,
           comment: newReview.comment,
-          service_type: "transport", // Explicitly state service type
-          service_id: id, // General service ID
-          service_name: transport?.vehicle_name || `Transport ${id}`, // Service name
         },
-        { withCredentials: true } // Send cookies if needed for auth
+        { withCredentials: true }
       );
 
-      // Assume the new review object needs user details for immediate display
+      // Build new review object for immediate display
       const newReviewData = {
-        ...response.data, // Use data from response if available
-        id: response.data.review_id || Date.now(), // Use response ID or generate temporary one
+        id: response.data.review_id || Date.now(),
         rating: newReview.rating,
         comment: newReview.comment,
         created_at: new Date().toISOString(),
@@ -714,14 +704,18 @@ const TransportDetailPage = () => {
           id: user.id,
           username: user.username,
           full_name: user.full_name || user.username,
-          avatar: user.avatar || null, // Add avatar if available in user context
+          avatar: user.avatar || null,
         },
+        likes_count: 0,
       };
 
       // Add the new review to the top of the list
       setReviews((prevReviews) => [newReviewData, ...prevReviews]);
       setNewReview({ rating: 5, comment: "" }); // Reset form
       setReviewSuccess(true);
+
+      // Reload transport to update rating stats
+      await reloadTransport();
 
       // Hide success message after 3 seconds
       setTimeout(() => {
@@ -878,7 +872,11 @@ const TransportDetailPage = () => {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-md p-6">
               <TransportDetail
-                transport={transport}
+                transport={{
+                  ...transport,
+                  reviews: reviews, // Use reviews from separate fetch
+                  comment_count: reviews.length, // Actual count
+                }}
                 currentUserId={user?.id}
                 isAdmin={user?.role === "admin"}
                 likedComments={likedComments}
@@ -923,7 +921,7 @@ const TransportDetailPage = () => {
                         className="h-5 w-5 object-contain"
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src = "/images/transport/default.png";
+                          e.target.src = `${API_HOST}/images/placeholder.png`;
                         }}
                       />
                       <span className="font-medium">{transport.company}</span>

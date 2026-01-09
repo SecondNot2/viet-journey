@@ -162,22 +162,70 @@ router.get("/:id", async (req, res) => {
 // Create booking
 router.post("/", async (req, res) => {
   try {
+    console.log(
+      "[DEBUG] Create booking request body:",
+      JSON.stringify(req.body, null, 2)
+    );
+
     const supabase = db.getClient();
+
+    // Chỉ lấy các field hợp lệ theo schema
+    const validFields = {
+      user_id: req.body.user_id,
+      hotel_id: req.body.hotel_id,
+      tour_id: req.body.tour_id,
+      flight_id: req.body.flight_id,
+      transport_id: req.body.transport_id,
+      booking_date: req.body.booking_date,
+      status: req.body.status || "pending",
+      payment_status: req.body.payment_status || "pending",
+      service_type: req.body.service_type,
+      total_price: req.body.total_price,
+      contact_email: req.body.contact_email,
+      contact_phone: req.body.contact_phone,
+      notes: req.body.notes,
+      seat_class: req.body.seat_class,
+      passenger_count: req.body.passenger_count,
+      check_in: req.body.check_in,
+      check_out: req.body.check_out,
+      room_count: req.body.room_count,
+      guest_count: req.body.guest_count,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    // Loại bỏ các field undefined
+    Object.keys(validFields).forEach((key) => {
+      if (validFields[key] === undefined) delete validFields[key];
+    });
+
+    console.log(
+      "[DEBUG] Cleaned booking data:",
+      JSON.stringify(validFields, null, 2)
+    );
+
     const { data, error } = await supabase
       .from("bookings")
-      .insert({
-        ...req.body,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
+      .insert(validFields)
       .select()
       .single();
 
-    if (error) throw error;
-    res.status(201).json({ id: data.id, message: "Đặt chỗ thành công" });
+    if (error) {
+      console.error("[DEBUG] Supabase error:", error);
+      throw error;
+    }
+
+    console.log("[DEBUG] Booking created successfully:", data.id);
+    res
+      .status(201)
+      .json({
+        booking_id: data.id,
+        id: data.id,
+        message: "Đặt chỗ thành công",
+      });
   } catch (error) {
     console.error("Error creating booking:", error);
-    res.status(500).json({ error: "Lỗi khi tạo đặt chỗ" });
+    res.status(500).json({ error: error.message || "Lỗi khi tạo đặt chỗ" });
   }
 });
 

@@ -248,25 +248,6 @@ const Transport = () => {
       const res = await axios.get(`${API_URL}/transport`, { params });
 
       if (res.data && res.data.transports && res.data.pagination) {
-        // 🔍 Debug: Log first transport to check date format
-        if (res.data.transports.length > 0) {
-          console.log("🔍 First transport data:", res.data.transports[0]);
-          console.log(
-            "  - trip_date:",
-            res.data.transports[0].trip_date,
-            typeof res.data.transports[0].trip_date
-          );
-          console.log(
-            "  - departure_time:",
-            res.data.transports[0].departure_time,
-            typeof res.data.transports[0].departure_time
-          );
-          console.log(
-            "  - departure_datetime:",
-            res.data.transports[0].departure_datetime,
-            typeof res.data.transports[0].departure_datetime
-          );
-        }
         setTransports(res.data.transports);
         setPagination(res.data.pagination);
       } else {
@@ -676,13 +657,28 @@ const Transport = () => {
     }`;
   };
 
-  // ✅ Format datetime string YYYY-MM-DD HH:MM:SS → HH:MM DD/MM/YYYY
-  // KHÔNG parse thành Date object để tránh lỗi timezone!
+  // ✅ Format datetime string → HH:MM DD/MM/YYYY
+  // Handles both ISO format (2026-01-28T06:00:00) and DB format (2026-01-28 06:00:00)
   const formatDateTime = (datetime) => {
     if (!datetime) return "Chưa xác định";
 
-    // Split "2025-10-12 08:30:00" → ["2025-10-12", "08:30:00"]
-    const [datePart, timePart] = String(datetime).split(" ");
+    const str = String(datetime);
+    let datePart, timePart;
+
+    // Handle ISO format with "T" separator
+    if (str.includes("T")) {
+      // Split "2026-01-28T06:00:00" → ["2026-01-28", "06:00:00"]
+      [datePart, timePart] = str.split("T");
+    } else if (str.includes(" ")) {
+      // Handle DB format with space separator
+      // Split "2025-10-12 08:30:00" → ["2025-10-12", "08:30:00"]
+      [datePart, timePart] = str.split(" ");
+    } else {
+      // Only date, no time
+      datePart = str;
+      timePart = "";
+    }
+
     if (!datePart) return datetime;
 
     // Split date "2025-10-12" → ["2025", "10", "12"]
@@ -692,7 +688,11 @@ const Transport = () => {
     const time = timePart ? timePart.substring(0, 5) : "";
 
     // Format: HH:MM DD/MM/YYYY
-    return `${time} ${day}/${month}/${year}`;
+    if (time) {
+      return `${time} ${day}/${month}/${year}`;
+    } else {
+      return `${day}/${month}/${year}`;
+    }
   };
 
   // --- Sidebar Component ---
@@ -1110,7 +1110,12 @@ const Transport = () => {
                 {/* Seats */}
                 <div className="flex items-center gap-1.5 text-gray-600">
                   <Users size={16} />
-                  <span>{transport.seats} chỗ</span>
+                  <span>
+                    {transport.available_seats ??
+                      transport.total_seats ??
+                      transport.seats}{" "}
+                    chỗ trống
+                  </span>
                 </div>
 
                 {/* Trip Type */}

@@ -52,13 +52,43 @@ const HotelBooking = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [bookingInfo, setBookingInfo] = useState({
     guestInfo: {
-      firstName: user?.profile?.full_name?.split(" ")[0] || "",
-      lastName: user?.profile?.full_name?.split(" ").slice(1).join(" ") || "",
-      email: user?.email || "",
-      phone: user?.profile?.phone_number || "",
+      firstName: "", // Will be auto-filled from user profile
+      lastName: "",
+      email: "",
+      phone: "",
       specialRequests: "",
     },
   });
+
+  // ✅ Auto-fill guest info from user profile when logged in
+  useEffect(() => {
+    if (user) {
+      // Parse full_name into firstName and lastName
+      let firstName = "";
+      let lastName = "";
+      if (user.full_name) {
+        const nameParts = user.full_name.trim().split(" ");
+        if (nameParts.length >= 2) {
+          // First word is last name (họ), rest is first name (tên và tên đệm)
+          firstName = nameParts[0];
+          lastName = nameParts.slice(1).join(" ");
+        } else {
+          firstName = user.full_name;
+        }
+      }
+
+      setBookingInfo((prev) => ({
+        ...prev,
+        guestInfo: {
+          ...prev.guestInfo,
+          firstName: firstName || prev.guestInfo.firstName,
+          lastName: lastName || prev.guestInfo.lastName,
+          email: user.email || prev.guestInfo.email,
+          phone: user.phone_number || prev.guestInfo.phone,
+        },
+      }));
+    }
+  }, [user]);
 
   // Payment states
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
@@ -886,14 +916,17 @@ const HotelBooking = () => {
         <div className="flex items-start gap-3 pb-4 border-b">
           <img
             src={
-              hotel?.images?.[0] ||
-              hotel?.image ||
-              "https://via.placeholder.com/60?text=Hotel"
+              hotel?.images?.[0]
+                ? hotel.images[0].startsWith("http")
+                  ? hotel.images[0]
+                  : `${API_HOST}${hotel.images[0]}`
+                : `${API_HOST}/images/placeholder.png`
             }
             alt={hotel?.name}
             className="w-16 h-16 object-cover rounded-lg"
             onError={(e) => {
-              e.target.src = "https://via.placeholder.com/60?text=Hotel";
+              e.target.onerror = null;
+              e.target.src = `${API_HOST}/images/placeholder.png`;
             }}
           />
           <div className="flex-1">

@@ -46,6 +46,33 @@ router.get("/featured", async (req, res) => {
   }
 });
 
+// Get location suggestions for hotels
+router.get("/locations/suggest", async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) {
+      return res.json({ locations: [] });
+    }
+
+    const supabase = db.getClient();
+    const { data, error } = await supabase
+      .from("hotels")
+      .select("location")
+      .eq("status", "active")
+      .ilike("location", `%${q}%`);
+
+    if (error) throw error;
+
+    const locations = [
+      ...new Set((data || []).map((h) => h.location).filter(Boolean)),
+    ];
+    res.json({ locations: locations.sort() });
+  } catch (error) {
+    console.error("Error fetching location suggestions:", error);
+    res.status(500).json({ error: "Lỗi khi lấy gợi ý địa điểm" });
+  }
+});
+
 // ========================================
 // LIST ROUTES
 // ========================================

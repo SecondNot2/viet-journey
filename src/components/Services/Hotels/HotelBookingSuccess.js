@@ -19,6 +19,9 @@ import {
   Home,
   Printer,
 } from "lucide-react";
+import { API_HOST } from "../../../config/api";
+
+const PLACEHOLDER_IMAGE = `${API_HOST}/images/placeholder.png`;
 
 const HotelBookingSuccess = () => {
   const location = useLocation();
@@ -146,15 +149,17 @@ const HotelBookingSuccess = () => {
                 <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
                   <img
                     src={
-                      hotel?.images?.[0] ||
-                      hotel?.image ||
-                      "https://via.placeholder.com/100?text=Hotel"
+                      hotel?.images?.[0]
+                        ? hotel.images[0].startsWith("http")
+                          ? hotel.images[0]
+                          : `${API_HOST}${hotel.images[0]}`
+                        : PLACEHOLDER_IMAGE
                     }
                     alt={hotel?.name}
                     className="w-24 h-24 object-cover rounded-lg shadow-md"
                     onError={(e) => {
-                      e.target.src =
-                        "https://via.placeholder.com/100?text=Hotel";
+                      e.target.onerror = null;
+                      e.target.src = PLACEHOLDER_IMAGE;
                     }}
                   />
                   <div className="flex-1">

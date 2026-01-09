@@ -61,6 +61,135 @@ router.get("/featured", async (req, res) => {
   }
 });
 
+// Get all cities (from/to locations)
+router.get("/cities", async (req, res) => {
+  try {
+    const supabase = db.getClient();
+    const { data, error } = await supabase
+      .from("flight_routes")
+      .select("from_location, to_location")
+      .eq("status", "active");
+
+    if (error) throw error;
+
+    // Extract unique locations
+    const fromLocations = [
+      ...new Set((data || []).map((r) => r.from_location).filter(Boolean)),
+    ];
+    const toLocations = [
+      ...new Set((data || []).map((r) => r.to_location).filter(Boolean)),
+    ];
+
+    res.json({
+      from_locations: fromLocations.sort(),
+      to_locations: toLocations.sort(),
+    });
+  } catch (error) {
+    console.error("Error fetching cities:", error);
+    res.status(500).json({ error: "Lỗi khi lấy danh sách thành phố" });
+  }
+});
+
+// Get all airlines
+router.get("/airlines", async (req, res) => {
+  try {
+    const supabase = db.getClient();
+    const { data, error } = await supabase
+      .from("flight_routes")
+      .select("airline")
+      .eq("status", "active");
+
+    if (error) throw error;
+
+    // Extract unique airlines
+    const airlines = [
+      ...new Set((data || []).map((r) => r.airline).filter(Boolean)),
+    ];
+
+    res.json({ airlines: airlines.sort() });
+  } catch (error) {
+    console.error("Error fetching airlines:", error);
+    res.status(500).json({ error: "Lỗi khi lấy danh sách hãng bay" });
+  }
+});
+
+// Get location suggestions
+router.get("/locations/suggest", async (req, res) => {
+  try {
+    const { q, field } = req.query;
+    if (!q) {
+      return res.json({ locations: [] });
+    }
+
+    const supabase = db.getClient();
+    const column = field === "from" ? "from_location" : "to_location";
+
+    const { data, error } = await supabase
+      .from("flight_routes")
+      .select(column)
+      .eq("status", "active")
+      .ilike(column, `%${q}%`);
+
+    if (error) throw error;
+
+    const locations = [
+      ...new Set((data || []).map((r) => r[column]).filter(Boolean)),
+    ];
+    res.json({ locations: locations.sort() });
+  } catch (error) {
+    console.error("Error fetching location suggestions:", error);
+    res.status(500).json({ error: "Lỗi khi lấy gợi ý địa điểm" });
+  }
+});
+
+// Get destinations from a specific origin
+router.get("/destinations/:origin", async (req, res) => {
+  try {
+    const { origin } = req.params;
+    const supabase = db.getClient();
+
+    const { data, error } = await supabase
+      .from("flight_routes")
+      .select("to_location")
+      .eq("from_location", decodeURIComponent(origin))
+      .eq("status", "active");
+
+    if (error) throw error;
+
+    const destinations = [
+      ...new Set((data || []).map((r) => r.to_location).filter(Boolean)),
+    ];
+    res.json({ destinations: destinations.sort() });
+  } catch (error) {
+    console.error("Error fetching destinations:", error);
+    res.status(500).json({ error: "Lỗi khi lấy điểm đến" });
+  }
+});
+
+// Get origins to a specific destination
+router.get("/origins/:destination", async (req, res) => {
+  try {
+    const { destination } = req.params;
+    const supabase = db.getClient();
+
+    const { data, error } = await supabase
+      .from("flight_routes")
+      .select("from_location")
+      .eq("to_location", decodeURIComponent(destination))
+      .eq("status", "active");
+
+    if (error) throw error;
+
+    const origins = [
+      ...new Set((data || []).map((r) => r.from_location).filter(Boolean)),
+    ];
+    res.json({ origins: origins.sort() });
+  } catch (error) {
+    console.error("Error fetching origins:", error);
+    res.status(500).json({ error: "Lỗi khi lấy điểm đi" });
+  }
+});
+
 // ========================================
 // LIST ROUTES
 // ========================================

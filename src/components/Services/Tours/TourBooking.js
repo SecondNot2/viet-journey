@@ -50,7 +50,7 @@ const TourBooking = () => {
     personalInfo: {
       fullName: user?.full_name || "",
       email: user?.email || "",
-      phone: user?.phone || "",
+      phone: user?.phone_number || "", // ✅ Fixed: use phone_number from AuthContext
     },
     tourDetails: {
       startDate: initialBookingDetails?.startDate || "",
@@ -619,22 +619,23 @@ const TourBooking = () => {
   };
 
   const getImageUrl = (tour) => {
-    if (!tour) return "https://via.placeholder.com/80?text=No+Image";
+    const PLACEHOLDER = `${API_HOST}/images/placeholder.png`;
+    if (!tour) return PLACEHOLDER;
 
     // Kiểm tra images array trước
     if (tour.images && tour.images.length > 0) {
       const imgSrc = tour.images[0];
-      return imgSrc.startsWith("http") ? imgSrc : `${API_URL}${imgSrc}`;
+      return imgSrc.startsWith("http") ? imgSrc : `${API_HOST}${imgSrc}`;
     }
 
     // Kiểm tra single image
     if (tour.image) {
       return tour.image.startsWith("http")
         ? tour.image
-        : `${API_URL}${tour.image}`;
+        : `${API_HOST}${tour.image}`;
     }
 
-    return "https://via.placeholder.com/80?text=No+Image";
+    return PLACEHOLDER;
   };
 
   const renderPersonalInfoForm = () => (
@@ -1102,7 +1103,7 @@ const TourBooking = () => {
             className="w-20 h-20 object-cover rounded-lg border-2 border-gray-100"
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = "https://via.placeholder.com/80?text=No+Image";
+              e.target.src = `${API_HOST}/images/placeholder.png`;
             }}
           />
           <div className="flex-1">

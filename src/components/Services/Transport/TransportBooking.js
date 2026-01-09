@@ -29,7 +29,6 @@ import {
   X,
 } from "lucide-react";
 
-
 const TransportBooking = () => {
   const { id } = useParams();
   const location = useLocation();
@@ -234,6 +233,46 @@ const TransportBooking = () => {
     };
   }, []);
 
+  // ✅ Auto-fill passenger details from user profile when logged in
+  useEffect(() => {
+    if (user) {
+      // Parse full_name into firstName and lastName
+      let firstName = "";
+      let lastName = "";
+      if (user.full_name) {
+        const nameParts = user.full_name.trim().split(" ");
+        if (nameParts.length >= 2) {
+          // First word is last name (họ), rest is first name (tên và tên đệm)
+          lastName = nameParts[0];
+          firstName = nameParts.slice(1).join(" ");
+        } else {
+          firstName = user.full_name;
+        }
+      }
+
+      // Determine title based on gender
+      let title = "";
+      if (user.gender === "male") {
+        title = "mr";
+      } else if (user.gender === "female") {
+        title = "ms";
+      }
+
+      setBookingInfo((prev) => ({
+        ...prev,
+        passengerDetails: {
+          ...prev.passengerDetails,
+          title: title || prev.passengerDetails.title,
+          firstName: firstName || prev.passengerDetails.firstName,
+          lastName: lastName || prev.passengerDetails.lastName,
+          email: user.email || prev.passengerDetails.email,
+          phone: user.phone_number || prev.passengerDetails.phone,
+          address: user.address || prev.passengerDetails.address,
+        },
+      }));
+    }
+  }, [user]);
+
   const handleInputChange = (section, field, value) => {
     setBookingInfo((prev) => ({
       ...prev,
@@ -417,13 +456,9 @@ const TransportBooking = () => {
       };
 
       // Gọi API tạo booking
-      const response = await axios.post(
-        `${API_URL}/bookings`,
-        bookingData,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.post(`${API_URL}/bookings`, bookingData, {
+        withCredentials: true,
+      });
 
       if (response.status === 201) {
         // Đặt vé thành công

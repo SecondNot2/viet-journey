@@ -1657,26 +1657,39 @@ const TourDetail = () => {
                                           </div>
 
                                           {/* Activities list */}
-                                          {schedule.activity &&
-                                            schedule.activity.length > 0 && (
+                                          {(() => {
+                                            const activities = Array.isArray(
+                                              schedule.activity
+                                            )
+                                              ? schedule.activity
+                                              : typeof schedule.activity ===
+                                                "string"
+                                              ? schedule.activity
+                                                  .split("\n")
+                                                  .filter((item) => item.trim())
+                                              : [];
+
+                                            if (activities.length === 0)
+                                              return null;
+
+                                            return (
                                               <div className="space-y-2 mb-3">
-                                                {schedule.activity.map(
-                                                  (act, idx) => (
-                                                    <div
-                                                      key={idx}
-                                                      className="flex items-start gap-2 text-sm text-gray-600"
-                                                    >
-                                                      <div className="w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                        <span className="text-xs font-medium text-emerald-600">
-                                                          {idx + 1}
-                                                        </span>
-                                                      </div>
-                                                      <p>{act}</p>
+                                                {activities.map((act, idx) => (
+                                                  <div
+                                                    key={idx}
+                                                    className="flex items-start gap-2 text-sm text-gray-600"
+                                                  >
+                                                    <div className="w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                      <span className="text-xs font-medium text-emerald-600">
+                                                        {idx + 1}
+                                                      </span>
                                                     </div>
-                                                  )
-                                                )}
+                                                    <p>{act}</p>
+                                                  </div>
+                                                ))}
                                               </div>
-                                            )}
+                                            );
+                                          })()}
 
                                           {/* Toggle button */}
                                           <button

@@ -56,8 +56,29 @@ export const formatPrice = (price) => {
   }).format(numericPrice);
 };
 
+/**
+ * Format date for display
+ * Handles both ISO format and "YYYY-MM-DD HH:MM:SS" from DB
+ */
 export const formatDate = (dateString) => {
   if (!dateString) return "";
+
+  // Handle "YYYY-MM-DD HH:MM:SS" format from DB (parse manually to avoid timezone issues)
+  const str = String(dateString);
+  if (str.includes(" ") && !str.includes("T")) {
+    const [datePart] = str.split(" ");
+    const [year, month, day] = datePart.split("-");
+    // Create date in local timezone
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    return date.toLocaleDateString("vi-VN", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+
+  // Standard ISO format
   return new Date(dateString).toLocaleDateString("vi-VN", {
     weekday: "long",
     year: "numeric",
@@ -66,12 +87,55 @@ export const formatDate = (dateString) => {
   });
 };
 
+/**
+ * Format time for display
+ * Handles both ISO format and "YYYY-MM-DD HH:MM:SS" from DB
+ */
 export const formatTime = (dateString) => {
   if (!dateString) return "";
+
+  // Handle "YYYY-MM-DD HH:MM:SS" format from DB
+  const str = String(dateString);
+  if (str.includes(" ") && !str.includes("T")) {
+    const [, timePart] = str.split(" ");
+    if (timePart) {
+      // Return HH:MM directly without Date parsing (avoids timezone issues)
+      return timePart.substring(0, 5);
+    }
+  }
+
+  // Standard ISO format
   return new Date(dateString).toLocaleTimeString("vi-VN", {
     hour: "2-digit",
     minute: "2-digit",
   });
+};
+
+/**
+ * Format datetime for display (combines date and time)
+ * Returns "HH:MM - DD/MM/YYYY"
+ */
+export const formatDateTime = (dateString) => {
+  if (!dateString) return "Chưa xác định";
+
+  const str = String(dateString);
+
+  // Handle "YYYY-MM-DD HH:MM:SS" format from DB
+  if (str.includes(" ") && !str.includes("T")) {
+    const [datePart, timePart] = str.split(" ");
+    const [year, month, day] = datePart.split("-");
+    const time = timePart ? timePart.substring(0, 5) : "";
+    return `${time} - ${day}/${month}/${year}`;
+  }
+
+  // ISO format
+  const date = new Date(dateString);
+  const time = date.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const dateFormatted = date.toLocaleDateString("vi-VN");
+  return `${time} - ${dateFormatted}`;
 };
 
 export const formatDuration = (minutes) => {
@@ -109,14 +173,13 @@ export const getTransportLabel = (type) => {
   return labels[type] || type;
 };
 
-// Thêm API_URL
-
-// Hàm xử lý đường dẫn hình ảnh
+// Hàm xử lý đường dẫn hình ảnh - use API_HOST for static assets
 const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
   if (imagePath.startsWith("http")) return imagePath;
-  if (imagePath.startsWith("/uploads")) return `${API_URL}${imagePath}`;
-  return `${API_URL}/uploads/transport/${imagePath}`;
+  // Use API_HOST (not API_URL) for static assets like images
+  if (imagePath.startsWith("/uploads")) return `${API_HOST}${imagePath}`;
+  return `${API_HOST}/uploads/transport/${imagePath}`;
 };
 
 const TransportDetail = ({
@@ -263,7 +326,7 @@ const TransportDetail = ({
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               e.target.onerror = null;
-                              e.target.src = "/images/transport/default.png";
+                              e.target.src = `${API_HOST}/images/placeholder.png`;
                             }}
                           />
                         </div>
