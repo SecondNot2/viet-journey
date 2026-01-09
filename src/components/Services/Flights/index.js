@@ -18,9 +18,14 @@ import {
   ArrowLeftRight,
   Wallet,
   Tag,
+  Hotel,
+  Map,
+  Bus,
 } from "lucide-react";
 import axios from "axios";
 import { API_URL, API_HOST } from "../../../config/api";
+import PopularDestinations from "../../common/PopularDestinations";
+import ServiceSuggestions from "../../common/ServiceSuggestions";
 
 // Alias for backward compatibility
 const API_BASE_URL = API_URL;
@@ -283,7 +288,7 @@ const FlightSearch = () => {
 
   // Hàm xử lý URL ảnh
   const getImageUrl = (imageUrl) => {
-    if (!imageUrl) return `${API_HOST}/images/placeholder.png`;
+    if (!imageUrl) return "/images/placeholder.png";
     if (imageUrl.startsWith("http")) return imageUrl;
     if (imageUrl.startsWith("/uploads")) return `${API_HOST}${imageUrl}`;
     return `${API_HOST}/${imageUrl}`.replace(/\/\//g, "/");
@@ -2676,48 +2681,40 @@ const FlightSearch = () => {
       </div>
 
       {/* Popular Destinations - full width */}
-      <div className="container mx-auto px-4 py-12">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">
-          Điểm đến phổ biến
-        </h2>
-        {loadingDestinations ? (
-          <div className="flex justify-center items-center h-48">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-            {popularDestinations.map((dest) => (
-              <div
-                key={dest.id}
-                className="relative group overflow-hidden rounded-lg cursor-pointer"
-                onClick={() => navigate(`/destinations/${dest.id}`)}
-              >
-                <img
-                  src={dest.main_image || dest.image}
-                  alt={dest.name}
-                  className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = `${API_BASE_URL}/images/placeholder.png`;
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">
-                      {dest.name}
-                    </h3>
-                    <p className="text-white/80">
-                      {dest.ticket_price
-                        ? `Từ ${formatPrice(dest.ticket_price)}`
-                        : "Miễn phí tham quan"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <PopularDestinations
+        destinations={popularDestinations}
+        loading={loadingDestinations}
+      />
+
+      {/* Suggestions for Other Services */}
+      <ServiceSuggestions
+        services={[
+          {
+            id: "hotels",
+            title: "Khách Sạn",
+            description: "Hơn 1000+ khách sạn, homestay giá tốt",
+            icon: Hotel,
+            path: "/hotels",
+            color: "blue",
+          },
+          {
+            id: "tours",
+            title: "Tour Du Lịch",
+            description: "Khám phá vẻ đẹp Việt Nam & thế giới",
+            icon: Map,
+            path: "/tours",
+            color: "green",
+          },
+          {
+            id: "transport",
+            title: "Vé Xe & Tàu",
+            description: "Di chuyển dễ dàng, tiết kiệm",
+            icon: Bus,
+            path: "/transport",
+            color: "orange",
+          },
+        ]}
+      />
     </div>
   );
 };
