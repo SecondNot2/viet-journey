@@ -10,6 +10,8 @@ import {
   Plane,
   Bus,
   BookOpen, // Added for Blog
+  AlertTriangle,
+  X,
 } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "../../contexts/AuthContext";
@@ -22,6 +24,9 @@ const Wishlist = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
+  // Confirm dialog state
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   useEffect(() => {
     fetchWishlist();
@@ -85,33 +90,50 @@ const Wishlist = () => {
     }
   };
 
-  const handleRemoveItem = async (item) => {
+  // Open confirm dialog
+  const openConfirmDialog = (item) => {
+    setItemToDelete(item);
+    setShowConfirmDialog(true);
+  };
+
+  // Cancel delete
+  const cancelDelete = () => {
+    setShowConfirmDialog(false);
+    setItemToDelete(null);
+  };
+
+  // Confirm and execute delete
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+
     try {
-      if (item.type === "blog") {
+      if (itemToDelete.type === "blog") {
         // Remove from local storage
         const savedBlogs = JSON.parse(
           localStorage.getItem("saved_blogs") || "[]"
         );
-        const newSaved = savedBlogs.filter((id) => id !== item.id);
+        const newSaved = savedBlogs.filter((id) => id !== itemToDelete.id);
         localStorage.setItem("saved_blogs", JSON.stringify(newSaved));
 
         setWishlistItems((prev) =>
-          prev.filter((i) => i.wishlist_id !== item.wishlist_id)
+          prev.filter((i) => i.wishlist_id !== itemToDelete.wishlist_id)
         );
         showToast("Đã xóa bài viết khỏi danh sách yêu thích", "success");
-        return;
+      } else {
+        await axios.delete(`${API_URL}/wishlist/${itemToDelete.wishlist_id}`, {
+          withCredentials: true,
+        });
+        setWishlistItems((prev) =>
+          prev.filter((i) => i.wishlist_id !== itemToDelete.wishlist_id)
+        );
+        showToast("Đã xóa khỏi danh sách yêu thích", "success");
       }
-
-      await axios.delete(`${API_URL}/wishlist/${item.wishlist_id}`, {
-        withCredentials: true,
-      });
-      setWishlistItems((prev) =>
-        prev.filter((i) => i.wishlist_id !== item.wishlist_id)
-      );
-      showToast("Đã xóa khỏi danh sách yêu thích", "success");
     } catch (err) {
       console.error("Error removing item:", err);
       showToast("Lỗi khi xóa mục này", "error");
+    } finally {
+      setShowConfirmDialog(false);
+      setItemToDelete(null);
     }
   };
 
@@ -161,15 +183,119 @@ const Wishlist = () => {
     }
   };
 
+  // Helper function to convert Vietnamese text to slug
+  const toSlug = (str) => {
+    if (!str) return "";
+    const vietnameseMap = {
+      à: "a",
+      á: "a",
+      ả: "a",
+      ã: "a",
+      ạ: "a",
+      ă: "a",
+      ằ: "a",
+      ắ: "a",
+      ẳ: "a",
+      ẵ: "a",
+      ặ: "a",
+      â: "a",
+      ầ: "a",
+      ấ: "a",
+      ẩ: "a",
+      ẫ: "a",
+      ậ: "a",
+      è: "e",
+      é: "e",
+      ẻ: "e",
+      ẽ: "e",
+      ẹ: "e",
+      ê: "e",
+      ề: "e",
+      ế: "e",
+      ể: "e",
+      ễ: "e",
+      ệ: "e",
+      ì: "i",
+      í: "i",
+      ỉ: "i",
+      ĩ: "i",
+      ị: "i",
+      ò: "o",
+      ó: "o",
+      ỏ: "o",
+      õ: "o",
+      ọ: "o",
+      ô: "o",
+      ồ: "o",
+      ố: "o",
+      ổ: "o",
+      ỗ: "o",
+      ộ: "o",
+      ơ: "o",
+      ờ: "o",
+      ớ: "o",
+      ở: "o",
+      ỡ: "o",
+      ợ: "o",
+      ù: "u",
+      ú: "u",
+      ủ: "u",
+      ũ: "u",
+      ụ: "u",
+      ư: "u",
+      ừ: "u",
+      ứ: "u",
+      ử: "u",
+      ữ: "u",
+      ự: "u",
+      ỳ: "y",
+      ý: "y",
+      ỷ: "y",
+      ỹ: "y",
+      ỵ: "y",
+      đ: "d",
+    };
+    let slug = str.toLowerCase();
+    for (const [viet, latin] of Object.entries(vietnameseMap)) {
+      slug = slug.replace(new RegExp(viet, "g"), latin);
+    }
+    return slug
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+  };
+
+  // Generate slug-based URL for each item type
   const getLink = (item) => {
+    // Use existing slug or generate from name + id
+    const generateSlug = () => item.slug || `${toSlug(item.name)}-${item.id}`;
+
     switch (item.type) {
       case "tour":
-        return `/tours/${item.id}`;
+        return `/tours/${generateSlug()}`;
       case "hotel":
-        return `/hotels/${item.id}`;
+        return `/hotels/${generateSlug()}`;
+      case "flight":
+        // For flights, use from-to-id pattern if available
+        if (item.from_location && item.to_location) {
+          return `/flights/${toSlug(item.from_location)}-${toSlug(
+            item.to_location
+          )}-${item.id}`;
+        }
+        return `/flights/${generateSlug()}`;
+      case "transport":
+        // For transport, use from-to-id pattern if available
+        if (item.from_location && item.to_location) {
+          return `/transport/${toSlug(item.from_location)}-${toSlug(
+            item.to_location
+          )}-${item.id}`;
+        }
+        return `/transport/${generateSlug()}`;
       case "blog":
         return `/blog/post/${item.id}`;
-      // Add other types when pages are ready
+      case "destination":
+        return `/destinations/${generateSlug()}`;
       default:
         return "#";
     }
@@ -229,6 +355,60 @@ const Wishlist = () => {
         />
       )}
 
+      {/* Confirm Delete Dialog */}
+      {showConfirmDialog && itemToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-in fade-in zoom-in duration-200">
+            {/* Header */}
+            <div className="bg-red-50 px-6 py-4 flex items-center gap-3">
+              <div className="p-2 bg-red-100 rounded-full">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800">
+                Xác nhận xóa
+              </h3>
+              <button
+                onClick={cancelDelete}
+                className="ml-auto p-1 hover:bg-red-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5">
+              <p className="text-gray-600">
+                Bạn có chắc chắn muốn xóa{" "}
+                <span className="font-semibold text-gray-800">
+                  "{itemToDelete.name}"
+                </span>{" "}
+                khỏi danh sách yêu thích?
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                Hành động này không thể hoàn tác.
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 bg-gray-50 flex gap-3 justify-end">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-2"
+              >
+                <Trash2 size={16} />
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <div className="bg-emerald-600 text-white py-12 mb-8">
         <div className="container mx-auto px-4">
@@ -260,7 +440,7 @@ const Wishlist = () => {
                     />
                   </Link>
                   <button
-                    onClick={() => handleRemoveItem(item)}
+                    onClick={() => openConfirmDialog(item)}
                     className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full text-red-500 hover:bg-red-50 transition-colors shadow-sm"
                     title="Xóa khỏi danh sách"
                   >
