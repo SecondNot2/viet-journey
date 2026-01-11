@@ -21,11 +21,13 @@ import Toast from "../common/Toast";
 import ImageGallery from "../common/ImageGallery";
 import CommentSection from "../common/CommentSection";
 import { useAuth } from "../../contexts/AuthContext";
+import { useBreadcrumb } from "../../contexts/BreadcrumbContext";
 
 const DestinationDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { setDynamicTitle } = useBreadcrumb();
 
   // State cho dữ liệu
   const [destination, setDestination] = useState(null);
@@ -137,6 +139,9 @@ const DestinationDetail = () => {
 
         setDestination(response.data);
 
+        // Set breadcrumb dynamic title
+        setDynamicTitle(response.data.name);
+
         // Set liked comments if available
         if (response.data.liked_review_ids) {
           setLikedComments(new Set(response.data.liked_review_ids));
@@ -155,7 +160,12 @@ const DestinationDetail = () => {
     if (id) {
       fetchDestination();
     }
-  }, [id, currentUserId]);
+
+    // Clear breadcrumb title when component unmounts
+    return () => {
+      setDynamicTitle("");
+    };
+  }, [id, currentUserId, setDynamicTitle]);
 
   // Helper functions
   const showToast = (message, type = "info") => {

@@ -589,11 +589,13 @@ const Tours = () => {
     // Don't automatically hide mobile filter on reset
   };
 
-  const handleSelectTour = (tourId) => {
-    if (tourId) {
-      navigate(`/tours/${tourId}`);
+  const handleSelectTour = (tour) => {
+    // Sử dụng slug nếu có, fallback về id
+    const identifier = tour.slug || tour.id;
+    if (identifier) {
+      navigate(`/tours/${identifier}`);
     } else {
-      console.error("Invalid tour ID for navigation:", tourId);
+      console.error("Invalid tour for navigation:", tour);
     }
   };
 
@@ -1416,7 +1418,7 @@ const Tours = () => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleSelectTour(tour.id);
+                    handleSelectTour(tour);
                   }}
                   className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition-colors shadow-sm text-sm font-medium flex items-center gap-2"
                 >

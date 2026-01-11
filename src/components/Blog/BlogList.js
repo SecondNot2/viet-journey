@@ -406,7 +406,7 @@ const BlogList = () => {
               <div
                 key={post.id}
                 className="bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer border border-gray-100 hover:border-emerald-200"
-                onClick={() => navigate(`/blog/post/${post.id}`)}
+                onClick={() => navigate(`/blog/post/${post.slug || post.id}`)}
               >
                 <div className="relative h-56 overflow-hidden">
                   <img
@@ -487,7 +487,9 @@ const BlogList = () => {
                           onClick={(e) => {
                             e.stopPropagation();
                             navigator.clipboard.writeText(
-                              `${window.location.origin}/blog/post/${post.id}`
+                              `${window.location.origin}/blog/post/${
+                                post.slug || post.id
+                              }`
                             );
                             showToast(
                               "Đã sao chép liên kết bài viết!",

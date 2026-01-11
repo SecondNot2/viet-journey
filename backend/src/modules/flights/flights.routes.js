@@ -4,6 +4,10 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../../shared/database/db");
+const {
+  generateFlightSlug,
+  isNumericId,
+} = require("../../shared/utils/slug.util");
 
 // ========================================
 // SPECIFIC ROUTES (must be before /:id)
@@ -32,27 +36,33 @@ router.get("/featured", async (req, res) => {
     if (error) throw error;
 
     // Flatten nested data for frontend compatibility
-    const flattenedFlights = (data || []).map((schedule) => ({
-      id: schedule.id,
-      schedule_code: schedule.schedule_code,
-      flight_date: schedule.flight_date,
-      departure_datetime: schedule.departure_datetime,
-      arrival_datetime: schedule.arrival_datetime,
-      departure_time: schedule.departure_datetime,
-      arrival_time: schedule.arrival_datetime,
-      status: schedule.status,
-      flight_number: schedule.flight_routes?.flight_number || "",
-      airline: schedule.flight_routes?.airline || "Hãng bay",
-      airline_image: schedule.flight_routes?.airline_image,
-      from_location: schedule.flight_routes?.from_location || "",
-      to_location: schedule.flight_routes?.to_location || "",
-      aircraft: schedule.flight_routes?.aircraft,
-      price: schedule.price_override || schedule.flight_routes?.base_price || 0,
-      duration: schedule.flight_routes?.duration || 0,
-      baggage: schedule.flight_routes?.baggage,
-      amenities: schedule.flight_routes?.amenities,
-      trip_type: schedule.flight_routes?.trip_type || "one_way",
-    }));
+    const flattenedFlights = (data || []).map((schedule) => {
+      const from = schedule.flight_routes?.from_location || "";
+      const to = schedule.flight_routes?.to_location || "";
+      return {
+        id: schedule.id,
+        slug: generateFlightSlug(from, to, schedule.id),
+        schedule_code: schedule.schedule_code,
+        flight_date: schedule.flight_date,
+        departure_datetime: schedule.departure_datetime,
+        arrival_datetime: schedule.arrival_datetime,
+        departure_time: schedule.departure_datetime,
+        arrival_time: schedule.arrival_datetime,
+        status: schedule.status,
+        flight_number: schedule.flight_routes?.flight_number || "",
+        airline: schedule.flight_routes?.airline || "Hãng bay",
+        airline_image: schedule.flight_routes?.airline_image,
+        from_location: from,
+        to_location: to,
+        aircraft: schedule.flight_routes?.aircraft,
+        price:
+          schedule.price_override || schedule.flight_routes?.base_price || 0,
+        duration: schedule.flight_routes?.duration || 0,
+        baggage: schedule.flight_routes?.baggage,
+        amenities: schedule.flight_routes?.amenities,
+        trip_type: schedule.flight_routes?.trip_type || "one_way",
+      };
+    });
 
     res.json(flattenedFlights);
   } catch (error) {
@@ -269,33 +279,39 @@ router.get("/", async (req, res) => {
     );
 
     // Flatten nested flight_routes data for frontend compatibility
-    const flattenedFlights = paginatedFlights.map((schedule) => ({
-      // Schedule fields
-      id: schedule.id,
-      schedule_id: schedule.id,
-      schedule_code: schedule.schedule_code,
-      flight_date: schedule.flight_date,
-      departure_datetime: schedule.departure_datetime,
-      arrival_datetime: schedule.arrival_datetime,
-      departure_time: schedule.departure_datetime,
-      arrival_time: schedule.arrival_datetime,
-      seat_classes: schedule.seat_classes,
-      flight_status: schedule.status,
-      discount_percentage: schedule.discount_percentage || 0,
-      // Flattened route fields
-      flight_number: schedule.flight_routes?.flight_number || "",
-      airline: schedule.flight_routes?.airline || "Hãng bay",
-      airline_image: schedule.flight_routes?.airline_image,
-      from_location: schedule.flight_routes?.from_location || "",
-      to_location: schedule.flight_routes?.to_location || "",
-      aircraft: schedule.flight_routes?.aircraft,
-      price: schedule.price_override || schedule.flight_routes?.base_price || 0,
-      base_price: schedule.flight_routes?.base_price || 0,
-      duration: schedule.flight_routes?.duration || 0,
-      baggage: schedule.flight_routes?.baggage,
-      amenities: schedule.flight_routes?.amenities,
-      trip_type: schedule.flight_routes?.trip_type || "one_way",
-    }));
+    const flattenedFlights = paginatedFlights.map((schedule) => {
+      const from = schedule.flight_routes?.from_location || "";
+      const to = schedule.flight_routes?.to_location || "";
+      return {
+        // Schedule fields
+        id: schedule.id,
+        slug: generateFlightSlug(from, to, schedule.id),
+        schedule_id: schedule.id,
+        schedule_code: schedule.schedule_code,
+        flight_date: schedule.flight_date,
+        departure_datetime: schedule.departure_datetime,
+        arrival_datetime: schedule.arrival_datetime,
+        departure_time: schedule.departure_datetime,
+        arrival_time: schedule.arrival_datetime,
+        seat_classes: schedule.seat_classes,
+        flight_status: schedule.status,
+        discount_percentage: schedule.discount_percentage || 0,
+        // Flattened route fields
+        flight_number: schedule.flight_routes?.flight_number || "",
+        airline: schedule.flight_routes?.airline || "Hãng bay",
+        airline_image: schedule.flight_routes?.airline_image,
+        from_location: from,
+        to_location: to,
+        aircraft: schedule.flight_routes?.aircraft,
+        price:
+          schedule.price_override || schedule.flight_routes?.base_price || 0,
+        base_price: schedule.flight_routes?.base_price || 0,
+        duration: schedule.flight_routes?.duration || 0,
+        baggage: schedule.flight_routes?.baggage,
+        amenities: schedule.flight_routes?.amenities,
+        trip_type: schedule.flight_routes?.trip_type || "one_way",
+      };
+    });
 
     res.json({
       flights: flattenedFlights,
@@ -317,11 +333,22 @@ router.get("/", async (req, res) => {
 // PARAMETERIZED ROUTES (must be after specific routes)
 // ========================================
 
-// Get flight by ID
-router.get("/:id", async (req, res) => {
+// Get flight by ID or Slug
+router.get("/:idOrSlug", async (req, res) => {
   try {
-    // Validate that id is a number
-    const id = parseInt(req.params.id);
+    const param = req.params.idOrSlug;
+    let id;
+
+    // Check if param is numeric ID or slug
+    if (isNumericId(param)) {
+      id = parseInt(param);
+    } else {
+      // Extract ID from slug (format: from-to-id)
+      const slugParts = param.split("-");
+      const lastPart = slugParts[slugParts.length - 1];
+      id = parseInt(lastPart);
+    }
+
     if (isNaN(id)) {
       return res.status(400).json({ error: "ID không hợp lệ" });
     }
@@ -345,10 +372,14 @@ router.get("/:id", async (req, res) => {
       throw error;
     }
 
+    const from = data.flight_routes?.from_location || "";
+    const to = data.flight_routes?.to_location || "";
+
     // Flatten nested flight_routes data for frontend compatibility
     const flattenedFlight = {
       // Schedule fields
       id: data.id,
+      slug: generateFlightSlug(from, to, data.id),
       schedule_id: data.id,
       schedule_code: data.schedule_code,
       flight_date: data.flight_date,
@@ -365,8 +396,8 @@ router.get("/:id", async (req, res) => {
       flight_number: data.flight_routes?.flight_number || "",
       airline: data.flight_routes?.airline || "Hãng bay",
       airline_image: data.flight_routes?.airline_image,
-      from_location: data.flight_routes?.from_location || "",
-      to_location: data.flight_routes?.to_location || "",
+      from_location: from,
+      to_location: to,
       aircraft: data.flight_routes?.aircraft,
       price: data.price_override || data.flight_routes?.base_price || 0,
       base_price: data.flight_routes?.base_price || 0,

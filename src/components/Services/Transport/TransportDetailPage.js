@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useBreadcrumb } from "../../../contexts/BreadcrumbContext";
 import { API_URL, API_HOST } from "../../../config/api";
 import TransportDetail, {
   formatPrice,
@@ -197,6 +198,7 @@ const TransportDetailPage = () => {
   const { user } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
+  const { setDynamicTitle } = useBreadcrumb();
   const passengerModalRef = useRef(null);
 
   // Main states
@@ -306,6 +308,11 @@ const TransportDetailPage = () => {
 
         setTransport(mappedTransport);
 
+        // Set breadcrumb dynamic title
+        setDynamicTitle(
+          `${mappedTransport.from_location} → ${mappedTransport.to_location}`
+        );
+
         // Set liked comments if available
         if (fetchedTransport.liked_review_ids) {
           setLikedComments(new Set(fetchedTransport.liked_review_ids));
@@ -326,7 +333,12 @@ const TransportDetailPage = () => {
     };
 
     fetchTransportDetail();
-  }, [id, user?.id]); // Dependency on ID and user ID
+
+    // Clear breadcrumb title when component unmounts
+    return () => {
+      setDynamicTitle("");
+    };
+  }, [id, user?.id, setDynamicTitle]); // Dependency on ID and user ID
 
   // Fetch reviews
   useEffect(() => {

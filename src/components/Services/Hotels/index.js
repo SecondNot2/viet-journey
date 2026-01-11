@@ -503,11 +503,12 @@ const HotelSearch = () => {
     return `${day}/${month}/${year}`;
   };
 
-  const handleSelectHotel = (hotelId) => {
+  const handleSelectHotel = (hotel) => {
     try {
+      const identifier = hotel.slug || hotel.id;
       console.log(
         "[DEBUG] Bắt đầu chuyển hướng đến chi tiết khách sạn:",
-        hotelId
+        identifier
       );
 
       // Chuẩn bị thông tin đặt phòng để truyền qua
@@ -519,7 +520,7 @@ const HotelSearch = () => {
       };
 
       // Chuyển hướng với state chứa thông tin đặt phòng
-      navigate(`/hotels/${hotelId}`, {
+      navigate(`/hotels/${identifier}`, {
         state: { bookingInfo },
         replace: false, // Đảm bảo có thể quay lại trang trước đó
       });
@@ -1660,7 +1661,7 @@ const HotelSearch = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleSelectHotel(hotel.id);
+                          handleSelectHotel(hotel);
                         }}
                         className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition-colors shadow-sm text-sm font-medium flex items-center gap-2"
                       >

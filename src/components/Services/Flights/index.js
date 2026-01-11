@@ -857,6 +857,7 @@ const FlightSearch = () => {
       // ✅ Use schedule_id as primary ID (for navigation & booking)
       id: flight.schedule_id || flight.id,
       schedule_id: flight.schedule_id || flight.id,
+      slug: flight.slug, // Slug for SEO-friendly URLs
 
       // Airline info
       airline: flight.airline,
@@ -1141,9 +1142,11 @@ const FlightSearch = () => {
     }
   };
 
-  const handleSelectFlight = (flightId) => {
+  const handleSelectFlight = (flight) => {
+    // Sử dụng slug nếu có, fallback về id
+    const identifier = flight.slug || flight.id;
     // Truyền thông tin hành khách và hạng ghế qua state của navigate
-    navigate(`/flights/${flightId}`, {
+    navigate(`/flights/${identifier}`, {
       state: {
         passengers: searchParams.passengers,
         class: searchParams.class,
@@ -2600,7 +2603,7 @@ const FlightSearch = () => {
 
                     {/* Nút Chọn - Đặt dưới Footer */}
                     <button
-                      onClick={() => handleSelectFlight(flight.id)}
+                      onClick={() => handleSelectFlight(flight)}
                       className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition-colors shadow-sm text-sm font-medium mt-2 md:mt-0"
                     >
                       Chọn chuyến bay

@@ -4,6 +4,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../../shared/database/db");
+const { generateSlug, isNumericId } = require("../../shared/utils/slug.util");
 
 // ========================================
 // SPECIFIC ROUTES (before /:id)
@@ -22,7 +23,7 @@ router.get("/featured", async (req, res) => {
 
     if (error) throw error;
 
-    // Process hotels to add min_price from rooms
+    // Process hotels to add min_price from rooms and slug
     const hotelsWithPrice = (data || []).map((hotel) => {
       const rooms = hotel.hotelrooms || [];
       const prices = rooms
@@ -36,6 +37,7 @@ router.get("/featured", async (req, res) => {
         ...hotelData,
         min_price,
         room_count: rooms.length,
+        slug: generateSlug(hotel.name) + "-" + hotel.id,
       };
     });
 
@@ -100,7 +102,7 @@ router.get("/", async (req, res) => {
 
     if (error) throw error;
 
-    // Process hotels to add min_price from rooms
+    // Process hotels to add min_price from rooms and slug
     const hotelsWithPrice = (data || []).map((hotel) => {
       const rooms = hotel.hotelrooms || [];
       const prices = rooms
@@ -114,6 +116,7 @@ router.get("/", async (req, res) => {
         ...hotelData,
         min_price,
         room_count: rooms.length,
+        slug: generateSlug(hotel.name) + "-" + hotel.id,
       };
     });
 
@@ -141,12 +144,21 @@ router.get("/", async (req, res) => {
 // PARAMETERIZED ROUTES
 // ========================================
 
-// Get hotel by ID
-router.get("/:id", async (req, res) => {
+// Get hotel by ID or slug
+router.get("/:idOrSlug", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "ID không hợp lệ" });
+    const param = req.params.idOrSlug;
+    let id;
+
+    if (isNumericId(param)) {
+      id = parseInt(param);
+    } else {
+      // Extract ID from slug (format: name-id)
+      const slugParts = param.split("-");
+      id = parseInt(slugParts[slugParts.length - 1]);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Slug không hợp lệ" });
+      }
     }
 
     const supabase = db.getClient();
@@ -162,7 +174,14 @@ router.get("/:id", async (req, res) => {
       }
       throw error;
     }
-    res.json(data);
+
+    // Add slug to response
+    const dataWithSlug = {
+      ...data,
+      slug: generateSlug(data.name) + "-" + data.id,
+    };
+
+    res.json(dataWithSlug);
   } catch (error) {
     console.error("Error fetching hotel:", error);
     res.status(500).json({ error: "Lỗi khi lấy thông tin khách sạn" });

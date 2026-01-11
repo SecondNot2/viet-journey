@@ -4,6 +4,10 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../../shared/database/db");
+const {
+  isNumericId,
+  generateTransportSlug,
+} = require("../../shared/utils/slug.util");
 
 // ========================================
 // SPECIFIC ROUTES (before /:id)
@@ -54,6 +58,11 @@ router.get("/featured", async (req, res) => {
       image: trip.transport_routes?.image,
       amenities: trip.transport_routes?.amenities,
       trip_type: trip.transport_routes?.trip_type || "one_way",
+      slug: generateTransportSlug(
+        trip.transport_routes?.from_location,
+        trip.transport_routes?.to_location,
+        trip.id
+      ),
     }));
 
     res.json(flattenedTransports);
@@ -562,7 +571,13 @@ router.get("/", async (req, res) => {
         duration: trip.transport_routes?.duration || 0,
         image: trip.transport_routes?.image,
         amenities: trip.transport_routes?.amenities,
+
         trip_type: trip.transport_routes?.trip_type || "one_way",
+        slug: generateTransportSlug(
+          trip.transport_routes?.from_location,
+          trip.transport_routes?.to_location,
+          trip.id
+        ),
       };
     });
 
@@ -586,11 +601,19 @@ router.get("/", async (req, res) => {
 // PARAMETERIZED ROUTES
 // ========================================
 
-// Get transport by ID
-router.get("/:id", async (req, res) => {
+// Get transport by ID or Slug
+router.get("/:idOrSlug", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
+    const { idOrSlug } = req.params;
+    let id = idOrSlug;
+
+    // Nếu là slug, parse ID từ slug
+    if (!isNumericId(idOrSlug)) {
+      const parts = idOrSlug.split("-");
+      id = parts[parts.length - 1];
+    }
+
+    if (!isNumericId(id)) {
       return res.status(400).json({ error: "ID không hợp lệ" });
     }
 
@@ -686,6 +709,11 @@ router.get("/:id", async (req, res) => {
       rating: avgRating,
       rating_count: reviewCount,
       rating_breakdown: ratingBreakdown,
+      slug: generateTransportSlug(
+        data.transport_routes?.from_location,
+        data.transport_routes?.to_location,
+        data.id
+      ),
     };
 
     res.json(flattenedTransport);

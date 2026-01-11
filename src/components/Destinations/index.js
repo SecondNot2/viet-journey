@@ -600,7 +600,7 @@ const Destinations = () => {
               {currentDestinations.map((destination) => (
                 <Link
                   key={destination.id}
-                  to={`/destinations/${destination.id}`}
+                  to={`/destinations/${destination.slug || destination.id}`}
                   className="group bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 block"
                 >
                   {/* Destination Image */}

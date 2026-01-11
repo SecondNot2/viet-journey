@@ -476,9 +476,10 @@ const Transport = () => {
     setHasSearched(false);
   };
 
-  const handleSelectTransport = (transportId) => {
-    if (transportId) {
-      navigate(`/transports/${transportId}`);
+  const handleSelectTransport = (transport) => {
+    const identifier = transport.slug || transport.id;
+    if (identifier) {
+      navigate(`/transport/${identifier}`);
     }
   };
 
@@ -979,8 +980,10 @@ const Transport = () => {
     const navigate = useNavigate();
 
     const handleViewDetail = () => {
-      // Sử dụng trip_id vì đây là transport_trips
-      navigate(`/transport/${transport.trip_id || transport.id}`);
+      // Sử dụng slug nếu có
+      navigate(
+        `/transport/${transport.slug || transport.trip_id || transport.id}`
+      );
     };
 
     const isPromo =

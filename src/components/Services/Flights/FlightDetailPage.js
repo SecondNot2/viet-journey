@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { API_URL, API_HOST } from "../../../config/api";
+import { useBreadcrumb } from "../../../contexts/BreadcrumbContext";
 import {
   formatDateLong,
   extractTime,
@@ -48,6 +49,7 @@ const FlightDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { setDynamicTitle } = useBreadcrumb();
   const [flight, setFlight] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -129,6 +131,11 @@ const FlightDetailPage = () => {
 
           setFlight(flightData);
 
+          // Set breadcrumb dynamic title
+          setDynamicTitle(
+            `${flightData.from_location} → ${flightData.to_location}`
+          );
+
           // Tính toán giá ban đầu dựa trên hạng ghế mặc định
           calculateInitialPrice(flightData);
         } else {
@@ -145,7 +152,12 @@ const FlightDetailPage = () => {
     };
 
     fetchFlightDetail();
-  }, [id]);
+
+    // Clear breadcrumb title when component unmounts
+    return () => {
+      setDynamicTitle("");
+    };
+  }, [id, setDynamicTitle]);
 
   // Cập nhật hàm calculateInitialPrice để tính toán giá dựa trên số lượng hành khách
   const calculateInitialPrice = (flightData) => {

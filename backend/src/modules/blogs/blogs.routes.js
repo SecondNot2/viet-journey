@@ -4,6 +4,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../../shared/database/db");
+const { generateSlug, isNumericId } = require("../../shared/utils/slug.util");
 
 // ========================================
 // SPECIFIC ROUTES (before /:id)
@@ -25,7 +26,14 @@ router.get("/featured", async (req, res) => {
       .limit(3);
 
     if (error) throw error;
-    res.json(data || []);
+
+    // Add slug to each blog
+    const dataWithSlug = (data || []).map((blog) => ({
+      ...blog,
+      slug: generateSlug(blog.title) + "-" + blog.id,
+    }));
+
+    res.json(dataWithSlug);
   } catch (error) {
     console.error("Error fetching featured blogs:", error);
     res.status(500).json({ error: "Lỗi khi lấy bài viết nổi bật" });
@@ -100,10 +108,11 @@ router.get("/", async (req, res) => {
       }
     }
 
-    // Map comment counts to blogs
+    // Map comment counts to blogs with slug
     const blogsWithCommentCounts = (data || []).map((blog) => ({
       ...blog,
       comment_count: commentCountMap[blog.id] || 0,
+      slug: generateSlug(blog.title) + "-" + blog.id,
     }));
 
     res.json({ blogs: blogsWithCommentCounts, total: count || 0 });
@@ -121,15 +130,24 @@ router.get("/", async (req, res) => {
 // PARAMETERIZED ROUTES
 // ========================================
 
-// Get blog by ID with interaction info
-router.get("/:id", async (req, res) => {
+// Get blog by ID or slug with interaction info
+router.get("/:idOrSlug", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const param = req.params.idOrSlug;
     const userId = req.query.user_id ? parseInt(req.query.user_id) : null;
     const incrementView = req.query.incrementView === "true";
 
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "ID không hợp lệ" });
+    // Determine if param is ID or slug and extract ID
+    let id;
+    if (isNumericId(param)) {
+      id = parseInt(param);
+    } else {
+      // Extract ID from slug (format: title-id)
+      const slugParts = param.split("-");
+      id = parseInt(slugParts[slugParts.length - 1]);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Slug không hợp lệ" });
+      }
     }
 
     const supabase = db.getClient();
@@ -213,13 +231,14 @@ router.get("/:id", async (req, res) => {
       }
     }
 
-    // 5. Structure Response
+    // 5. Structure Response with slug
     const responseData = {
       ...blog,
       comments: comments || [],
       comment_count: comments ? comments.length : 0,
       user_has_liked: userHasLiked,
       liked_comment_ids: likedCommentIds,
+      slug: generateSlug(blog.title) + "-" + blog.id,
     };
 
     res.json(responseData);

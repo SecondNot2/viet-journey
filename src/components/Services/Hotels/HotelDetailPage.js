@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useBreadcrumb } from "../../../contexts/BreadcrumbContext";
 import HotelDetail from "./HotelDetail";
 import {
   CheckCircle,
@@ -23,6 +24,7 @@ const HotelDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { setDynamicTitle } = useBreadcrumb();
   const [hotel, setHotel] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -116,6 +118,9 @@ const HotelDetailPage = () => {
 
           setHotel(hotelData);
 
+          // Set breadcrumb dynamic title
+          setDynamicTitle(hotelData.name);
+
           // Fetch liked comments if user is logged in
           if (user?.id) {
             try {
@@ -155,7 +160,18 @@ const HotelDetailPage = () => {
     if (id) {
       fetchHotelDetail();
     }
-  }, [id, user?.id, bookingDetails.checkIn, bookingDetails.checkOut]);
+
+    // Clear breadcrumb title when component unmounts
+    return () => {
+      setDynamicTitle("");
+    };
+  }, [
+    id,
+    user?.id,
+    bookingDetails.checkIn,
+    bookingDetails.checkOut,
+    setDynamicTitle,
+  ]);
 
   // Log để debug
   useEffect(() => {}, [location.state, bookingInfo, bookingDetails]);

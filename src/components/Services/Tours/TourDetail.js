@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useBreadcrumb } from "../../../contexts/BreadcrumbContext";
 import CommentSection from "../../common/CommentSection";
 import ConfirmModal from "../../common/ConfirmModal";
 import Toast from "../../common/Toast";
@@ -52,6 +53,7 @@ const TourDetail = () => {
   const { user } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
+  const { setDynamicTitle } = useBreadcrumb();
   const guestModalRef = useRef(null);
   const [tour, setTour] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -184,6 +186,10 @@ const TourDetail = () => {
         });
 
         setTour(response.data);
+
+        // Set breadcrumb dynamic title
+        setDynamicTitle(response.data.title);
+
         updateBookingSummary(response.data, bookingDetails);
         setError(null);
       } catch (err) {
@@ -195,7 +201,12 @@ const TourDetail = () => {
     };
 
     fetchTourDetail();
-  }, [id, bookingDetails.startDate]); // Re-fetch when date changes
+
+    // Clear breadcrumb title when component unmounts
+    return () => {
+      setDynamicTitle("");
+    };
+  }, [id, bookingDetails.startDate, setDynamicTitle]); // Re-fetch when date changes
 
   // Cập nhật booking summary khi thông tin đặt tour thay đổi
   const updateBookingSummary = (tourData, details) => {

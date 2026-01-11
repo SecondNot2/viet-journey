@@ -4,6 +4,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../../shared/database/db");
+const { generateSlug, isNumericId } = require("../../shared/utils/slug.util");
 
 // ========================================
 // SPECIFIC ROUTES (must be before /:id)
@@ -27,7 +28,14 @@ router.get("/featured", async (req, res) => {
       .limit(4);
 
     if (error) throw error;
-    res.json(data || []);
+
+    // Add slug to each tour
+    const dataWithSlug = (data || []).map((tour) => ({
+      ...tour,
+      slug: generateSlug(tour.title) + "-" + tour.id,
+    }));
+
+    res.json(dataWithSlug);
   } catch (error) {
     console.error("Error fetching featured tours:", error);
     res.status(500).json({ error: "Lỗi khi lấy danh sách tour nổi bật" });
@@ -198,13 +206,14 @@ router.get("/", async (req, res) => {
 
     if (error) throw error;
 
-    // Transform data for frontend
+    // Transform data for frontend with slug
     const formattedTours = (data || []).map((tour) => ({
       ...tour,
       destination_name: tour.destinations?.name,
       schedules: tour.tour_schedules,
       // Fallback for image if needed
       image: tour.image || tour.destinations?.image,
+      slug: generateSlug(tour.title) + "-" + tour.id,
     }));
 
     res.json({ tours: formattedTours, total: count || 0 });
@@ -218,14 +227,23 @@ router.get("/", async (req, res) => {
 // PARAMETERIZED ROUTES (must be after specific routes)
 // ========================================
 
-// Get tour by ID
-router.get("/:id", async (req, res) => {
+// Get tour by ID or slug
+router.get("/:idOrSlug", async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const param = req.params.idOrSlug;
     const selectedDate = req.query.selected_date; // Get selected date from query
 
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "ID không hợp lệ" });
+    // Determine if param is ID or slug and extract ID
+    let id;
+    if (isNumericId(param)) {
+      id = parseInt(param);
+    } else {
+      // Extract ID from slug (format: title-id)
+      const slugParts = param.split("-");
+      id = parseInt(slugParts[slugParts.length - 1]);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Slug không hợp lệ" });
+      }
     }
 
     const supabase = db.getClient();
@@ -314,7 +332,7 @@ router.get("/:id", async (req, res) => {
       }
     }
 
-    // Format response
+    // Format response with slug
     const formattedTour = {
       ...tour,
       destination_name: tour.destinations?.name,
@@ -325,6 +343,7 @@ router.get("/:id", async (req, res) => {
       rating_breakdown: ratingBreakdown,
       available_seats: availableSeats,
       total_booked: totalBooked,
+      slug: generateSlug(tour.title) + "-" + tour.id,
     };
 
     res.json(formattedTour);

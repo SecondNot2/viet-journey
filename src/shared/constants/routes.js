@@ -12,35 +12,35 @@ export const ROUTES = {
   REGISTER: "/register",
   PROFILE: "/profile",
 
-  // Services
+  // Services - Support both ID and slug
   TOURS: "/tours",
-  TOUR_DETAIL: "/tours/:id",
-  TOUR_BOOKING: "/tours/:id/booking",
+  TOUR_DETAIL: "/tours/:idOrSlug",
+  TOUR_BOOKING: "/tours/:idOrSlug/booking",
   TOUR_BOOKING_SUCCESS: "/tours/booking/success",
 
   HOTELS: "/hotels",
-  HOTEL_DETAIL: "/hotels/:id",
-  HOTEL_BOOKING: "/hotels/:id/booking",
+  HOTEL_DETAIL: "/hotels/:idOrSlug",
+  HOTEL_BOOKING: "/hotels/:idOrSlug/booking",
   HOTEL_BOOKING_SUCCESS: "/hotels/booking/success",
 
   FLIGHTS: "/flights",
-  FLIGHT_DETAIL: "/flights/:id",
-  FLIGHT_BOOKING: "/flights/:id/booking",
+  FLIGHT_DETAIL: "/flights/:idOrSlug",
+  FLIGHT_BOOKING: "/flights/:idOrSlug/booking",
   FLIGHT_BOOKING_SUCCESS: "/flights/booking/success",
 
   TRANSPORT: "/transport",
-  TRANSPORT_DETAIL: "/transport/:id",
-  TRANSPORT_BOOKING: "/transport/:id/booking",
+  TRANSPORT_DETAIL: "/transport/:idOrSlug",
+  TRANSPORT_BOOKING: "/transport/:idOrSlug/booking",
   TRANSPORT_BOOKING_SUCCESS: "/transport/booking/success",
 
   // Destinations
   DESTINATIONS: "/destinations",
-  DESTINATION_DETAIL: "/destinations/:id",
+  DESTINATION_DETAIL: "/destinations/:idOrSlug",
 
   // Content
   BLOG: "/blog",
   BLOG_CATEGORY: "/blog/:category",
-  BLOG_POST: "/blog/post/:id",
+  BLOG_POST: "/blog/post/:idOrSlug",
   ABOUT: "/about",
 
   // User
@@ -163,9 +163,19 @@ export const getRouteName = (segment, fullPath = "", dynamicTitle = "") => {
     return ROUTE_NAMES[segment];
   }
 
-  // Check for numeric ID or UUID - will be replaced by dynamic title from context
-  if (/^\d+$/.test(segment) || /^[0-9a-f-]{36}$/i.test(segment)) {
+  // Check for numeric ID - will be replaced by dynamic title from context
+  if (/^\d+$/.test(segment)) {
     return null; // Return null to signal "use dynamic title"
+  }
+
+  // Check for UUID
+  if (/^[0-9a-f-]{36}$/i.test(segment)) {
+    return null; // Return null to signal "use dynamic title"
+  }
+
+  // Check for slug pattern (contains hyphen followed by numbers at the end, e.g., "tour-name-123")
+  if (/^[a-z0-9-]+-\d+$/.test(segment)) {
+    return null; // Return null to signal "use dynamic title" for slugs
   }
 
   // Capitalize first letter as fallback
