@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import Header from "./Header";
 import Footer from "./Footer";
 import Breadcrumbs from "./Breadcrumbs";
+import { BreadcrumbProvider } from "../contexts/BreadcrumbContext";
 
 import { MapPin, Calendar, Star } from "lucide-react";
 
@@ -33,32 +34,33 @@ const MainLayout = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header - Fixed position */}
-      <Header
-        isMenuOpen={isMenuOpen}
-        setIsMenuOpen={setIsMenuOpen}
-        isLanguageOpen={isLanguageOpen}
-        setIsLanguageOpen={setIsLanguageOpen}
-        currentLanguage={currentLanguage}
-        setCurrentLanguage={setCurrentLanguage}
-        isTourDropdownOpen={isTourDropdownOpen}
-        setIsTourDropdownOpen={setIsTourDropdownOpen}
-        languages={languages}
-        tourCategories={tourCategories}
-      />
-      {/* Header space placeholder */}
-      <div className="h-[104px]"></div>{" "}
-      {/* Điều chỉnh chiều cao này để phù hợp với chiều cao thực tế của header */}
-      {/* Content wrapper */}
-      <div className="flex-grow">
-        <Breadcrumbs />
-        <main>
-          <Outlet />
-        </main>
+    <BreadcrumbProvider>
+      <div className="min-h-screen flex flex-col">
+        {/* Header - Fixed position */}
+        <Header
+          isMenuOpen={isMenuOpen}
+          setIsMenuOpen={setIsMenuOpen}
+          isLanguageOpen={isLanguageOpen}
+          setIsLanguageOpen={setIsLanguageOpen}
+          currentLanguage={currentLanguage}
+          setCurrentLanguage={setCurrentLanguage}
+          isTourDropdownOpen={isTourDropdownOpen}
+          setIsTourDropdownOpen={setIsTourDropdownOpen}
+          languages={languages}
+          tourCategories={tourCategories}
+        />
+        {/* Header space placeholder */}
+        <div className="h-[104px]"></div>
+        {/* Content wrapper */}
+        <div className="flex-grow">
+          <Breadcrumbs />
+          <main>
+            <Outlet />
+          </main>
+        </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    </BreadcrumbProvider>
   );
 };
 

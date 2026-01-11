@@ -489,8 +489,10 @@ const BlogList = () => {
                             navigator.clipboard.writeText(
                               `${window.location.origin}/blog/post/${post.id}`
                             );
-                            // Simple alert or toast if available, but for now just copy
-                            alert("Đã sao chép liên kết bài viết!");
+                            showToast(
+                              "Đã sao chép liên kết bài viết!",
+                              "success"
+                            );
                           }}
                         >
                           <Share2 className="w-4 h-4" />

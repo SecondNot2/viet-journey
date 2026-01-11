@@ -38,12 +38,14 @@ import Toast from "../common/Toast";
 import ImageGallery from "../common/ImageGallery";
 import CommentSection from "../common/CommentSection";
 import { useAuth } from "../../contexts/AuthContext";
+import { useBreadcrumb } from "../../contexts/BreadcrumbContext";
 import { API_URL, API_HOST } from "../../config/api";
 
 const BlogPost = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth(); // Lấy user từ AuthContext
+  const { setDynamicTitle } = useBreadcrumb(); // Lấy setDynamicTitle từ BreadcrumbContext
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
@@ -126,12 +128,14 @@ const BlogPost = () => {
 
         setPost(response.data);
 
-        // Phát hiện địa điểm từ bài viết
         const locations = detectLocations(
           response.data.title,
           response.data.content
         );
         setDetectedLocations(locations);
+
+        // Set breadcrumb dynamic title to blog post title
+        setDynamicTitle(response.data.title);
 
         // Check if current user has liked this post
         if (currentUserId && response.data.user_has_liked !== undefined) {
@@ -169,7 +173,12 @@ const BlogPost = () => {
     if (id) {
       fetchPost();
     }
-  }, [id, currentUserId]);
+
+    // Clear breadcrumb title when component unmounts
+    return () => {
+      setDynamicTitle("");
+    };
+  }, [id, currentUserId, setDynamicTitle]);
 
   // Show toast notification
   const showToast = (message, type = "success") => {

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import {
   Globe,
@@ -34,8 +35,9 @@ function Header({
 }) {
   const { user, logout } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
-  // Helper function for navigation with reload
+  // Helper function for navigation with reload (chỉ dùng khi cần clear state như logout)
   const navigateWithReload = (path) => {
     window.location.href = path;
   };
@@ -98,7 +100,7 @@ function Header({
 
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => navigateWithReload("/wishlist")}
+                onClick={() => navigate("/wishlist")}
                 className="text-gray-600 hover:text-emerald-600 flex items-center space-x-1"
               >
                 <Heart size={16} />
@@ -123,21 +125,21 @@ function Header({
                   {isUserMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
                       <button
-                        onClick={() => navigateWithReload("/profile")}
+                        onClick={() => navigate("/profile")}
                         className="flex items-center space-x-2 w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
                       >
                         <User size={16} />
                         <span>Tài khoản</span>
                       </button>
                       <button
-                        onClick={() => navigateWithReload("/profile/bookings")}
+                        onClick={() => navigate("/profile/bookings")}
                         className="flex items-center space-x-2 w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
                       >
                         <ClipboardList size={16} />
                         <span>Đơn đặt chỗ</span>
                       </button>
                       <button
-                        onClick={() => navigateWithReload("/profile/reviews")}
+                        onClick={() => navigate("/profile/reviews")}
                         className="flex items-center space-x-2 w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
                       >
                         <Star size={16} />
@@ -156,7 +158,7 @@ function Header({
                 </div>
               ) : (
                 <button
-                  onClick={() => navigateWithReload("/login")}
+                  onClick={() => navigate("/login")}
                   className="text-gray-600 hover:text-emerald-600 flex items-center space-x-1"
                 >
                   <User size={16} />
@@ -171,7 +173,7 @@ function Header({
         <nav className="py-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => navigateWithReload("/")}
+              onClick={() => navigate("/")}
               className="flex items-center space-x-2"
             >
               <Compass className="h-8 w-8 text-emerald-600" />
@@ -183,7 +185,7 @@ function Header({
 
           <div className="hidden lg:flex items-center space-x-8">
             <button
-              onClick={() => navigateWithReload("/flights")}
+              onClick={() => navigate("/flights")}
               className="flex items-center space-x-1 text-gray-700 hover:text-emerald-600"
             >
               <Plane size={18} />
@@ -191,7 +193,7 @@ function Header({
             </button>
 
             <button
-              onClick={() => navigateWithReload("/hotels")}
+              onClick={() => navigate("/hotels")}
               className="flex items-center space-x-1 text-gray-700 hover:text-emerald-600"
             >
               <Building2 size={18} />
@@ -203,7 +205,7 @@ function Header({
                 className="flex items-center space-x-1 text-gray-700 hover:text-emerald-600"
                 onClick={() => {
                   setIsTourDropdownOpen(!isTourDropdownOpen);
-                  navigateWithReload("/tours");
+                  navigate("/tours");
                 }}
               >
                 <Map size={18} />
@@ -222,7 +224,7 @@ function Header({
                         <button
                           key={index}
                           onClick={() =>
-                            navigateWithReload(
+                            navigate(
                               `/tours/type/${category.name
                                 .toLowerCase()
                                 .replace(/\s+/g, "-")}`
@@ -251,7 +253,7 @@ function Header({
                               <button
                                 key={placeIndex}
                                 onClick={() =>
-                                  navigateWithReload(
+                                  navigate(
                                     `/tours/region/${region.name
                                       .toLowerCase()
                                       .replace(/\s+/g, "-")}`
@@ -272,7 +274,7 @@ function Header({
             </div>
 
             <button
-              onClick={() => navigateWithReload("/transport")}
+              onClick={() => navigate("/transport")}
               className="flex items-center space-x-1 text-gray-700 hover:text-emerald-600"
             >
               <Train size={18} />
@@ -280,7 +282,7 @@ function Header({
             </button>
 
             <button
-              onClick={() => navigateWithReload("/destinations")}
+              onClick={() => navigate("/destinations")}
               className="flex items-center space-x-1 text-gray-700 hover:text-emerald-600"
             >
               <MapPin size={18} />
@@ -288,7 +290,7 @@ function Header({
             </button>
 
             <button
-              onClick={() => navigateWithReload("/blog")}
+              onClick={() => navigate("/blog")}
               className="flex items-center space-x-1 text-gray-700 hover:text-emerald-600"
             >
               <Book size={18} />
@@ -296,7 +298,7 @@ function Header({
             </button>
 
             <button
-              onClick={() => navigateWithReload("/about")}
+              onClick={() => navigate("/about")}
               className="flex items-center space-x-1 text-gray-700 hover:text-emerald-600"
             >
               <Info size={18} />

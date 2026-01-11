@@ -10,6 +10,7 @@ import AdminLayout from "./components/Admin/Layout";
 // Core components
 import ScrollToTop from "./components/ScrollToTop";
 import Home from "./components/Home";
+import NotFound from "./components/NotFound";
 
 // Destination components
 import Destinations from "./components/Destinations";
@@ -207,17 +208,7 @@ function App() {
           </Route>
 
           {/* 404 Route */}
-          <Route
-            path="*"
-            element={
-              <div className="container mx-auto px-4 py-8 text-center">
-                <h1 className="text-4xl font-bold text-gray-800 mb-4">404</h1>
-                <p className="text-xl text-gray-600">
-                  Không tìm thấy trang bạn yêu cầu
-                </p>
-              </div>
-            }
-          />
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </AuthProvider>

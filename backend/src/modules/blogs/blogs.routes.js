@@ -79,7 +79,34 @@ router.get("/", async (req, res) => {
       .range(offset, offset + parseInt(limit) - 1);
 
     if (error) throw error;
-    res.json({ blogs: data || [], total: count || 0 });
+
+    // Optimization: Fetch all comment counts in ONE query instead of N queries
+    const blogIds = (data || []).map((blog) => blog.id);
+
+    let commentCountMap = {};
+    if (blogIds.length > 0) {
+      // Fetch all reviews for these blog IDs in a single query
+      const { data: reviews } = await supabase
+        .from("reviews")
+        .select("blog_id")
+        .in("blog_id", blogIds);
+
+      // Count comments by blog_id
+      if (reviews) {
+        reviews.forEach((review) => {
+          commentCountMap[review.blog_id] =
+            (commentCountMap[review.blog_id] || 0) + 1;
+        });
+      }
+    }
+
+    // Map comment counts to blogs
+    const blogsWithCommentCounts = (data || []).map((blog) => ({
+      ...blog,
+      comment_count: commentCountMap[blog.id] || 0,
+    }));
+
+    res.json({ blogs: blogsWithCommentCounts, total: count || 0 });
   } catch (error) {
     console.error("Error fetching blogs:", error);
     res.status(500).json({ error: "Lỗi khi lấy danh sách bài viết" });

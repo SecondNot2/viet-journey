@@ -1,104 +1,121 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronRight, Home } from "lucide-react";
-
-const routeNames = {
-  // Các trang chính
-  tours: "Tour Du Lịch",
-  destinations: "Điểm Đến",
-  hotels: "Khách Sạn",
-  flights: "Vé Máy Bay",
-  transport: "Vé Xe/Tàu",
-  guide: "Cẩm Nang",
-  blog: "Blog Du Lịch",
-  about: "Giới Thiệu",
-  contact: "Liên Hệ",
-
-  // Các trang dịch vụ
-  wishlist: "Yêu Thích",
-
-  // Các trang xác thực
-  login: "Đăng Nhập",
-  register: "Đăng Ký",
-  "forgot-password": "Quên Mật Khẩu",
-  profile: "Tài Khoản",
-
-  // Các action
-  booking: "Đặt",
-  payment: "Thanh Toán",
-  confirmation: "Xác Nhận",
-
-  // Các khu vực
-  north: "Miền Bắc",
-  central: "Miền Trung",
-  south: "Miền Nam",
-
-  // Các loại tour
-  cultural: "Du Lịch Văn Hóa",
-  nature: "Du Lịch Thiên Nhiên",
-  food: "Du Lịch Ẩm Thực",
-  adventure: "Du Lịch Mạo Hiểm",
-
-  // Các loại điểm đến
-  beach: "Biển",
-  mountain: "Núi",
-  city: "Thành Phố",
-  countryside: "Nông Thôn",
-  island: "Đảo",
-};
+import {
+  getRouteName,
+  shouldShowBreadcrumbs,
+  HIDDEN_SEGMENTS,
+} from "../shared/constants/routes";
+import { useBreadcrumb } from "../contexts/BreadcrumbContext";
 
 const Breadcrumbs = () => {
   const location = useLocation();
-  const pathnames = location.pathname.split("/").filter((x) => x);
+  const pathname = location.pathname;
+  const { dynamicTitle } = useBreadcrumb();
 
-  // Các trang không hiển thị breadcrumbs
-  const excludedPaths = ["login", "register", "forgot-password"];
-  if (pathnames.length === 0 || excludedPaths.includes(pathnames[0])) {
+  // Check if should show breadcrumbs
+  if (!shouldShowBreadcrumbs(pathname)) {
     return null;
   }
 
+  const pathnames = pathname.split("/").filter((x) => x);
+
+  // Filter out hidden segments (like "post" in /blog/post/:id)
+  const visiblePathnames = pathnames.filter(
+    (segment) => !HIDDEN_SEGMENTS.includes(segment.toLowerCase())
+  );
+
   return (
-    <nav className="bg-gray-50 border-b">
+    <nav className="bg-gray-50 border-b" aria-label="Breadcrumb">
       <div className="container mx-auto px-4">
-        <div className="flex items-center py-3 text-sm">
-          <Link
-            to="/"
-            className="text-gray-600 hover:text-emerald-600 flex items-center transition-colors"
+        <ol
+          className="flex items-center py-3 text-sm"
+          itemScope
+          itemType="https://schema.org/BreadcrumbList"
+        >
+          {/* Home link */}
+          <li
+            className="flex items-center"
+            itemProp="itemListElement"
+            itemScope
+            itemType="https://schema.org/ListItem"
           >
-            <Home size={16} className="mr-1" />
-            Trang chủ
-          </Link>
+            <Link
+              to="/"
+              className="text-gray-600 hover:text-emerald-600 flex items-center transition-colors"
+              itemProp="item"
+            >
+              <Home size={16} className="mr-1" aria-hidden="true" />
+              <span itemProp="name">Trang chủ</span>
+            </Link>
+            <meta itemProp="position" content="1" />
+          </li>
 
-          {pathnames.map((name, index) => {
-            const routeTo = `/${pathnames.slice(0, index + 1).join("/")}`;
-            const isLast = index === pathnames.length - 1;
+          {/* Dynamic segments */}
+          {visiblePathnames.map((segment, index) => {
+            // Build route path excluding hidden segments up to current index
+            const visibleUpToNow = visiblePathnames.slice(0, index + 1);
 
-            // Xử lý các trường hợp đặc biệt
-            let displayName = routeNames[name] || name;
-            if (name.match(/^[0-9a-f]{24}$/)) {
-              // Nếu là MongoDB ObjectId
-              displayName = "Chi tiết";
+            // Reconstruct actual path including hidden segments
+            let routeTo = "/";
+            let visibleIdx = 0;
+            for (const seg of pathnames) {
+              routeTo += seg + "/";
+              if (!HIDDEN_SEGMENTS.includes(seg.toLowerCase())) {
+                if (visibleIdx >= visibleUpToNow.length - 1) break;
+                visibleIdx++;
+              }
+            }
+            routeTo = routeTo.replace(/\/$/, ""); // Remove trailing slash
+
+            const isLast = index === visiblePathnames.length - 1;
+            const position = index + 2; // Home is 1, so start from 2
+
+            // Get display name - use dynamic title for last segment if it's an ID
+            let displayName = getRouteName(segment, routeTo);
+
+            // If displayName is null (numeric ID), use dynamic title or fallback
+            if (displayName === null) {
+              displayName = isLast && dynamicTitle ? dynamicTitle : "Chi tiết";
             }
 
             return (
-              <React.Fragment key={name}>
-                <ChevronRight size={16} className="mx-2 text-gray-400" />
+              <li
+                key={routeTo}
+                className="flex items-center"
+                itemProp="itemListElement"
+                itemScope
+                itemType="https://schema.org/ListItem"
+              >
+                <ChevronRight
+                  size={16}
+                  className="mx-2 text-gray-400"
+                  aria-hidden="true"
+                />
+
                 {isLast ? (
-                  <span className="text-emerald-600 font-medium">
+                  <span
+                    className="text-emerald-600 font-medium truncate max-w-[200px]"
+                    itemProp="name"
+                    aria-current="page"
+                    title={displayName}
+                  >
                     {displayName}
                   </span>
                 ) : (
                   <Link
                     to={routeTo}
                     className="text-gray-600 hover:text-emerald-600 transition-colors"
+                    itemProp="item"
                   >
-                    {displayName}
+                    <span itemProp="name">{displayName}</span>
                   </Link>
                 )}
-              </React.Fragment>
+                <meta itemProp="position" content={String(position)} />
+              </li>
             );
           })}
-        </div>
+        </ol>
       </div>
     </nav>
   );
