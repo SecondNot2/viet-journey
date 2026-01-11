@@ -6,7 +6,127 @@ const router = express.Router();
 const db = require("../../shared/database/db");
 const {
   authenticateToken,
+  requireRole,
 } = require("../../shared/middleware/auth.middleware");
+
+// ========================================
+// ADMIN ROUTES (must be before public routes)
+// ========================================
+
+// Get admin stats for reviews
+router.get(
+  "/admin/stats",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const supabase = db.getClient();
+
+      // Get total reviews count
+      const { count: totalReviews } = await supabase
+        .from("reviews")
+        .select("*", { count: "exact", head: true });
+
+      // Get active reviews count
+      const { count: activeReviews } = await supabase
+        .from("reviews")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active");
+
+      // Get average rating
+      const { data: ratingData } = await supabase
+        .from("reviews")
+        .select("rating")
+        .eq("status", "active");
+
+      let averageRating = 0;
+      if (ratingData && ratingData.length > 0) {
+        const sum = ratingData.reduce((acc, r) => acc + (r.rating || 0), 0);
+        averageRating = (sum / ratingData.length).toFixed(2);
+      }
+
+      // Get pending reviews (if status field supports 'pending')
+      const { count: pendingReviews } = await supabase
+        .from("reviews")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending");
+
+      res.json({
+        totalReviews: totalReviews || 0,
+        activeReviews: activeReviews || 0,
+        pendingReviews: pendingReviews || 0,
+        averageRating: parseFloat(averageRating) || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ error: "Lỗi khi lấy thống kê" });
+    }
+  }
+);
+
+// Get all reviews for admin (with pagination)
+router.get(
+  "/admin/reviews",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const {
+        page = 1,
+        limit = 10,
+        sort_by = "created_desc",
+        status,
+      } = req.query;
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+
+      const supabase = db.getClient();
+
+      let query = supabase.from("reviews").select(
+        `
+          *,
+          users (username, userprofiles (full_name, avatar))
+        `,
+        { count: "exact" }
+      );
+
+      if (status && status !== "all") {
+        query = query.eq("status", status);
+      }
+
+      // Sorting
+      if (sort_by === "created_desc") {
+        query = query.order("created_at", { ascending: false });
+      } else if (sort_by === "created_asc") {
+        query = query.order("created_at", { ascending: true });
+      } else if (sort_by === "rating_desc") {
+        query = query.order("rating", { ascending: false });
+      } else if (sort_by === "rating_asc") {
+        query = query.order("rating", { ascending: true });
+      }
+
+      const { data, count, error } = await query.range(
+        offset,
+        offset + parseInt(limit) - 1
+      );
+
+      if (error) throw error;
+
+      res.json({
+        reviews: data || [],
+        total: count || 0,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: count || 0,
+          total_pages: Math.ceil((count || 0) / parseInt(limit)),
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching admin reviews:", error);
+      res.status(500).json({ error: "Lỗi khi lấy danh sách đánh giá" });
+    }
+  }
+);
 
 // ========================================
 // SPECIFIC ROUTES (before /:id)

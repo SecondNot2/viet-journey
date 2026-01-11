@@ -39,7 +39,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-
 const COLORS = {
   tour: "#3b82f6", // blue
   hotel: "#10b981", // green
@@ -49,6 +48,16 @@ const COLORS = {
   confirmed: "#10b981", // green
   cancelled: "#ef4444", // red
   completed: "#3b82f6", // blue
+};
+
+// Helper function to get fetch options with credentials
+const getFetchOptions = () => {
+  return {
+    credentials: "include", // Send cookies with request
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
 };
 
 const Dashboard = () => {
@@ -94,6 +103,7 @@ const Dashboard = () => {
       setLoading(true);
 
       // Fetch stats from all modules
+      const fetchOpts = getFetchOptions();
       const [
         usersRes,
         bookingsRes,
@@ -107,17 +117,20 @@ const Dashboard = () => {
         reviewsRes,
         analyticsRes,
       ] = await Promise.all([
-        fetch(`${API_URL}/users/admin/stats`),
-        fetch(`${API_URL}/bookings/admin/stats`),
-        fetch(`${API_URL}/tours/admin/stats`),
-        fetch(`${API_URL}/hotels/admin/stats`),
-        fetch(`${API_URL}/flights/admin/stats`),
-        fetch(`${API_URL}/transport/admin/stats`),
-        fetch(`${API_URL}/destinations/admin/stats`),
-        fetch(`${API_URL}/blogs/admin/stats`),
-        fetch(`${API_URL}/promotions/admin/stats`),
-        fetch(`${API_URL}/reviews/admin/stats`),
-        fetch(`${API_URL}/bookings/admin/analytics?days=${dateRange}`),
+        fetch(`${API_URL}/users/admin/stats`, fetchOpts),
+        fetch(`${API_URL}/bookings/admin/stats`, fetchOpts),
+        fetch(`${API_URL}/tours/admin/stats`, fetchOpts),
+        fetch(`${API_URL}/hotels/admin/stats`, fetchOpts),
+        fetch(`${API_URL}/flights/admin/stats`, fetchOpts),
+        fetch(`${API_URL}/transport/admin/stats`, fetchOpts),
+        fetch(`${API_URL}/destinations/admin/stats`, fetchOpts),
+        fetch(`${API_URL}/blogs/admin/stats`, fetchOpts),
+        fetch(`${API_URL}/promotions/admin/stats`, fetchOpts),
+        fetch(`${API_URL}/reviews/admin/stats`, fetchOpts),
+        fetch(
+          `${API_URL}/bookings/admin/analytics?days=${dateRange}`,
+          fetchOpts
+        ),
       ]);
 
       const [
@@ -168,14 +181,16 @@ const Dashboard = () => {
 
       // Fetch detailed analytics
       const detailedRes = await fetch(
-        `${API_URL}/bookings/admin/analytics/detailed?days=${dateRange}`
+        `${API_URL}/bookings/admin/analytics/detailed?days=${dateRange}`,
+        fetchOpts
       );
       const detailedData = await detailedRes.json();
       setDetailedAnalytics(detailedData);
 
       // Fetch comparison
       const comparisonRes = await fetch(
-        `${API_URL}/bookings/admin/analytics/comparison?days=${dateRange}`
+        `${API_URL}/bookings/admin/analytics/comparison?days=${dateRange}`,
+        fetchOpts
       );
       const comparisonData = await comparisonRes.json();
       setComparison(comparisonData);
@@ -205,7 +220,8 @@ const Dashboard = () => {
   const fetchRecentBookings = async () => {
     try {
       const response = await fetch(
-        `${API_URL}/bookings/admin/bookings?limit=5&sort_by=created_desc`
+        `${API_URL}/bookings/admin/bookings?limit=5&sort_by=created_desc`,
+        getFetchOptions()
       );
       if (!response.ok) throw new Error("Failed to fetch bookings");
 
@@ -220,7 +236,8 @@ const Dashboard = () => {
   const fetchRecentReviews = async () => {
     try {
       const response = await fetch(
-        `${API_URL}/reviews/admin/reviews?limit=5&sort_by=created_desc`
+        `${API_URL}/reviews/admin/reviews?limit=5&sort_by=created_desc`,
+        getFetchOptions()
       );
       if (!response.ok) throw new Error("Failed to fetch reviews");
 
@@ -287,7 +304,8 @@ const Dashboard = () => {
 
   // Prepare chart data
   const prepareRevenueByServiceData = () => {
-    return analytics.revenueByService.map((item) => ({
+    const serviceData = analytics.revenueByService || [];
+    return serviceData.map((item) => ({
       name:
         item.service_type === "tour"
           ? "Tours"
@@ -304,7 +322,8 @@ const Dashboard = () => {
   };
 
   const prepareBookingsByStatusData = () => {
-    return analytics.bookingsByStatus.map((item) => ({
+    const statusData = analytics.bookingsByStatus || [];
+    return statusData.map((item) => ({
       name:
         item.status === "pending"
           ? "Chờ xác nhận"
@@ -322,7 +341,8 @@ const Dashboard = () => {
 
   const prepareRevenueTrendData = () => {
     // Sort by date ascending and format
-    return analytics.revenueTrend
+    const trendData = analytics.revenueTrend || [];
+    return trendData
       .sort((a, b) => new Date(a.date) - new Date(b.date))
       .map((item) => ({
         date: formatDate(item.date),

@@ -8,6 +8,131 @@ const {
   generateFlightSlug,
   isNumericId,
 } = require("../../shared/utils/slug.util");
+const {
+  authenticateToken,
+  requireRole,
+} = require("../../shared/middleware/auth.middleware");
+
+// ========================================
+// ADMIN ROUTES (must be before public routes)
+// ========================================
+
+// Get admin stats for flights
+router.get(
+  "/admin/stats",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const supabase = db.getClient();
+
+      // Get total routes count
+      const { count: totalRoutes } = await supabase
+        .from("flight_routes")
+        .select("*", { count: "exact", head: true });
+
+      // Get active routes count
+      const { count: activeRoutes } = await supabase
+        .from("flight_routes")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active");
+
+      // Get total schedules count
+      const { count: totalSchedules } = await supabase
+        .from("flight_schedules")
+        .select("*", { count: "exact", head: true });
+
+      // Get scheduled flights count
+      const { count: scheduledFlights } = await supabase
+        .from("flight_schedules")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "scheduled");
+
+      // Get total bookings for flights
+      const { count: totalBookings } = await supabase
+        .from("bookings")
+        .select("*", { count: "exact", head: true })
+        .not("flight_id", "is", null);
+
+      res.json({
+        totalRoutes: totalRoutes || 0,
+        activeRoutes: activeRoutes || 0,
+        totalSchedules: totalSchedules || 0,
+        scheduledFlights: scheduledFlights || 0,
+        totalBookings: totalBookings || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ error: "Lỗi khi lấy thống kê" });
+    }
+  }
+);
+
+// Get all flight routes for admin
+router.get(
+  "/admin/routes",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const {
+        search,
+        airline,
+        status,
+        page = 1,
+        limit = 10,
+        sort_by = "created_desc",
+      } = req.query;
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+
+      const supabase = db.getClient();
+
+      let query = supabase
+        .from("flight_routes")
+        .select("*", { count: "exact" });
+
+      if (search) {
+        query = query.or(
+          `from_location.ilike.%${search}%,to_location.ilike.%${search}%,airline.ilike.%${search}%`
+        );
+      }
+      if (airline && airline !== "all") {
+        query = query.eq("airline", airline);
+      }
+      if (status && status !== "all") {
+        query = query.eq("status", status);
+      }
+
+      // Sorting
+      if (sort_by === "created_desc") {
+        query = query.order("created_at", { ascending: false });
+      } else if (sort_by === "created_asc") {
+        query = query.order("created_at", { ascending: true });
+      }
+
+      const { data, count, error } = await query.range(
+        offset,
+        offset + parseInt(limit) - 1
+      );
+
+      if (error) throw error;
+
+      res.json({
+        routes: data || [],
+        total: count || 0,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: count || 0,
+          total_pages: Math.ceil((count || 0) / parseInt(limit)),
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching admin routes:", error);
+      res.status(500).json({ error: "Lỗi khi lấy danh sách tuyến bay" });
+    }
+  }
+);
 
 // ========================================
 // SPECIFIC ROUTES (must be before /:id)

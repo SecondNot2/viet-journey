@@ -5,6 +5,189 @@ const express = require("express");
 const router = express.Router();
 const db = require("../../shared/database/db");
 const { generateSlug, isNumericId } = require("../../shared/utils/slug.util");
+const {
+  authenticateToken,
+  requireRole,
+} = require("../../shared/middleware/auth.middleware");
+
+// ========================================
+// ADMIN ROUTES (must be before public routes)
+// ========================================
+
+// Get admin stats for blogs
+router.get(
+  "/admin/stats",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const supabase = db.getClient();
+
+      // Get total blogs count
+      const { count: totalBlogs } = await supabase
+        .from("blogs")
+        .select("*", { count: "exact", head: true });
+
+      // Get total views
+      const { data: viewsData } = await supabase.from("blogs").select("views");
+      const totalViews = (viewsData || []).reduce(
+        (sum, b) => sum + (b.views || 0),
+        0
+      );
+
+      // Get total likes
+      const { data: likesData } = await supabase.from("blogs").select("likes");
+      const totalLikes = (likesData || []).reduce(
+        (sum, b) => sum + (b.likes || 0),
+        0
+      );
+
+      // Get total comments (from reviews table with blog_id)
+      const { count: totalComments } = await supabase
+        .from("reviews")
+        .select("*", { count: "exact", head: true })
+        .not("blog_id", "is", null);
+
+      res.json({
+        totalBlogs: totalBlogs || 0,
+        totalViews: totalViews,
+        totalLikes: totalLikes,
+        totalComments: totalComments || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ error: "Lỗi khi lấy thống kê" });
+    }
+  }
+);
+
+// Get all blogs for admin (with pagination)
+router.get(
+  "/admin/blogs",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const {
+        search,
+        category,
+        page = 1,
+        limit = 10,
+        sort_by = "created_desc",
+      } = req.query;
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+
+      const supabase = db.getClient();
+
+      let query = supabase.from("blogs").select(
+        `
+        *,
+        users (username, userprofiles (full_name, avatar))
+      `,
+        { count: "exact" }
+      );
+
+      if (search) {
+        query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
+      }
+      if (category && category !== "all") {
+        query = query.eq("category", category);
+      }
+
+      // Sorting
+      if (sort_by === "created_desc") {
+        query = query.order("created_at", { ascending: false });
+      } else if (sort_by === "created_asc") {
+        query = query.order("created_at", { ascending: true });
+      } else if (sort_by === "views_desc") {
+        query = query.order("views", { ascending: false });
+      }
+
+      const { data, count, error } = await query.range(
+        offset,
+        offset + parseInt(limit) - 1
+      );
+
+      if (error) throw error;
+
+      // Add slug
+      const blogsWithSlug = (data || []).map((blog) => ({
+        ...blog,
+        slug: generateSlug(blog.title) + "-" + blog.id,
+      }));
+
+      res.json({
+        blogs: blogsWithSlug,
+        total: count || 0,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: count || 0,
+          total_pages: Math.ceil((count || 0) / parseInt(limit)),
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching admin blogs:", error);
+      res.status(500).json({ error: "Lỗi khi lấy danh sách bài viết" });
+    }
+  }
+);
+
+// Get blog categories for admin filters
+router.get(
+  "/admin/categories",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const supabase = db.getClient();
+      const { data, error } = await supabase.from("blogs").select("category");
+
+      if (error) throw error;
+
+      const categories = [
+        ...new Set((data || []).map((b) => b.category).filter(Boolean)),
+      ];
+      res.json({ categories: categories.sort() });
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.status(500).json({ error: "Lỗi khi lấy danh mục" });
+    }
+  }
+);
+
+// Get blog authors for admin filters
+router.get(
+  "/admin/authors",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const supabase = db.getClient();
+      const { data, error } = await supabase
+        .from("blogs")
+        .select("user_id, users(username, userprofiles(full_name))");
+
+      if (error) throw error;
+
+      const authorsMap = new Map();
+      (data || []).forEach((b) => {
+        if (b.user_id && b.users) {
+          authorsMap.set(b.user_id, {
+            id: b.user_id,
+            username: b.users.username,
+            full_name: b.users.userprofiles?.full_name || b.users.username,
+          });
+        }
+      });
+
+      res.json({ authors: Array.from(authorsMap.values()) });
+    } catch (error) {
+      console.error("Error fetching authors:", error);
+      res.status(500).json({ error: "Lỗi khi lấy danh sách tác giả" });
+    }
+  }
+);
 
 // ========================================
 // SPECIFIC ROUTES (before /:id)

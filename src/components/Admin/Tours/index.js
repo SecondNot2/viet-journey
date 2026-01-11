@@ -21,7 +21,6 @@ import TourForm from "./TourForm";
 import ScheduleForm from "./ScheduleForm";
 import { API_URL, API_HOST } from "../../../config/api";
 
-
 const AdminTours = () => {
   const [activeTab, setActiveTab] = useState("tours"); // 'tours' | 'schedules'
   const [loading, setLoading] = useState(false);
@@ -108,9 +107,7 @@ const AdminTours = () => {
         params.append(key, value);
       });
 
-      const response = await fetch(
-        `${API_URL}/tours/admin/tours?${params}`
-      );
+      const response = await fetch(`${API_URL}/tours/admin/tours?${params}`);
       if (!response.ok) throw new Error("Failed to fetch tours");
 
       const data = await response.json();
@@ -227,28 +224,25 @@ const AdminTours = () => {
   };
 
   const handleSetInactive = async (tourId) => {
-        try {
-          const response = await fetch(
-        `${API_URL}/tours/admin/tours/${tourId}`,
-            {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ status: "inactive" }),
-            }
-          );
+    try {
+      const response = await fetch(`${API_URL}/tours/admin/tours/${tourId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "inactive" }),
+      });
 
       if (!response.ok) throw new Error("Failed to set inactive");
 
       await fetchTours();
       await fetchStats();
       toast.success("Đã chuyển tour sang trạng thái Inactive");
-        } catch (error) {
+    } catch (error) {
       toast.error("Có lỗi khi cập nhật trạng thái");
     }
   };
 
   const handleManageSchedule = (tour) => {
-      setSelectedTour(tour);
+    setSelectedTour(tour);
     setShowScheduleForm(true);
   };
 
@@ -267,7 +261,7 @@ const AdminTours = () => {
         tour={currentTour}
         onClose={handleCloseTourForm}
         onSave={() => {
-    fetchTours();
+          fetchTours();
           fetchStats();
           handleCloseTourForm();
         }}
@@ -304,23 +298,23 @@ const AdminTours = () => {
               <div className="bg-white/20 p-3 rounded-xl">
                 <Compass className="w-8 h-8 text-white" />
               </div>
-            <div>
+              <div>
                 <h1 className="text-3xl font-bold text-white">Quản lý Tours</h1>
                 <p className="text-white/80 mt-1">
                   Quản lý tours và lịch trình trong hệ thống
-              </p>
-            </div>
+                </p>
+              </div>
             </div>
 
             <div className="flex items-center gap-3">
               {activeTab === "tours" && (
-              <button
-                onClick={handleAddTour}
+                <button
+                  onClick={handleAddTour}
                   className="flex items-center gap-2 px-6 py-3 bg-white text-green-600 rounded-xl font-medium hover:bg-green-50 transition-all shadow-lg hover:shadow-xl"
-              >
+                >
                   <Plus className="w-5 h-5" />
-                Thêm tour
-              </button>
+                  Thêm tour
+                </button>
               )}
             </div>
           </div>
@@ -337,9 +331,9 @@ const AdminTours = () => {
                 </div>
                 <div className="bg-white/20 p-3 rounded-lg">
                   <Compass className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
-                </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
               <div className="flex items-center justify-between">
@@ -351,9 +345,9 @@ const AdminTours = () => {
                 </div>
                 <div className="bg-white/20 p-3 rounded-lg">
                   <CheckCircle className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
-                </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
               <div className="flex items-center justify-between">
@@ -365,9 +359,9 @@ const AdminTours = () => {
                 </div>
                 <div className="bg-white/20 p-3 rounded-lg">
                   <FileText className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
-                </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
               <div className="flex items-center justify-between">
@@ -379,8 +373,8 @@ const AdminTours = () => {
                 </div>
                 <div className="bg-white/20 p-3 rounded-lg">
                   <Calendar className="w-6 h-6 text-white" />
+                </div>
               </div>
-            </div>
             </div>
           </div>
 
@@ -409,10 +403,10 @@ const AdminTours = () => {
             <div className="mb-6">
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {/* Search */}
-              <div className="relative">
+                <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
+                  <input
+                    type="text"
                     placeholder="Tìm kiếm tour..."
                     value={tourFilters.search}
                     onChange={(e) =>
@@ -424,10 +418,10 @@ const AdminTours = () => {
                     }
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
-            </div>
+                </div>
 
                 {/* Type Filter */}
-              <select
+                <select
                   value={tourFilters.type}
                   onChange={(e) =>
                     setTourFilters({
@@ -444,10 +438,10 @@ const AdminTours = () => {
                       {type}
                     </option>
                   ))}
-              </select>
+                </select>
 
                 {/* Status Filter */}
-              <select
+                <select
                   value={tourFilters.status}
                   onChange={(e) =>
                     setTourFilters({
@@ -462,10 +456,10 @@ const AdminTours = () => {
                   <option value="active">Đang hoạt động</option>
                   <option value="inactive">Tạm dừng</option>
                   <option value="draft">Nháp</option>
-              </select>
+                </select>
 
                 {/* Difficulty Filter */}
-              <select
+                <select
                   value={tourFilters.difficulty}
                   onChange={(e) =>
                     setTourFilters({
@@ -481,10 +475,10 @@ const AdminTours = () => {
                   <option value="moderate">Trung bình</option>
                   <option value="challenging">Khó</option>
                   <option value="difficult">Rất khó</option>
-              </select>
+                </select>
 
                 {/* Sort */}
-              <select
+                <select
                   value={tourFilters.sort_by}
                   onChange={(e) =>
                     setTourFilters({ ...tourFilters, sort_by: e.target.value })
@@ -500,7 +494,7 @@ const AdminTours = () => {
                   <option value="duration_asc">Thời gian ngắn</option>
                   <option value="duration_desc">Thời gian dài</option>
                   <option value="rating_desc">Rating cao nhất</option>
-              </select>
+                </select>
               </div>
             </div>
 
@@ -508,12 +502,12 @@ const AdminTours = () => {
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-green-600" />
-            </div>
+              </div>
             ) : tours.length === 0 ? (
               <div className="text-center py-12">
                 <Compass className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500">Không tìm thấy tour nào</p>
-          </div>
+              </div>
             ) : (
               <div className="space-y-4">
                 {tours.map((tour) => (
@@ -537,9 +531,9 @@ const AdminTours = () => {
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <Compass className="w-12 h-12 text-gray-300" />
-            </div>
-          )}
-        </div>
+                          </div>
+                        )}
+                      </div>
 
                       {/* Tour Info */}
                       <div className="flex-1">
@@ -551,13 +545,13 @@ const AdminTours = () => {
                             <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
                               <MapPin className="w-4 h-4" />
                               {tour.location}
-          </div>
+                            </div>
                           </div>
-              <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2">
                             {tour.status === "active" ? (
                               <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
                                 Đang hoạt động
-                </span>
+                              </span>
                             ) : tour.status === "inactive" ? (
                               <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
                                 Tạm dừng
@@ -567,18 +561,18 @@ const AdminTours = () => {
                                 Nháp
                               </span>
                             )}
-              </div>
-            </div>
+                          </div>
+                        </div>
 
                         <div className="grid grid-cols-5 gap-4 mb-3">
                           <div className="flex items-center gap-2 text-sm">
                             <Star className="w-4 h-4 text-yellow-500" />
                             <span>{tour.rating || "N/A"}</span>
-                            </div>
+                          </div>
                           <div className="flex items-center gap-2 text-sm">
                             <Clock className="w-4 h-4 text-gray-400" />
                             <span>{tour.duration} ngày</span>
-                            </div>
+                          </div>
                           <div className="flex items-center gap-2 text-sm">
                             <Users className="w-4 h-4 text-gray-400" />
                             <span>{tour.group_size || "N/A"}</span>
@@ -591,7 +585,7 @@ const AdminTours = () => {
                             <Calendar className="w-4 h-4 text-gray-400" />
                             <span>{formatDate(tour.created_at)}</span>
                           </div>
-                          </div>
+                        </div>
 
                         {/* Price */}
                         <div className="mb-3">
@@ -601,44 +595,44 @@ const AdminTours = () => {
                         </div>
 
                         {/* Actions */}
-                          <div className="flex items-center gap-2">
-                            <button
+                        <div className="flex items-center gap-2">
+                          <button
                             onClick={() => handleViewTour(tour)}
                             className="flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            >
+                          >
                             <Eye className="w-4 h-4" />
                             Xem
-                            </button>
-                            <button
+                          </button>
+                          <button
                             onClick={() => handleEditTour(tour)}
                             className="flex items-center gap-1 px-3 py-1.5 text-sm text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            >
+                          >
                             <Edit className="w-4 h-4" />
                             Sửa
-                            </button>
-                              <button
+                          </button>
+                          <button
                             onClick={() => handleManageSchedule(tour)}
                             className="flex items-center gap-1 px-3 py-1.5 text-sm text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                           >
                             <FileText className="w-4 h-4" />
                             Lịch trình
-                              </button>
-                            <button
-                              onClick={() => handleDeleteTour(tour.id)}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteTour(tour.id)}
                             className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            >
+                          >
                             <Trash2 className="w-4 h-4" />
                             Xóa
-                            </button>
-                          </div>
+                          </button>
+                        </div>
                       </div>
-          </div>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
 
-          {/* Pagination */}
+            {/* Pagination */}
             {tourPagination.total_pages > 1 && (
               <div className="flex items-center justify-between mt-6 pt-6 border-t">
                 <p className="text-sm text-gray-600">
@@ -651,7 +645,7 @@ const AdminTours = () => {
                   trong tổng số {tourPagination.total} tours
                 </p>
                 <div className="flex gap-2">
-              <button
+                  <button
                     onClick={() =>
                       setTourFilters({
                         ...tourFilters,
@@ -662,12 +656,12 @@ const AdminTours = () => {
                     className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Trước
-              </button>
+                  </button>
                   <span className="px-4 py-2 bg-green-50 text-green-600 rounded-lg font-medium">
                     {tourPagination.page} / {tourPagination.total_pages}
                   </span>
-              <button
-                onClick={() =>
+                  <button
+                    onClick={() =>
                       setTourFilters({
                         ...tourFilters,
                         page: tourFilters.page + 1,
@@ -677,9 +671,9 @@ const AdminTours = () => {
                     className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Sau
-              </button>
-            </div>
-          </div>
+                  </button>
+                </div>
+              </div>
             )}
           </>
         ) : null}

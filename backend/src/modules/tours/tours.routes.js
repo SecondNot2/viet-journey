@@ -5,6 +5,262 @@ const express = require("express");
 const router = express.Router();
 const db = require("../../shared/database/db");
 const { generateSlug, isNumericId } = require("../../shared/utils/slug.util");
+const {
+  authenticateToken,
+  requireRole,
+} = require("../../shared/middleware/auth.middleware");
+
+// ========================================
+// ADMIN ROUTES (must be before public routes)
+// ========================================
+
+// Get admin stats for tours
+router.get(
+  "/admin/stats",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const supabase = db.getClient();
+
+      // Get total tours count
+      const { count: totalTours } = await supabase
+        .from("tours")
+        .select("*", { count: "exact", head: true });
+
+      // Get active tours count
+      const { count: activeTours } = await supabase
+        .from("tours")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active");
+
+      // Get total schedules count
+      const { count: totalSchedules } = await supabase
+        .from("tour_schedules")
+        .select("*", { count: "exact", head: true });
+
+      // Get total bookings for tours
+      const { count: totalBookings } = await supabase
+        .from("bookings")
+        .select("*", { count: "exact", head: true })
+        .not("tour_id", "is", null);
+
+      res.json({
+        totalTours: totalTours || 0,
+        activeTours: activeTours || 0,
+        totalSchedules: totalSchedules || 0,
+        totalBookings: totalBookings || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ error: "Lỗi khi lấy thống kê" });
+    }
+  }
+);
+
+// Get all tours for admin (including inactive/draft)
+router.get(
+  "/admin/tours",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const {
+        search,
+        type,
+        status,
+        difficulty,
+        page = 1,
+        limit = 10,
+        sort_by = "created_desc",
+      } = req.query;
+
+      const supabase = db.getClient();
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+
+      let query = supabase.from("tours").select(
+        `
+        *,
+        destinations (name),
+        guides (name),
+        tour_schedules (id)
+      `,
+        { count: "exact" }
+      );
+
+      // Apply filters
+      if (search) {
+        query = query.or(`title.ilike.%${search}%,location.ilike.%${search}%`);
+      }
+      if (type && type !== "all") {
+        query = query.eq("type", type);
+      }
+      if (status && status !== "all") {
+        query = query.eq("status", status);
+      }
+      if (difficulty && difficulty !== "all") {
+        query = query.eq("difficulty", difficulty);
+      }
+
+      // Apply sorting
+      switch (sort_by) {
+        case "created_asc":
+          query = query.order("created_at", { ascending: true });
+          break;
+        case "title_asc":
+          query = query.order("title", { ascending: true });
+          break;
+        case "title_desc":
+          query = query.order("title", { ascending: false });
+          break;
+        case "price_asc":
+          query = query.order("price", { ascending: true });
+          break;
+        case "price_desc":
+          query = query.order("price", { ascending: false });
+          break;
+        case "duration_asc":
+          query = query.order("duration", { ascending: true });
+          break;
+        case "duration_desc":
+          query = query.order("duration", { ascending: false });
+          break;
+        case "rating_desc":
+          query = query.order("rating", {
+            ascending: false,
+            nullsFirst: false,
+          });
+          break;
+        default:
+          query = query.order("created_at", { ascending: false });
+      }
+
+      const { data, count, error } = await query.range(
+        offset,
+        offset + parseInt(limit) - 1
+      );
+
+      if (error) throw error;
+
+      // Format response with schedule count
+      const formattedTours = (data || []).map((tour) => ({
+        ...tour,
+        destination_name: tour.destinations?.name,
+        guide_name: tour.guides?.name,
+        schedule_count: tour.tour_schedules?.length || 0,
+        slug: generateSlug(tour.title) + "-" + tour.id,
+      }));
+
+      res.json({
+        tours: formattedTours,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: count || 0,
+          total_pages: Math.ceil((count || 0) / parseInt(limit)),
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching admin tours:", error);
+      res.status(500).json({ error: "Lỗi khi lấy danh sách tours" });
+    }
+  }
+);
+
+// Get tour types for admin filter
+router.get(
+  "/admin/tour-types",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const supabase = db.getClient();
+      const { data, error } = await supabase.from("tours").select("type");
+
+      if (error) throw error;
+
+      const types = [
+        ...new Set((data || []).map((t) => t.type).filter(Boolean)),
+      ];
+      res.json({ types: types.sort() });
+    } catch (error) {
+      console.error("Error fetching tour types:", error);
+      res.status(500).json({ error: "Lỗi khi lấy loại tour" });
+    }
+  }
+);
+
+// Delete tour (admin only)
+router.delete(
+  "/admin/tours/:id",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "ID không hợp lệ" });
+      }
+
+      const supabase = db.getClient();
+
+      // Check for future bookings
+      const { data: futureBookings } = await supabase
+        .from("bookings")
+        .select("id")
+        .eq("tour_id", id)
+        .in("status", ["pending", "confirmed"])
+        .gte("check_in", new Date().toISOString().split("T")[0]);
+
+      if (futureBookings && futureBookings.length > 0) {
+        return res.status(400).json({
+          error: "Không thể xóa tour có booking active",
+          hasFutureBookings: true,
+          futureBookingsCount: futureBookings.length,
+        });
+      }
+
+      // Soft delete - set status to inactive
+      const { error } = await supabase
+        .from("tours")
+        .update({ status: "inactive", updated_at: new Date().toISOString() })
+        .eq("id", id);
+
+      if (error) throw error;
+      res.json({ message: "Đã xóa tour thành công" });
+    } catch (error) {
+      console.error("Error deleting tour:", error);
+      res.status(500).json({ error: "Lỗi khi xóa tour" });
+    }
+  }
+);
+
+// Update tour (admin only)
+router.put(
+  "/admin/tours/:id",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "ID không hợp lệ" });
+      }
+
+      const supabase = db.getClient();
+      const { error } = await supabase
+        .from("tours")
+        .update({ ...req.body, updated_at: new Date().toISOString() })
+        .eq("id", id);
+
+      if (error) throw error;
+      res.json({ message: "Cập nhật tour thành công" });
+    } catch (error) {
+      console.error("Error updating tour:", error);
+      res.status(500).json({ error: "Lỗi khi cập nhật tour" });
+    }
+  }
+);
 
 // ========================================
 // SPECIFIC ROUTES (must be before /:id)
@@ -756,11 +1012,6 @@ router.delete("/:id/reviews/:reviewId", async (req, res) => {
 });
 
 // Create tour
-const {
-  authenticateToken,
-  requireRole,
-} = require("../../shared/middleware/auth.middleware");
-
 router.post("/", authenticateToken, requireRole("admin"), async (req, res) => {
   try {
     const supabase = db.getClient();

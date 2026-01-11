@@ -19,6 +19,7 @@ import {
   LogOut,
   ClipboardList,
   Star,
+  Settings,
 } from "lucide-react";
 
 function Header({
@@ -145,6 +146,21 @@ function Header({
                         <Star size={16} />
                         <span>Đánh giá</span>
                       </button>
+
+                      {/* Admin Console - chỉ hiển thị cho admin */}
+                      {user.role === "admin" && (
+                        <>
+                          <hr className="my-1" />
+                          <button
+                            onClick={() => navigate("/admin")}
+                            className="flex items-center space-x-2 w-full px-4 py-2 text-left text-sm text-purple-600 hover:bg-purple-50"
+                          >
+                            <Settings size={16} />
+                            <span>Admin Console</span>
+                          </button>
+                        </>
+                      )}
+
                       <hr className="my-1" />
                       <button
                         onClick={handleLogout}

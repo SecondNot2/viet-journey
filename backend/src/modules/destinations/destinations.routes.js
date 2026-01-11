@@ -5,6 +5,113 @@ const express = require("express");
 const router = express.Router();
 const db = require("../../shared/database/db");
 const { generateSlug, isNumericId } = require("../../shared/utils/slug.util");
+const {
+  authenticateToken,
+  requireRole,
+} = require("../../shared/middleware/auth.middleware");
+
+// ========================================
+// ADMIN ROUTES (must be before public routes)
+// ========================================
+
+// Get admin stats for destinations
+router.get(
+  "/admin/stats",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const supabase = db.getClient();
+
+      // Get total destinations count
+      const { count: totalDestinations } = await supabase
+        .from("destinations")
+        .select("*", { count: "exact", head: true });
+
+      // Get active destinations count
+      const { count: activeDestinations } = await supabase
+        .from("destinations")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active");
+
+      res.json({
+        totalDestinations: totalDestinations || 0,
+        activeDestinations: activeDestinations || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ error: "Lỗi khi lấy thống kê" });
+    }
+  }
+);
+
+// Get all destinations for admin (with pagination)
+router.get(
+  "/admin/destinations",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const {
+        search,
+        status,
+        page = 1,
+        limit = 10,
+        sort_by = "created_desc",
+      } = req.query;
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+
+      const supabase = db.getClient();
+
+      let query = supabase.from("destinations").select("*", { count: "exact" });
+
+      if (search) {
+        query = query.or(`name.ilike.%${search}%,location.ilike.%${search}%`);
+      }
+      if (status && status !== "all") {
+        query = query.eq("status", status);
+      }
+
+      // Sorting
+      if (sort_by === "created_desc") {
+        query = query.order("created_at", { ascending: false });
+      } else if (sort_by === "created_asc") {
+        query = query.order("created_at", { ascending: true });
+      } else if (sort_by === "name_asc") {
+        query = query.order("name", { ascending: true });
+      } else if (sort_by === "name_desc") {
+        query = query.order("name", { ascending: false });
+      }
+
+      const { data, count, error } = await query.range(
+        offset,
+        offset + parseInt(limit) - 1
+      );
+
+      if (error) throw error;
+
+      // Add slug to each destination
+      const dataWithSlug = (data || []).map((dest) => ({
+        ...dest,
+        slug: generateSlug(dest.name) + "-" + dest.id,
+      }));
+
+      res.json({
+        destinations: dataWithSlug,
+        total: count || 0,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: count || 0,
+          total_pages: Math.ceil((count || 0) / parseInt(limit)),
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching admin destinations:", error);
+      res.status(500).json({ error: "Lỗi khi lấy danh sách điểm đến" });
+    }
+  }
+);
 
 // ========================================
 // SPECIFIC ROUTES (before /:id)

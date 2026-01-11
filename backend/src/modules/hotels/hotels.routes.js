@@ -5,6 +5,163 @@ const express = require("express");
 const router = express.Router();
 const db = require("../../shared/database/db");
 const { generateSlug, isNumericId } = require("../../shared/utils/slug.util");
+const {
+  authenticateToken,
+  requireRole,
+} = require("../../shared/middleware/auth.middleware");
+
+// ========================================
+// ADMIN ROUTES (must be before public routes)
+// ========================================
+
+// Get admin stats for hotels
+router.get(
+  "/admin/stats",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const supabase = db.getClient();
+
+      // Get total hotels count
+      const { count: totalHotels } = await supabase
+        .from("hotels")
+        .select("*", { count: "exact", head: true });
+
+      // Get active hotels count
+      const { count: activeHotels } = await supabase
+        .from("hotels")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active");
+
+      // Get total rooms count
+      const { count: totalRooms } = await supabase
+        .from("hotelrooms")
+        .select("*", { count: "exact", head: true });
+
+      // Get total bookings for hotels
+      const { count: totalBookings } = await supabase
+        .from("bookings")
+        .select("*", { count: "exact", head: true })
+        .not("hotel_id", "is", null);
+
+      res.json({
+        totalHotels: totalHotels || 0,
+        activeHotels: activeHotels || 0,
+        totalRooms: totalRooms || 0,
+        totalBookings: totalBookings || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ error: "Lỗi khi lấy thống kê" });
+    }
+  }
+);
+
+// Get hotel locations for admin filters
+router.get(
+  "/admin/locations",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const supabase = db.getClient();
+      const { data, error } = await supabase.from("hotels").select("location");
+
+      if (error) throw error;
+
+      const locations = [
+        ...new Set((data || []).map((h) => h.location).filter(Boolean)),
+      ];
+      res.json({ locations: locations.sort() });
+    } catch (error) {
+      console.error("Error fetching locations:", error);
+      res.status(500).json({ error: "Lỗi khi lấy danh sách địa điểm" });
+    }
+  }
+);
+
+// Get all hotels for admin (including inactive)
+router.get(
+  "/admin/hotels",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const {
+        search,
+        status,
+        page = 1,
+        limit = 10,
+        sort_by = "created_desc",
+      } = req.query;
+
+      const supabase = db.getClient();
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+
+      let query = supabase.from("hotels").select(
+        `
+        *,
+        hotelrooms (id, price)
+      `,
+        { count: "exact" }
+      );
+
+      // Apply filters
+      if (search) {
+        query = query.or(`name.ilike.%${search}%,location.ilike.%${search}%`);
+      }
+      if (status && status !== "all") {
+        query = query.eq("status", status);
+      }
+
+      // Apply sorting
+      if (sort_by === "created_asc") {
+        query = query.order("created_at", { ascending: true });
+      } else if (sort_by === "name_asc") {
+        query = query.order("name", { ascending: true });
+      } else if (sort_by === "rating_desc") {
+        query = query.order("rating", { ascending: false, nullsFirst: false });
+      } else {
+        query = query.order("created_at", { ascending: false });
+      }
+
+      const { data, count, error } = await query.range(
+        offset,
+        offset + parseInt(limit) - 1
+      );
+
+      if (error) throw error;
+
+      // Format response
+      const formattedHotels = (data || []).map((hotel) => {
+        const rooms = hotel.hotelrooms || [];
+        const prices = rooms
+          .filter((r) => r.price)
+          .map((r) => parseFloat(r.price));
+        return {
+          ...hotel,
+          room_count: rooms.length,
+          min_price: prices.length > 0 ? Math.min(...prices) : null,
+          slug: generateSlug(hotel.name) + "-" + hotel.id,
+        };
+      });
+
+      res.json({
+        hotels: formattedHotels,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: count || 0,
+          total_pages: Math.ceil((count || 0) / parseInt(limit)),
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching admin hotels:", error);
+      res.status(500).json({ error: "Lỗi khi lấy danh sách khách sạn" });
+    }
+  }
+);
 
 // ========================================
 // SPECIFIC ROUTES (before /:id)
@@ -212,11 +369,6 @@ router.get("/:id/rooms", async (req, res) => {
 });
 
 // Create hotel
-const {
-  authenticateToken,
-  requireRole,
-} = require("../../shared/middleware/auth.middleware");
-
 router.post("/", authenticateToken, requireRole("admin"), async (req, res) => {
   try {
     const supabase = db.getClient();

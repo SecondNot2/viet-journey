@@ -16,7 +16,6 @@ import ConfirmDialog from "../../common/ConfirmDialog";
 import BookingDetail from "./BookingDetail";
 import { API_URL, API_HOST } from "../../../config/api";
 
-
 const AdminBookings = () => {
   const [loading, setLoading] = useState(false);
 

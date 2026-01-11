@@ -331,6 +331,15 @@ const AdminLayout = () => {
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-1">
                     <Link
+                      to="/"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-emerald-600 hover:bg-emerald-50 font-medium"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <Home className="w-4 h-4" />
+                      Về trang người dùng
+                    </Link>
+                    <hr className="my-1" />
+                    <Link
                       to="/admin/profile"
                       className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsUserMenuOpen(false)}

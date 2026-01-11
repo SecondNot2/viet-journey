@@ -8,6 +8,109 @@ const {
   isNumericId,
   generateTransportSlug,
 } = require("../../shared/utils/slug.util");
+const {
+  authenticateToken,
+  requireRole,
+} = require("../../shared/middleware/auth.middleware");
+
+// ========================================
+// ADMIN ROUTES (must be before public routes)
+// ========================================
+
+// Get admin stats for transport
+router.get(
+  "/admin/stats",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const supabase = db.getClient();
+
+      // Get total routes count
+      const { count: totalRoutes } = await supabase
+        .from("transport_routes")
+        .select("*", { count: "exact", head: true });
+
+      // Get active routes count
+      const { count: activeRoutes } = await supabase
+        .from("transport_routes")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active");
+
+      // Get total trips count
+      const { count: totalTrips } = await supabase
+        .from("transport_trips")
+        .select("*", { count: "exact", head: true });
+
+      // Get scheduled trips count
+      const { count: scheduledTrips } = await supabase
+        .from("transport_trips")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "scheduled");
+
+      // Get total bookings for transport
+      const { count: totalBookings } = await supabase
+        .from("bookings")
+        .select("*", { count: "exact", head: true })
+        .not("transport_id", "is", null);
+
+      res.json({
+        totalRoutes: totalRoutes || 0,
+        activeRoutes: activeRoutes || 0,
+        totalTrips: totalTrips || 0,
+        scheduledTrips: scheduledTrips || 0,
+        totalBookings: totalBookings || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ error: "Lỗi khi lấy thống kê" });
+    }
+  }
+);
+
+// Get all transport routes for admin
+router.get(
+  "/admin/routes",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const { search, type, status, page = 1, limit = 1000 } = req.query;
+
+      const supabase = db.getClient();
+
+      let query = supabase
+        .from("transport_routes")
+        .select("*", { count: "exact" });
+
+      if (search) {
+        query = query.or(
+          `from_location.ilike.%${search}%,to_location.ilike.%${search}%,company.ilike.%${search}%`
+        );
+      }
+      if (type && type !== "all") {
+        query = query.eq("type", type);
+      }
+      if (status && status !== "all") {
+        query = query.eq("status", status);
+      }
+
+      query = query.order("created_at", { ascending: false });
+
+      const { data, count, error } = await query;
+
+      if (error) throw error;
+
+      res.json({
+        routes: data || [],
+        total: count || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching admin routes:", error);
+      res.status(500).json({ error: "Lỗi khi lấy danh sách tuyến xe" });
+    }
+  }
+);
 
 // ========================================
 // SPECIFIC ROUTES (before /:id)

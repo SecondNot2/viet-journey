@@ -4,6 +4,114 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../../shared/database/db");
+const {
+  authenticateToken,
+  requireRole,
+} = require("../../shared/middleware/auth.middleware");
+
+// ========================================
+// ADMIN ROUTES (must be before public routes)
+// ========================================
+
+// Get admin stats for promotions
+router.get(
+  "/admin/stats",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const supabase = db.getClient();
+      const today = new Date().toISOString().split("T")[0];
+
+      // Get total promotions count
+      const { count: totalPromotions } = await supabase
+        .from("promotions")
+        .select("*", { count: "exact", head: true });
+
+      // Get active promotions count
+      const { count: activePromotions } = await supabase
+        .from("promotions")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "active")
+        .gte("end_date", today);
+
+      // Get upcoming promotions (start_date > today)
+      const { count: upcomingPromotions } = await supabase
+        .from("promotions")
+        .select("*", { count: "exact", head: true })
+        .gt("start_date", today);
+
+      res.json({
+        totalPromotions: totalPromotions || 0,
+        activePromotions: activePromotions || 0,
+        upcomingPromotions: upcomingPromotions || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ error: "Lỗi khi lấy thống kê" });
+    }
+  }
+);
+
+// Get all promotions for admin (with pagination)
+router.get(
+  "/admin/promotions",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const {
+        search,
+        status,
+        page = 1,
+        limit = 10,
+        sort_by = "created_desc",
+      } = req.query;
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+
+      const supabase = db.getClient();
+
+      let query = supabase.from("promotions").select("*", { count: "exact" });
+
+      if (search) {
+        query = query.or(`name.ilike.%${search}%,code.ilike.%${search}%`);
+      }
+      if (status && status !== "all") {
+        query = query.eq("status", status);
+      }
+
+      // Sorting
+      if (sort_by === "created_desc") {
+        query = query.order("created_at", { ascending: false });
+      } else if (sort_by === "created_asc") {
+        query = query.order("created_at", { ascending: true });
+      } else if (sort_by === "end_date_asc") {
+        query = query.order("end_date", { ascending: true });
+      }
+
+      const { data, count, error } = await query.range(
+        offset,
+        offset + parseInt(limit) - 1
+      );
+
+      if (error) throw error;
+
+      res.json({
+        promotions: data || [],
+        total: count || 0,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total: count || 0,
+          total_pages: Math.ceil((count || 0) / parseInt(limit)),
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching admin promotions:", error);
+      res.status(500).json({ error: "Lỗi khi lấy danh sách khuyến mãi" });
+    }
+  }
+);
 
 // ========================================
 // SPECIFIC ROUTES (before /:id)
