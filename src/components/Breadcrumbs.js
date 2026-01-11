@@ -76,7 +76,7 @@ const Breadcrumbs = () => {
 
             // If displayName is null (numeric ID), use dynamic title or fallback
             if (displayName === null) {
-              displayName = isLast && dynamicTitle ? dynamicTitle : "Chi tiết";
+              displayName = dynamicTitle || "Chi tiết";
             }
 
             return (

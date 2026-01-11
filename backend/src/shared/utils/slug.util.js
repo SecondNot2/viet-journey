@@ -206,8 +206,10 @@ const generateFlightSlug = (from, to, id) => {
  * @param {number} id - Transport trip ID
  * @returns {string} Transport slug
  */
-const generateTransportSlug = (routeName, id) => {
-  return generateUniqueSlug(routeName, id);
+const generateTransportSlug = (from, to, id) => {
+  const fromSlug = generateSlug(from);
+  const toSlug = generateSlug(to);
+  return `${fromSlug}-${toSlug}-${id}`;
 };
 
 module.exports = {

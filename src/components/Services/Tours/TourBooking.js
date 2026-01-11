@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useBreadcrumb } from "../../../contexts/BreadcrumbContext";
 import axios from "axios";
 import { API_URL, API_HOST } from "../../../config/api";
 import {
@@ -36,6 +37,7 @@ const TourBooking = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { setDynamicTitle } = useBreadcrumb();
   const guestModalRef = useRef(null);
   const {
     tour,
@@ -173,12 +175,16 @@ const TourBooking = () => {
     });
   };
 
-  // Redirect if no tour data
+  // Redirect if no tour data + Set breadcrumb
   useEffect(() => {
     if (!tour) {
       navigate("/tours");
+      return;
     }
-  }, [tour, navigate]);
+    // Set dynamic breadcrumb title
+    setDynamicTitle(tour.title || "Đặt tour");
+    return () => setDynamicTitle("");
+  }, [tour, navigate, setDynamicTitle]);
 
   // Fetch lại tour data khi thay đổi ngày khởi hành
   useEffect(() => {

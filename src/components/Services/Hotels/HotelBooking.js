@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useBreadcrumb } from "../../../contexts/BreadcrumbContext";
 import { API_URL, API_HOST } from "../../../config/api";
 
 const HotelBooking = () => {
@@ -30,6 +31,7 @@ const HotelBooking = () => {
   const location = useLocation();
   const bookingData = location.state;
   const { user } = useAuth();
+  const { setDynamicTitle } = useBreadcrumb();
 
   // Kiểm tra và chuyển hướng nếu không có dữ liệu
   useEffect(() => {
@@ -44,7 +46,11 @@ const HotelBooking = () => {
       navigate("/hotels");
       return;
     }
-  }, [bookingData, navigate]);
+
+    // Set dynamic breadcrumb title
+    setDynamicTitle(bookingData.hotel.name || "Đặt phòng");
+    return () => setDynamicTitle("");
+  }, [bookingData, navigate, setDynamicTitle]);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);

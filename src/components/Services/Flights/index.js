@@ -1142,11 +1142,27 @@ const FlightSearch = () => {
     }
   };
 
+  // Helper function to create slug
+  const toSlug = (str) => {
+    if (!str) return "";
+    return str
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[đĐ]/g, "d")
+      .replace(/([^0-9a-z-\s])/g, "")
+      .replace(/(\s+)/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  };
+
   const handleSelectFlight = (flight) => {
-    // Sử dụng slug nếu có, fallback về id
-    const identifier = flight.slug || flight.id;
-    // Truyền thông tin hành khách và hạng ghế qua state của navigate
-    navigate(`/flights/${identifier}`, {
+    // Generate slug from locations if flight.slug is missing
+    const slug =
+      flight.slug || `${toSlug(flight.from)}-${toSlug(flight.to)}-${flight.id}`;
+
+    // ✅ Navigate to DETAIL page (not booking) with passenger/class info
+    navigate(`/flights/${slug}`, {
       state: {
         passengers: searchParams.passengers,
         class: searchParams.class,

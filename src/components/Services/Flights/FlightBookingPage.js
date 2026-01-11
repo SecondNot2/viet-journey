@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import FlightBooking from "./FlightBooking";
 import { Loader2 } from "lucide-react";
+
+import { useBreadcrumb } from "../../../contexts/BreadcrumbContext";
 
 // Sample flight data - replace with actual API call
 const sampleFlight = {
@@ -24,28 +26,53 @@ const sampleFlight = {
 };
 
 const FlightBookingPage = () => {
-  const { id } = useParams();
+  const { idOrSlug } = useParams();
+  const id = idOrSlug;
   const navigate = useNavigate();
+  const location = useLocation(); // Get params passed from FlightSearch
   const [flight, setFlight] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { setDynamicTitle } = useBreadcrumb();
 
   useEffect(() => {
-    // Simulate API call
-    const fetchFlight = async () => {
+    const loadFlightData = async () => {
       try {
-        // Replace this with actual API call
+        // Option 1: Data passed via navigation state (from FlightSearch)
+        if (location.state && location.state.flight) {
+          const flightData = location.state.flight;
+          // Ensure flightData has necessary fields
+          setFlight(flightData);
+
+          // Format title for breadcrumb
+          const from = flightData.from || flightData.from_location;
+          const to = flightData.to || flightData.to_location;
+          setDynamicTitle(`${from} → ${to}`);
+          setLoading(false);
+          return;
+        }
+
+        // Option 2: Fetch from API (simulated for now, should replace with real API)
+        // In real app: const res = await axios.get(`${API_URL}/flights/${id}`); setFlight(res.data);
         await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
         setFlight(sampleFlight);
+
+        // Update breadcrumb
+        setDynamicTitle(`${sampleFlight.from} → ${sampleFlight.to}`);
+
         setLoading(false);
       } catch (err) {
+        console.error("Error loading flight:", err);
         setError("Không thể tải thông tin chuyến bay. Vui lòng thử lại sau.");
         setLoading(false);
       }
     };
 
-    fetchFlight();
-  }, [id]);
+    loadFlightData();
+
+    // Cleanup
+    return () => setDynamicTitle("");
+  }, [id, setDynamicTitle, location.state]);
 
   const handleClose = () => {
     navigate(`/flights/${id}`);

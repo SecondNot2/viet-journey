@@ -46,7 +46,8 @@ const sampleFlight = {
 };
 
 const FlightDetailPage = () => {
-  const { id } = useParams();
+  const { idOrSlug } = useParams();
+  const id = idOrSlug;
   const navigate = useNavigate();
   const location = useLocation();
   const { setDynamicTitle } = useBreadcrumb();
@@ -294,6 +295,20 @@ const FlightDetailPage = () => {
     navigate("/flights");
   };
 
+  // Helper function to create slug
+  const toSlug = (str) => {
+    if (!str) return "";
+    return str
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[đĐ]/g, "d")
+      .replace(/([^0-9a-z-\s])/g, "")
+      .replace(/(\s+)/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  };
+
   const handleBooking = () => {
     const bookingInfo = {
       flightId: flight.id,
@@ -319,7 +334,11 @@ const FlightDetailPage = () => {
       },
     };
 
-    navigate(`/flights/${flight.id}/booking`, { state: bookingInfo });
+    // Generate slug for prettier URL
+    const slug = `${toSlug(flight.from_location)}-${toSlug(
+      flight.to_location
+    )}-${flight.id}`;
+    navigate(`/flights/${slug}/booking`, { state: bookingInfo });
   };
 
   // Xử lý và hiển thị các lựa chọn hạng ghế

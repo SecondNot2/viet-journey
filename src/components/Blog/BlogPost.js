@@ -42,7 +42,8 @@ import { useBreadcrumb } from "../../contexts/BreadcrumbContext";
 import { API_URL, API_HOST } from "../../config/api";
 
 const BlogPost = () => {
-  const { id } = useParams();
+  const { idOrSlug } = useParams();
+  const id = idOrSlug;
   const navigate = useNavigate();
   const { user } = useAuth(); // Lấy user từ AuthContext
   const { setDynamicTitle } = useBreadcrumb(); // Lấy setDynamicTitle từ BreadcrumbContext

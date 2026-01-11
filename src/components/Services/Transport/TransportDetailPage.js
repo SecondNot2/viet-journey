@@ -196,7 +196,8 @@ const PassengerSelection = ({
 
 const TransportDetailPage = () => {
   const { user } = useAuth();
-  const { id } = useParams();
+  const { idOrSlug } = useParams();
+  const id = idOrSlug;
   const navigate = useNavigate();
   const { setDynamicTitle } = useBreadcrumb();
   const passengerModalRef = useRef(null);

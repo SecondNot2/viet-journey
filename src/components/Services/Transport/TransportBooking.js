@@ -3,6 +3,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../../contexts/AuthContext";
 import { API_URL, API_HOST } from "../../../config/api";
+import { useBreadcrumb } from "../../../contexts/BreadcrumbContext"; // Import context
 import {
   MapPin,
   Clock,
@@ -30,10 +31,12 @@ import {
 } from "lucide-react";
 
 const TransportBooking = () => {
-  const { id } = useParams();
+  const { idOrSlug } = useParams();
+  const id = idOrSlug; // Use idOrSlug as the identifier (backend handles slug parsing)
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth(); // ✅ Thêm AuthContext
+  const { setDynamicTitle } = useBreadcrumb(); // ✅ Add Breadcrumb context
   const guestModalRef = useRef(null);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -107,6 +110,50 @@ const TransportBooking = () => {
 
   useEffect(() => {
     const fetchTransportDetail = async () => {
+      // ✅ Optimization: Check if transport data is passed via state
+      if (location.state?.transport) {
+        const passedTransport = location.state.transport;
+
+        // Map passed data to match component structure (if needed)
+        // TransportDetailPage passes a structure that matches what we need mostly
+        // but let's be safe and ensure consistent mapping or use directly
+        // The structure from TransportDetailPage seems robust enough used in bookingState
+
+        const mappedTransport = {
+          ...passedTransport,
+          // Ensure critical fields are present
+          from_location: passedTransport.from_location,
+          to_location: passedTransport.to_location,
+          price: passedTransport.price,
+          discounted_price:
+            passedTransport.discounted_price || passedTransport.price,
+          image: passedTransport.image,
+        };
+
+        setTransport(mappedTransport);
+        setDynamicTitle(
+          `${mappedTransport.from_location} - ${mappedTransport.to_location}`
+        );
+
+        // Setup initial pricing
+        const basePrice = mappedTransport.promotion
+          ? mappedTransport.promotion.type === "percentage"
+            ? mappedTransport.price *
+              (1 - mappedTransport.promotion.discount / 100)
+            : mappedTransport.price - mappedTransport.promotion.discount
+          : mappedTransport.price;
+
+        setBookingSummary({
+          basePrice: mappedTransport.price,
+          // approximate total price calc - will be refined by component logic
+          totalPrice: basePrice,
+          discount: mappedTransport.price - basePrice,
+        });
+
+        setLoading(false);
+        return;
+      }
+
       if (!id || id === "undefined") {
         console.error("ID chuyến đi không hợp lệ");
         setLoading(false);
@@ -115,6 +162,7 @@ const TransportBooking = () => {
 
       try {
         setLoading(true);
+        // Call API with idOrSlug (backend handles slug)
         const response = await axios.get(`${API_URL}/transport/${id}`);
         const fetchedTransport = response.data;
 
@@ -144,6 +192,12 @@ const TransportBooking = () => {
         };
 
         setTransport(mappedTransport);
+
+        // Set dynamic breadcrumb title
+        setDynamicTitle(
+          `${mappedTransport.from_location} - ${mappedTransport.to_location}`
+        );
+
         // Tính tổng tiền ban đầu
         const basePrice =
           mappedTransport.discounted_price || mappedTransport.price;
@@ -187,7 +241,10 @@ const TransportBooking = () => {
       }
     };
     fetchTransportDetail();
-  }, [id]);
+
+    // Clear breadcrumb on unmount
+    return () => setDynamicTitle("");
+  }, [id, setDynamicTitle]);
 
   useEffect(() => {
     if (!transport) return;

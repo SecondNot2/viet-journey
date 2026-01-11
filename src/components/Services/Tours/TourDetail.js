@@ -51,7 +51,8 @@ import {
 
 const TourDetail = () => {
   const { user } = useAuth();
-  const { id } = useParams();
+  const { idOrSlug } = useParams();
+  const id = idOrSlug;
   const navigate = useNavigate();
   const { setDynamicTitle } = useBreadcrumb();
   const guestModalRef = useRef(null);
@@ -596,7 +597,9 @@ const TourDetail = () => {
       return;
     }
 
-    navigate(`/tours/${id}/booking`, {
+    // Use slug for SEO-friendly URL, fallback to ID
+    const identifier = tour.slug || tour.id;
+    navigate(`/tours/${identifier}/booking`, {
       state: {
         tour,
         bookingDetails,

@@ -24,7 +24,8 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useBreadcrumb } from "../../contexts/BreadcrumbContext";
 
 const DestinationDetail = () => {
-  const { id } = useParams();
+  const { idOrSlug } = useParams();
+  const id = idOrSlug;
   const navigate = useNavigate();
   const { user } = useAuth();
   const { setDynamicTitle } = useBreadcrumb();

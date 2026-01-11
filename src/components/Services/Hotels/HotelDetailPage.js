@@ -21,7 +21,8 @@ const API_BASE_URL = API_URL;
 
 const HotelDetailPage = () => {
   const { user } = useAuth();
-  const { id } = useParams();
+  const { idOrSlug } = useParams();
+  const id = idOrSlug;
   const navigate = useNavigate();
   const location = useLocation();
   const { setDynamicTitle } = useBreadcrumb();
@@ -363,7 +364,9 @@ const HotelDetailPage = () => {
       },
     };
 
-    navigate(`/hotels/${hotel.id}/booking`, { state: bookingInfo });
+    // Use slug for SEO-friendly URL, fallback to ID
+    const identifier = hotel.slug || hotel.id;
+    navigate(`/hotels/${identifier}/booking`, { state: bookingInfo });
   };
 
   // Format giá

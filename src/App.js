@@ -140,7 +140,7 @@ function App() {
           {/* Destinations Routes */}
           <Route path="destinations">
             <Route index element={<Destinations />} />
-            <Route path=":id" element={<DestinationDetail />} />
+            <Route path=":idOrSlug" element={<DestinationDetail />} />
           </Route>
 
           {/* Tours Routes */}
@@ -148,24 +148,24 @@ function App() {
             <Route index element={<Tours />} />
             <Route path="type/:type" element={<Tours />} />
             <Route path="region/:region" element={<Tours />} />
-            <Route path=":id" element={<TourDetail />} />
-            <Route path=":id/booking" element={<TourBooking />} />
+            <Route path=":idOrSlug" element={<TourDetail />} />
+            <Route path=":idOrSlug/booking" element={<TourBooking />} />
             <Route path="booking/success" element={<TourBookingSuccess />} />
           </Route>
 
           {/* Flight Routes */}
           <Route path="flights">
             <Route index element={<FlightSearch />} />
-            <Route path=":id" element={<FlightDetailPage />} />
-            <Route path=":id/booking" element={<FlightBookingPage />} />
+            <Route path=":idOrSlug" element={<FlightDetailPage />} />
+            <Route path=":idOrSlug/booking" element={<FlightBookingPage />} />
             <Route path="booking/success" element={<FlightBookingSuccess />} />
           </Route>
 
           {/* Hotel Routes */}
           <Route path="hotels">
             <Route index element={<HotelSearch />} />
-            <Route path=":id" element={<HotelDetailPage />} />
-            <Route path=":id/booking" element={<HotelBooking />} />
+            <Route path=":idOrSlug" element={<HotelDetailPage />} />
+            <Route path=":idOrSlug/booking" element={<HotelBooking />} />
             <Route path="booking/success" element={<HotelBookingSuccess />} />
             <Route path="booking/failed" element={<HotelBookingFailed />} />
           </Route>
@@ -173,8 +173,8 @@ function App() {
           {/* Transport Routes */}
           <Route path="transport">
             <Route index element={<TransportSearch />} />
-            <Route path=":id" element={<TransportDetailPage />} />
-            <Route path=":id/booking" element={<TransportBooking />} />
+            <Route path=":idOrSlug" element={<TransportDetailPage />} />
+            <Route path=":idOrSlug/booking" element={<TransportBooking />} />
             <Route
               path="booking/success"
               element={<TransportBookingSuccess />}
@@ -189,7 +189,7 @@ function App() {
           <Route path="blog">
             <Route index element={<BlogList />} />
             <Route path=":category" element={<BlogCategory />} />
-            <Route path="post/:id" element={<BlogPost />} />
+            <Route path="post/:idOrSlug" element={<BlogPost />} />
           </Route>
 
           {/* Other Routes */}
