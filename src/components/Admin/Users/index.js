@@ -108,7 +108,10 @@ const AdminUsers = () => {
         params.append(key, value);
       });
 
-      const response = await fetch(`${API_URL}/users/admin/users?${params}`);
+      const response = await fetch(
+        `${API_URL}/users/admin/users?${params}`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch users");
 
       const data = await response.json();

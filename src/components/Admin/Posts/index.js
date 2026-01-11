@@ -99,7 +99,7 @@ const AdminBlogs = () => {
       if (!response.ok) throw new Error("Failed to fetch categories");
 
       const data = await response.json();
-      setCategories(data);
+      setCategories(Array.isArray(data) ? data : data.categories || []);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
@@ -115,7 +115,7 @@ const AdminBlogs = () => {
       if (!response.ok) throw new Error("Failed to fetch authors");
 
       const data = await response.json();
-      setAuthors(data);
+      setAuthors(Array.isArray(data) ? data : data.authors || []);
     } catch (error) {
       console.error("Error fetching authors:", error);
     }
@@ -144,7 +144,10 @@ const AdminBlogs = () => {
         params.append(key, value);
       });
 
-      const response = await fetch(`${API_URL}/blogs/admin/blogs?${params}`);
+      const response = await fetch(
+        `${API_URL}/blogs/admin/blogs?${params}`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch blogs");
 
       const data = await response.json();

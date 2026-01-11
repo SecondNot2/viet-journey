@@ -544,7 +544,7 @@ const AdminTours = () => {
                             src={
                               tour.image.startsWith("http")
                                 ? tour.image
-                                : `${API_URL}${tour.image}`
+                                : `${API_HOST}${tour.image}`
                             }
                             alt={tour.title}
                             className="w-full h-full object-cover"

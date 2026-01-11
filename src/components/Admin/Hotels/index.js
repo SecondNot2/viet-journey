@@ -127,7 +127,10 @@ const AdminHotels = () => {
         params.append(key, value);
       });
 
-      const response = await fetch(`${API_URL}/hotels/admin/hotels?${params}`);
+      const response = await fetch(
+        `${API_URL}/hotels/admin/hotels?${params}`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch hotels");
 
       const data = await response.json();
@@ -171,7 +174,8 @@ const AdminHotels = () => {
       });
 
       const response = await fetch(
-        `${API_URL}/hotels/admin/hotels/${selectedHotel.id}/rooms?${params}`
+        `${API_URL}/hotels/admin/hotels/${selectedHotel.id}/rooms?${params}`,
+        getFetchOptions()
       );
       if (!response.ok) throw new Error("Failed to fetch rooms");
 
@@ -695,7 +699,7 @@ const AdminHotels = () => {
                             src={
                               hotel.images[0].startsWith("http")
                                 ? hotel.images[0]
-                                : `${API_URL}${hotel.images[0]}`
+                                : `${API_HOST}${hotel.images[0]}`
                             }
                             alt={hotel.name}
                             className="w-full h-full object-cover"
@@ -971,7 +975,7 @@ const AdminHotels = () => {
                               src={
                                 room.images[0].startsWith("http")
                                   ? room.images[0]
-                                  : `${API_URL}${room.images[0]}`
+                                  : `${API_HOST}${room.images[0]}`
                               }
                               alt={room.name}
                               className="w-full h-full object-cover"

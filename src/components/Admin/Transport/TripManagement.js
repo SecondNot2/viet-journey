@@ -82,7 +82,8 @@ const TripManagement = ({ onBack }) => {
       params.append("limit", "1000");
 
       const response = await fetch(
-        `${API_URL}/transport/admin/trips?${params.toString()}`
+        `${API_URL}/transport/admin/trips?${params.toString()}`,
+        getFetchOptions()
       );
 
       if (!response.ok) {

@@ -109,7 +109,8 @@ const AdminPromotions = () => {
       });
 
       const response = await fetch(
-        `${API_URL}/promotions/admin/promotions?${params}`
+        `${API_URL}/promotions/admin/promotions?${params}`,
+        getFetchOptions()
       );
       if (!response.ok) throw new Error("Failed to fetch promotions");
 

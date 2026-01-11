@@ -456,7 +456,7 @@ const AdminDestinations = () => {
                         src={
                           destination.image.startsWith("http")
                             ? destination.image
-                            : `${API_URL}${destination.image}`
+                            : `${API_HOST}${destination.image}`
                         }
                         alt={destination.name}
                         className="w-full h-full object-cover"

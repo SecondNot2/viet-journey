@@ -108,7 +108,8 @@ const AdminBookings = () => {
       });
 
       const response = await fetch(
-        `${API_URL}/bookings/admin/bookings?${params}`
+        `${API_URL}/bookings/admin/bookings?${params}`,
+        getFetchOptions()
       );
       if (!response.ok) throw new Error("Failed to fetch bookings");
 

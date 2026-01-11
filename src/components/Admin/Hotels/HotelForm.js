@@ -545,7 +545,7 @@ const HotelForm = ({ hotel, onClose, onSave, viewMode, editMode }) => {
                         src={
                           image.startsWith("http")
                             ? image
-                            : `${API_URL}${image}`
+                            : `${API_HOST}${image}`
                         }
                         alt={`Hotel ${index + 1}`}
                         className="w-full h-40 object-cover rounded-lg"

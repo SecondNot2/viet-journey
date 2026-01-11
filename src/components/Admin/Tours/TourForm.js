@@ -844,7 +844,7 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                   src={
                     formData.image.startsWith("http")
                       ? formData.image
-                      : `${API_URL}${formData.image}`
+                      : `${API_HOST}${formData.image}`
                   }
                   alt="Tour preview"
                   className="w-full max-w-md h-64 object-cover rounded-lg"

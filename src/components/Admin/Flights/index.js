@@ -180,7 +180,8 @@ const FlightManagement = () => {
       });
 
       const res = await axios.get(
-        `${API_BASE_URL}/flights/admin/routes?${params}`
+        `${API_BASE_URL}/flights/admin/routes?${params}`,
+        { withCredentials: true }
       );
 
       setRoutes(res.data.routes || []);
@@ -201,7 +202,8 @@ const FlightManagement = () => {
       });
 
       const res = await axios.get(
-        `${API_BASE_URL}/flights/admin/schedules?${params}`
+        `${API_BASE_URL}/flights/admin/schedules?${params}`,
+        { withCredentials: true }
       );
 
       setSchedules(res.data.schedules || []);
@@ -216,7 +218,9 @@ const FlightManagement = () => {
 
   const fetchAirlines = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/flights/airlines`);
+      const res = await axios.get(`${API_BASE_URL}/flights/airlines`, {
+        withCredentials: true,
+      });
       setAirlines(res.data.airlines || []);
     } catch (error) {
       console.error("Error fetching airlines:", error);
@@ -256,7 +260,9 @@ const FlightManagement = () => {
       cancelText: "Hủy",
       onConfirm: async () => {
         try {
-          await axios.delete(`${API_BASE_URL}/flights/admin/routes/${id}`);
+          await axios.delete(`${API_BASE_URL}/flights/admin/routes/${id}`, {
+            withCredentials: true,
+          });
           toast.success("Xóa tuyến bay thành công!");
           fetchRoutes();
           setConfirmDialog({ ...confirmDialog, isOpen: false });
@@ -297,9 +303,11 @@ const FlightManagement = () => {
       cancelText: "Hủy",
       onConfirm: async () => {
         try {
-          await axios.put(`${API_BASE_URL}/flights/admin/routes/${id}`, {
-            status: "inactive",
-          });
+          await axios.put(
+            `${API_BASE_URL}/flights/admin/routes/${id}`,
+            { status: "inactive" },
+            { withCredentials: true }
+          );
           toast.success("Đã chuyển tuyến bay sang trạng thái Inactive");
           fetchRoutes();
           setConfirmDialog({ ...confirmDialog, isOpen: false });
@@ -323,11 +331,14 @@ const FlightManagement = () => {
         // Update existing route
         await axios.put(
           `${API_BASE_URL}/flights/admin/routes/${routeData.id}`,
-          routeData
+          routeData,
+          { withCredentials: true }
         );
       } else {
         // Create new route
-        await axios.post(`${API_BASE_URL}/flights/admin/routes`, routeData);
+        await axios.post(`${API_BASE_URL}/flights/admin/routes`, routeData, {
+          withCredentials: true,
+        });
       }
       fetchRoutes();
     } catch (error) {
@@ -359,7 +370,8 @@ const FlightManagement = () => {
         try {
           await axios.put(
             `${API_BASE_URL}/flights/admin/schedules/${id}/cancel`,
-            { cancellation_reason: reason }
+            { cancellation_reason: reason },
+            { withCredentials: true }
           );
           toast.success("Đã hủy lịch bay thành công!");
           fetchSchedules();
@@ -391,9 +403,11 @@ const FlightManagement = () => {
       cancelText: "Hủy",
       onConfirm: async () => {
         try {
-          await axios.put(`${API_BASE_URL}/flights/admin/schedules/${id}`, {
-            status,
-          });
+          await axios.put(
+            `${API_BASE_URL}/flights/admin/schedules/${id}`,
+            { status },
+            { withCredentials: true }
+          );
           toast.success("Đã cập nhật trạng thái thành công!");
           fetchSchedules();
           setConfirmDialog({ ...confirmDialog, isOpen: false });
@@ -426,7 +440,9 @@ const FlightManagement = () => {
 
         try {
           const res = await axios.post(
-            `${API_BASE_URL}/flights/admin/generate-schedules`
+            `${API_BASE_URL}/flights/admin/generate-schedules`,
+            {},
+            { withCredentials: true }
           );
 
           // Hiển thị thông tin chi tiết
@@ -779,7 +795,7 @@ const FlightManagement = () => {
                             <div className="flex items-center gap-2">
                               {route.airline_image && (
                                 <img
-                                  src={`${API_BASE_URL}${route.airline_image}`}
+                                  src={`${API_HOST}${route.airline_image}`}
                                   alt={route.airline}
                                   className="w-8 h-8 object-contain"
                                 />

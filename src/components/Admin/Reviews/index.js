@@ -112,7 +112,8 @@ const AdminReviews = () => {
       });
 
       const response = await fetch(
-        `${API_URL}/reviews/admin/reviews?${params}`
+        `${API_URL}/reviews/admin/reviews?${params}`,
+        getFetchOptions()
       );
       if (!response.ok) throw new Error("Failed to fetch reviews");
 

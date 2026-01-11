@@ -97,7 +97,8 @@ const TransportManagement = () => {
       params.append("limit", "1000"); // Load all cho filtering ở client
 
       const response = await fetch(
-        `${API_URL}/transport/admin/routes?${params.toString()}`
+        `${API_URL}/transport/admin/routes?${params.toString()}`,
+        getFetchOptions()
       );
 
       if (!response.ok) {
@@ -383,13 +384,13 @@ const TransportManagement = () => {
 
       const method = routeData.id ? "PUT" : "POST";
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(routeData),
-      });
+      const response = await fetch(
+        url,
+        getFetchOptions({
+          method,
+          body: JSON.stringify(routeData),
+        })
+      );
 
       if (!response.ok) {
         const data = await response.json();

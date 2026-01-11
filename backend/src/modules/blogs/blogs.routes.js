@@ -82,7 +82,7 @@ router.get(
       let query = supabase.from("blogs").select(
         `
         *,
-        users (username, userprofiles (full_name, avatar))
+        users:author_id (username, userprofiles (full_name, avatar))
       `,
         { count: "exact" }
       );
@@ -164,27 +164,32 @@ router.get(
   async (req, res) => {
     try {
       const supabase = db.getClient();
+      // Note: blogs table uses author_id, not user_id
       const { data, error } = await supabase
         .from("blogs")
-        .select("user_id, users(username, userprofiles(full_name))");
+        .select(
+          "author_id, users:author_id(username, userprofiles(full_name))"
+        );
 
       if (error) throw error;
 
       const authorsMap = new Map();
       (data || []).forEach((b) => {
-        if (b.user_id && b.users) {
-          authorsMap.set(b.user_id, {
-            id: b.user_id,
-            username: b.users.username,
-            full_name: b.users.userprofiles?.full_name || b.users.username,
+        if (b.author_id && b.users) {
+          const userProfile = b.users.userprofiles;
+          authorsMap.set(b.author_id, {
+            id: b.author_id,
+            username: b.users.username || "Unknown",
+            full_name: userProfile?.full_name || b.users.username || "Unknown",
           });
         }
       });
 
-      res.json({ authors: Array.from(authorsMap.values()) });
+      res.json(Array.from(authorsMap.values()));
     } catch (error) {
       console.error("Error fetching authors:", error);
-      res.status(500).json({ error: "Lỗi khi lấy danh sách tác giả" });
+      // Return empty array instead of error to not break UI
+      res.json([]);
     }
   }
 );
@@ -202,7 +207,7 @@ router.get("/featured", async (req, res) => {
       .select(
         `
         *,
-        users (username, userprofiles (full_name, avatar))
+        users:author_id (username, userprofiles (full_name, avatar))
       `
       )
       .order("created_at", { ascending: false })
@@ -256,7 +261,7 @@ router.get("/", async (req, res) => {
     let query = supabase.from("blogs").select(
       `
         *,
-        users (username, userprofiles (full_name, avatar))
+        users:author_id (username, userprofiles (full_name, avatar))
       `,
       { count: "exact" }
     );
@@ -341,7 +346,7 @@ router.get("/:idOrSlug", async (req, res) => {
       .select(
         `
         *,
-        users (username, userprofiles (full_name, avatar))
+        users:author_id (username, userprofiles (full_name, avatar))
       `
       )
       .eq("id", id)

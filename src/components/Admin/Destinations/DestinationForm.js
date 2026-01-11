@@ -685,7 +685,7 @@ const DestinationForm = ({
                   src={
                     formData.image.startsWith("http")
                       ? formData.image
-                      : `${API_URL}${formData.image}`
+                      : `${API_HOST}${formData.image}`
                   }
                   alt="Main"
                   className="w-full max-w-md h-64 object-cover rounded-lg"
@@ -735,7 +735,7 @@ const DestinationForm = ({
               {formData.images.map((img, index) => (
                 <div key={index} className="relative">
                   <img
-                    src={img.startsWith("http") ? img : `${API_URL}${img}`}
+                    src={img.startsWith("http") ? img : `${API_HOST}${img}`}
                     alt={`Gallery ${index + 1}`}
                     className="w-full h-32 object-cover rounded-lg"
                   />
