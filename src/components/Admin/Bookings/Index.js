@@ -16,6 +16,16 @@ import ConfirmDialog from "../../common/ConfirmDialog";
 import BookingDetail from "./BookingDetail";
 import { API_URL, API_HOST } from "../../../config/api";
 
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
+
 const AdminBookings = () => {
   const [loading, setLoading] = useState(false);
 
@@ -61,7 +71,10 @@ const AdminBookings = () => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/bookings/admin/stats`);
+      const response = await fetch(
+        `${API_URL}/bookings/admin/stats`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch stats");
 
       const data = await response.json();
@@ -163,11 +176,10 @@ const AdminBookings = () => {
         try {
           const response = await fetch(
             `${API_URL}/bookings/admin/bookings/${bookingId}/status`,
-            {
+            getFetchOptions({
               method: "PUT",
-              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ status: newStatus }),
-            }
+            })
           );
 
           if (!response.ok) {
@@ -217,11 +229,10 @@ const AdminBookings = () => {
         try {
           const response = await fetch(
             `${API_URL}/bookings/admin/bookings/${bookingId}/payment`,
-            {
+            getFetchOptions({
               method: "PUT",
-              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ payment_status: newPaymentStatus }),
-            }
+            })
           );
 
           if (!response.ok) {
@@ -260,9 +271,9 @@ const AdminBookings = () => {
         try {
           const response = await fetch(
             `${API_URL}/bookings/admin/bookings/${bookingId}`,
-            {
+            getFetchOptions({
               method: "DELETE",
-            }
+            })
           );
 
           if (!response.ok) {

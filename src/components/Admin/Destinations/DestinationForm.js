@@ -11,6 +11,15 @@ import {
 import toast from "react-hot-toast";
 import { API_URL, API_HOST } from "../../../config/api";
 
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
 
 const DestinationForm = ({
   destination,
@@ -50,7 +59,7 @@ const DestinationForm = ({
 
   useEffect(() => {
     if (destination) {
-        setFormData({
+      setFormData({
         name: destination.name || "",
         description: destination.description || "",
         region: destination.region || "north",
@@ -152,8 +161,9 @@ const DestinationForm = ({
 
     try {
       const response = await fetch(`${API_URL}/destinations/upload`, {
-            method: "POST",
+        method: "POST",
         body: formDataUpload,
+        credentials: "include",
       });
 
       if (!response.ok) throw new Error("Upload failed");
@@ -167,8 +177,8 @@ const DestinationForm = ({
       }
 
       toast.success("Upload ảnh thành công!");
-      } catch (error) {
-        console.error("Error uploading image:", error);
+    } catch (error) {
+      console.error("Error uploading image:", error);
       toast.error("Có lỗi khi upload ảnh");
     }
   };
@@ -231,11 +241,13 @@ const DestinationForm = ({
         : `${API_URL}/destinations/admin/destinations`;
       const method = destination ? "PUT" : "POST";
 
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        url,
+        getFetchOptions({
+          method,
+          body: JSON.stringify(payload),
+        })
+      );
 
       if (!response.ok) {
         const data = await response.json();
@@ -260,9 +272,9 @@ const DestinationForm = ({
     return new Intl.NumberFormat("vi-VN").format(price) + " đ";
   };
 
-    return (
+  return (
     <div className="min-h-screen bg-gray-50">
-        {/* Header */}
+      {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 -mx-8 -mt-8 px-8 py-6 mb-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between">
@@ -285,9 +297,9 @@ const DestinationForm = ({
             </div>
 
             {!viewMode && (
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
                 className="flex items-center gap-2 px-6 py-3 bg-white text-indigo-600 rounded-xl font-medium hover:bg-indigo-50 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
@@ -301,7 +313,7 @@ const DestinationForm = ({
                     Lưu thông tin
                   </>
                 )}
-            </button>
+              </button>
             )}
           </div>
         </div>
@@ -377,27 +389,27 @@ const DestinationForm = ({
                 </select>
               </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Loại
-              </label>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
+                </label>
+                <select
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
                   disabled={viewMode}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
-              >
-                <option value="nature">Thiên nhiên</option>
-                <option value="culture">Văn hóa</option>
+                >
+                  <option value="nature">Thiên nhiên</option>
+                  <option value="culture">Văn hóa</option>
                   <option value="beach">Biển</option>
                   <option value="mountain">Núi</option>
-                <option value="city">Thành phố</option>
-              </select>
-          </div>
+                  <option value="city">Thành phố</option>
+                </select>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Trạng thái
                 </label>
                 <select
@@ -418,11 +430,11 @@ const DestinationForm = ({
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Mô tả <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
                 disabled={viewMode}
                 rows={4}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 ${
@@ -445,43 +457,43 @@ const DestinationForm = ({
             </h2>
 
             <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Giờ mở cửa
-              </label>
-              <input
-                type="time"
-                name="open_time"
-                value={formData.open_time}
-                onChange={handleChange}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Giờ mở cửa
+                </label>
+                <input
+                  type="time"
+                  name="open_time"
+                  value={formData.open_time}
+                  onChange={handleChange}
                   disabled={viewMode}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
-              />
-            </div>
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Giờ đóng cửa
-              </label>
-              <input
-                type="time"
-                name="close_time"
-                value={formData.close_time}
-                onChange={handleChange}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Giờ đóng cửa
+                </label>
+                <input
+                  type="time"
+                  name="close_time"
+                  value={formData.close_time}
+                  onChange={handleChange}
                   disabled={viewMode}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
-              />
-            </div>
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Giá vé (đ)
-              </label>
-              <input
-                type="number"
-                name="ticket_price"
-                value={formData.ticket_price}
-                onChange={handleChange}
+                </label>
+                <input
+                  type="number"
+                  name="ticket_price"
+                  value={formData.ticket_price}
+                  onChange={handleChange}
                   disabled={viewMode}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
                   placeholder="VD: 100000"
@@ -515,16 +527,16 @@ const DestinationForm = ({
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
                 placeholder="VD: Tháng 3 - Tháng 5"
               />
-          </div>
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Phương tiện di chuyển
-            </label>
-            <textarea
-              name="transportation"
-              value={formData.transportation}
-              onChange={handleChange}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phương tiện di chuyển
+              </label>
+              <textarea
+                name="transportation"
+                value={formData.transportation}
+                onChange={handleChange}
                 disabled={viewMode}
                 rows={3}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
@@ -541,10 +553,10 @@ const DestinationForm = ({
                 value={formData.notes}
                 onChange={handleChange}
                 disabled={viewMode}
-              rows={3}
+                rows={3}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
                 placeholder="Các ghi chú khác..."
-            />
+              />
             </div>
           </div>
 
@@ -578,9 +590,9 @@ const DestinationForm = ({
                 </div>
               )}
               <div className="flex flex-wrap gap-2">
-              {formData.activities.map((activity, index) => (
+                {formData.activities.map((activity, index) => (
                   <span
-                  key={index}
+                    key={index}
                     className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm"
                   >
                     {activity}
@@ -689,7 +701,7 @@ const DestinationForm = ({
                 )}
               </div>
             )}
-                </div>
+          </div>
 
           {/* Gallery Images */}
           <div className="space-y-4">
@@ -728,13 +740,13 @@ const DestinationForm = ({
                     className="w-full h-32 object-cover rounded-lg"
                   />
                   {!viewMode && (
-                  <button
-                    type="button"
+                    <button
+                      type="button"
                       onClick={() => handleRemoveImage(index)}
                       className="absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
-                  >
+                    >
                       <X className="w-3 h-3" />
-                  </button>
+                    </button>
                   )}
                 </div>
               ))}

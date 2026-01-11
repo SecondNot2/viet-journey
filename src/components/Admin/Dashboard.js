@@ -944,554 +944,568 @@ const Dashboard = () => {
       </div>
 
       {/* Detailed Analytics Section */}
-      {showDetailedView && detailedAnalytics && comparison && (
-        <div className="space-y-8">
-          {/* Comparison KPIs */}
-          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-sm p-6 border border-indigo-100">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <TrendingUp className="w-6 h-6 text-indigo-600" />
-              So sánh với kỳ trước ({dateRange} ngày)
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              {/* Bookings Growth */}
-              <div className="bg-white rounded-lg p-4 shadow-sm">
-                <p className="text-xs text-gray-500 mb-1">Đơn hàng</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {comparison.current.bookings}
-                </p>
-                <div className="flex items-center gap-1 mt-2">
-                  {parseFloat(comparison.growth.bookings) >= 0 ? (
-                    <ArrowUpRight className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <ArrowDownRight className="w-4 h-4 text-red-600" />
-                  )}
-                  <span
-                    className={`text-sm font-semibold ${
-                      parseFloat(comparison.growth.bookings) >= 0
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {comparison.growth.bookings}%
-                  </span>
-                </div>
-              </div>
-
-              {/* Revenue Growth */}
-              <div className="bg-white rounded-lg p-4 shadow-sm">
-                <p className="text-xs text-gray-500 mb-1">Doanh thu</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {(comparison.current.revenue / 1000000).toFixed(1)}M
-                </p>
-                <div className="flex items-center gap-1 mt-2">
-                  {parseFloat(comparison.growth.revenue) >= 0 ? (
-                    <ArrowUpRight className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <ArrowDownRight className="w-4 h-4 text-red-600" />
-                  )}
-                  <span
-                    className={`text-sm font-semibold ${
-                      parseFloat(comparison.growth.revenue) >= 0
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {comparison.growth.revenue}%
-                  </span>
-                </div>
-              </div>
-
-              {/* AOV Growth */}
-              <div className="bg-white rounded-lg p-4 shadow-sm">
-                <p className="text-xs text-gray-500 mb-1">Giá trị TB/đơn</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {(comparison.current.avgOrderValue / 1000).toFixed(0)}K
-                </p>
-                <div className="flex items-center gap-1 mt-2">
-                  {parseFloat(comparison.growth.avgOrderValue) >= 0 ? (
-                    <ArrowUpRight className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <ArrowDownRight className="w-4 h-4 text-red-600" />
-                  )}
-                  <span
-                    className={`text-sm font-semibold ${
-                      parseFloat(comparison.growth.avgOrderValue) >= 0
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {comparison.growth.avgOrderValue}%
-                  </span>
-                </div>
-              </div>
-
-              {/* Conversion Rate */}
-              <div className="bg-white rounded-lg p-4 shadow-sm">
-                <p className="text-xs text-gray-500 mb-1">Tỷ lệ chuyển đổi</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {detailedAnalytics.summary.conversionRate}%
-                </p>
-                <p className="text-xs text-gray-500 mt-2">
-                  {detailedAnalytics.summary.confirmedBookings}/
-                  {detailedAnalytics.summary.totalBookings}
-                </p>
-              </div>
-
-              {/* Cancellation Rate */}
-              <div className="bg-white rounded-lg p-4 shadow-sm">
-                <p className="text-xs text-gray-500 mb-1">Tỷ lệ hủy</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {detailedAnalytics.summary.cancellationRate}%
-                </p>
-                <p className="text-xs text-gray-500 mt-2">
-                  {detailedAnalytics.summary.cancelledBookings} đơn
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Service Details Table */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Thống kê chi tiết theo dịch vụ
-            </h2>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                      Dịch vụ
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
-                      Tổng đơn
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
-                      Đã thanh toán
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
-                      Chờ thanh toán
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
-                      Mất mát (Hủy)
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
-                      Giá TB
-                    </th>
-                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
-                      Min - Max
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {detailedAnalytics.serviceDetails.map((service) => (
-                    <tr
-                      key={service.service_type}
-                      className="border-b border-gray-100 hover:bg-gray-50"
-                    >
-                      <td className="py-3 px-4">
-                        <span className="font-medium text-gray-900">
-                          {service.service_type === "tour"
-                            ? "Tours"
-                            : service.service_type === "hotel"
-                            ? "Khách sạn"
-                            : service.service_type === "flight"
-                            ? "Chuyến bay"
-                            : service.service_type === "transport"
-                            ? "Vận chuyển"
-                            : service.service_type}
-                        </span>
-                      </td>
-                      <td className="text-right py-3 px-4 text-sm text-gray-900">
-                        {service.total_bookings}
-                      </td>
-                      <td className="text-right py-3 px-4 text-sm">
-                        <span className="text-green-600 font-semibold">
-                          {formatCurrency(service.paid_revenue)}
-                        </span>
-                      </td>
-                      <td className="text-right py-3 px-4 text-sm">
-                        <span className="text-yellow-600 font-semibold">
-                          {formatCurrency(service.pending_revenue)}
-                        </span>
-                      </td>
-                      <td className="text-right py-3 px-4 text-sm">
-                        <span className="text-red-600 font-semibold">
-                          {formatCurrency(service.lost_revenue)}
-                        </span>
-                      </td>
-                      <td className="text-right py-3 px-4 text-sm text-gray-900">
-                        {formatCurrency(service.avg_paid_order)}
-                      </td>
-                      <td className="text-right py-3 px-4 text-xs text-gray-500">
-                        {(service.min_order / 1000).toFixed(0)}K -{" "}
-                        {(service.max_order / 1000000).toFixed(1)}M
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Top Performers */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Top Tours */}
-            {detailedAnalytics.topPerformers.tours.length > 0 && (
-              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Compass className="w-5 h-5 text-blue-600" />
-                  Top Tours
-                </h3>
-                <div className="space-y-3">
-                  {detailedAnalytics.topPerformers.tours
-                    .slice(0, 5)
-                    .map((tour, index) => (
-                      <div
-                        key={tour.id}
-                        className="flex items-center justify-between p-3 bg-blue-50 rounded-lg"
-                      >
-                        <div className="flex items-center gap-3 flex-1">
-                          <span className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-bold text-blue-600">
-                            {index + 1}
-                          </span>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                              {tour.title}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {tour.bookings} đơn
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-bold text-blue-600">
-                            {(parseFloat(tour.revenue) / 1000000).toFixed(1)}M
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
-
-            {/* Top Hotels */}
-            {detailedAnalytics.topPerformers.hotels.length > 0 && (
-              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-green-600" />
-                  Top Khách sạn
-                </h3>
-                <div className="space-y-3">
-                  {detailedAnalytics.topPerformers.hotels
-                    .slice(0, 5)
-                    .map((hotel, index) => (
-                      <div
-                        key={hotel.id}
-                        className="flex items-center justify-between p-3 bg-green-50 rounded-lg"
-                      >
-                        <div className="flex items-center gap-3 flex-1">
-                          <span className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-sm font-bold text-green-600">
-                            {index + 1}
-                          </span>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                              {hotel.name}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {hotel.bookings} đơn
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-bold text-green-600">
-                            {(parseFloat(hotel.revenue) / 1000000).toFixed(1)}M
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
-
-            {/* Top Flights */}
-            {detailedAnalytics.topPerformers.flights.length > 0 && (
-              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Plane className="w-5 h-5 text-purple-600" />
-                  Top Chuyến bay
-                </h3>
-                <div className="space-y-3">
-                  {detailedAnalytics.topPerformers.flights
-                    .slice(0, 5)
-                    .map((flight, index) => (
-                      <div
-                        key={`${flight.airline}-${index}`}
-                        className="flex items-center justify-between p-3 bg-purple-50 rounded-lg"
-                      >
-                        <div className="flex items-center gap-3 flex-1">
-                          <span className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-sm font-bold text-purple-600">
-                            {index + 1}
-                          </span>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900">
-                              {flight.airline}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {flight.from_location} → {flight.to_location} (
-                              {flight.bookings} đơn)
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-bold text-purple-600">
-                            {(parseFloat(flight.revenue) / 1000000).toFixed(1)}M
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
-
-            {/* Top Transports */}
-            {detailedAnalytics.topPerformers.transports.length > 0 && (
-              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Bus className="w-5 h-5 text-yellow-600" />
-                  Top Vận chuyển
-                </h3>
-                <div className="space-y-3">
-                  {detailedAnalytics.topPerformers.transports
-                    .slice(0, 5)
-                    .map((transport, index) => (
-                      <div
-                        key={`${transport.company}-${index}`}
-                        className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg"
-                      >
-                        <div className="flex items-center gap-3 flex-1">
-                          <span className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center text-sm font-bold text-yellow-600">
-                            {index + 1}
-                          </span>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900">
-                              {transport.company}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {transport.from_location} →{" "}
-                              {transport.to_location} ({transport.bookings} đơn)
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-bold text-yellow-600">
-                            {(parseFloat(transport.revenue) / 1000000).toFixed(
-                              1
-                            )}
-                            M
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Hourly Distribution Chart */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Phân bố đặt hàng theo giờ
-            </h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={detailedAnalytics.hourlyDistribution}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis
-                  dataKey="hour"
-                  stroke="#6b7280"
-                  fontSize={12}
-                  tickFormatter={(hour) => `${hour}h`}
-                />
-                <YAxis yAxisId="left" stroke="#6b7280" fontSize={12} />
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  stroke="#6b7280"
-                  fontSize={12}
-                  tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#fff",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: "8px",
-                  }}
-                  formatter={(value, name) => [
-                    name === "revenue"
-                      ? `${(value / 1000000).toFixed(1)}M đ`
-                      : value,
-                    name === "revenue" ? "Doanh thu" : "Đơn hàng",
-                  ]}
-                />
-                <Legend />
-                <Bar
-                  dataKey="bookings"
-                  fill="#3b82f6"
-                  name="Đơn hàng"
-                  yAxisId="left"
-                />
-                <Bar
-                  dataKey="revenue"
-                  fill="#10b981"
-                  name="Doanh thu (đ)"
-                  yAxisId="right"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Daily Breakdown Table */}
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Chi tiết theo ngày
+      {showDetailedView &&
+        detailedAnalytics?.summary &&
+        detailedAnalytics?.serviceDetails &&
+        detailedAnalytics?.topPerformers &&
+        detailedAnalytics?.hourlyDistribution &&
+        detailedAnalytics?.dailyBreakdown &&
+        comparison?.current &&
+        comparison?.growth && (
+          <div className="space-y-8">
+            {/* Comparison KPIs */}
+            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-sm p-6 border border-indigo-100">
+              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <TrendingUp className="w-6 h-6 text-indigo-600" />
+                So sánh với kỳ trước ({dateRange} ngày)
               </h2>
-              <button
-                onClick={() => {
-                  // Export CSV functionality
-                  const csv = [
-                    [
-                      "Ngày",
-                      "Dịch vụ",
-                      "Tổng đơn",
-                      "Xác nhận",
-                      "Hoàn thành",
-                      "Hủy",
-                      "Chờ",
-                      "Doanh thu",
-                      "Chờ thanh toán",
-                      "Giá TB",
-                    ],
-                    ...detailedAnalytics.dailyBreakdown.map((row) => [
-                      row.date,
-                      row.service_type,
-                      row.total_bookings,
-                      row.confirmed_bookings,
-                      row.completed_bookings,
-                      row.cancelled_bookings,
-                      row.pending_bookings,
-                      parseFloat(row.paid_revenue).toFixed(2),
-                      parseFloat(row.pending_revenue).toFixed(2),
-                      parseFloat(row.avg_order_value).toFixed(2),
-                    ]),
-                  ]
-                    .map((row) => row.join(","))
-                    .join("\n");
-
-                  const blob = new Blob(["\uFEFF" + csv], {
-                    type: "text/csv;charset=utf-8;",
-                  });
-                  const link = document.createElement("a");
-                  link.href = URL.createObjectURL(blob);
-                  link.download = `analytics_${
-                    new Date().toISOString().split("T")[0]
-                  }.csv`;
-                  link.click();
-                  toast.success("Đã xuất file CSV");
-                }}
-                className="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-              >
-                <FileText className="w-4 h-4" />
-                Xuất CSV
-              </button>
-            </div>
-            <div className="overflow-x-auto max-h-96 overflow-y-auto">
-              <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-gray-50">
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-700">
-                      Ngày
-                    </th>
-                    <th className="text-left py-2 px-3 text-xs font-semibold text-gray-700">
-                      Dịch vụ
-                    </th>
-                    <th className="text-right py-2 px-3 text-xs font-semibold text-gray-700">
-                      Tổng đơn
-                    </th>
-                    <th className="text-right py-2 px-3 text-xs font-semibold text-gray-700">
-                      Xác nhận
-                    </th>
-                    <th className="text-right py-2 px-3 text-xs font-semibold text-gray-700">
-                      Hoàn thành
-                    </th>
-                    <th className="text-right py-2 px-3 text-xs font-semibold text-gray-700">
-                      Hủy
-                    </th>
-                    <th className="text-right py-2 px-3 text-xs font-semibold text-gray-700">
-                      Doanh thu
-                    </th>
-                    <th className="text-right py-2 px-3 text-xs font-semibold text-gray-700">
-                      Giá TB
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {detailedAnalytics.dailyBreakdown.map((row, index) => (
-                    <tr
-                      key={`${row.date}-${row.service_type}`}
-                      className={`border-b border-gray-100 ${
-                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                {/* Bookings Growth */}
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <p className="text-xs text-gray-500 mb-1">Đơn hàng</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {comparison.current.bookings}
+                  </p>
+                  <div className="flex items-center gap-1 mt-2">
+                    {parseFloat(comparison.growth.bookings) >= 0 ? (
+                      <ArrowUpRight className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <ArrowDownRight className="w-4 h-4 text-red-600" />
+                    )}
+                    <span
+                      className={`text-sm font-semibold ${
+                        parseFloat(comparison.growth.bookings) >= 0
+                          ? "text-green-600"
+                          : "text-red-600"
                       }`}
                     >
-                      <td className="py-2 px-3 text-xs text-gray-900">
-                        {new Date(row.date).toLocaleDateString("vi-VN")}
-                      </td>
-                      <td className="py-2 px-3 text-xs">
-                        <span
-                          className={`px-2 py-1 rounded ${
-                            row.service_type === "tour"
-                              ? "bg-blue-100 text-blue-700"
-                              : row.service_type === "hotel"
-                              ? "bg-green-100 text-green-700"
-                              : row.service_type === "flight"
-                              ? "bg-purple-100 text-purple-700"
-                              : "bg-yellow-100 text-yellow-700"
-                          }`}
-                        >
-                          {row.service_type === "tour"
-                            ? "Tour"
-                            : row.service_type === "hotel"
-                            ? "Hotel"
-                            : row.service_type === "flight"
-                            ? "Flight"
-                            : "Transport"}
-                        </span>
-                      </td>
-                      <td className="text-right py-2 px-3 text-xs font-semibold text-gray-900">
-                        {row.total_bookings}
-                      </td>
-                      <td className="text-right py-2 px-3 text-xs text-green-600">
-                        {row.confirmed_bookings}
-                      </td>
-                      <td className="text-right py-2 px-3 text-xs text-blue-600">
-                        {row.completed_bookings}
-                      </td>
-                      <td className="text-right py-2 px-3 text-xs text-red-600">
-                        {row.cancelled_bookings}
-                      </td>
-                      <td className="text-right py-2 px-3 text-xs font-semibold text-gray-900">
-                        {(parseFloat(row.paid_revenue) / 1000).toFixed(0)}K
-                      </td>
-                      <td className="text-right py-2 px-3 text-xs text-gray-600">
-                        {(parseFloat(row.avg_order_value) / 1000).toFixed(0)}K
-                      </td>
+                      {comparison.growth.bookings}%
+                    </span>
+                  </div>
+                </div>
+
+                {/* Revenue Growth */}
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <p className="text-xs text-gray-500 mb-1">Doanh thu</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {(comparison.current.revenue / 1000000).toFixed(1)}M
+                  </p>
+                  <div className="flex items-center gap-1 mt-2">
+                    {parseFloat(comparison.growth.revenue) >= 0 ? (
+                      <ArrowUpRight className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <ArrowDownRight className="w-4 h-4 text-red-600" />
+                    )}
+                    <span
+                      className={`text-sm font-semibold ${
+                        parseFloat(comparison.growth.revenue) >= 0
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {comparison.growth.revenue}%
+                    </span>
+                  </div>
+                </div>
+
+                {/* AOV Growth */}
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <p className="text-xs text-gray-500 mb-1">Giá trị TB/đơn</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {(comparison.current.avgOrderValue / 1000).toFixed(0)}K
+                  </p>
+                  <div className="flex items-center gap-1 mt-2">
+                    {parseFloat(comparison.growth.avgOrderValue) >= 0 ? (
+                      <ArrowUpRight className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <ArrowDownRight className="w-4 h-4 text-red-600" />
+                    )}
+                    <span
+                      className={`text-sm font-semibold ${
+                        parseFloat(comparison.growth.avgOrderValue) >= 0
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {comparison.growth.avgOrderValue}%
+                    </span>
+                  </div>
+                </div>
+
+                {/* Conversion Rate */}
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <p className="text-xs text-gray-500 mb-1">Tỷ lệ chuyển đổi</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {detailedAnalytics.summary.conversionRate}%
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    {detailedAnalytics.summary.confirmedBookings}/
+                    {detailedAnalytics.summary.totalBookings}
+                  </p>
+                </div>
+
+                {/* Cancellation Rate */}
+                <div className="bg-white rounded-lg p-4 shadow-sm">
+                  <p className="text-xs text-gray-500 mb-1">Tỷ lệ hủy</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {detailedAnalytics.summary.cancellationRate}%
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    {detailedAnalytics.summary.cancelledBookings} đơn
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Service Details Table */}
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Thống kê chi tiết theo dịch vụ
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
+                        Dịch vụ
+                      </th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
+                        Tổng đơn
+                      </th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
+                        Đã thanh toán
+                      </th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
+                        Chờ thanh toán
+                      </th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
+                        Mất mát (Hủy)
+                      </th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
+                        Giá TB
+                      </th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
+                        Min - Max
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {detailedAnalytics.serviceDetails.map((service) => (
+                      <tr
+                        key={service.service_type}
+                        className="border-b border-gray-100 hover:bg-gray-50"
+                      >
+                        <td className="py-3 px-4">
+                          <span className="font-medium text-gray-900">
+                            {service.service_type === "tour"
+                              ? "Tours"
+                              : service.service_type === "hotel"
+                              ? "Khách sạn"
+                              : service.service_type === "flight"
+                              ? "Chuyến bay"
+                              : service.service_type === "transport"
+                              ? "Vận chuyển"
+                              : service.service_type}
+                          </span>
+                        </td>
+                        <td className="text-right py-3 px-4 text-sm text-gray-900">
+                          {service.total_bookings}
+                        </td>
+                        <td className="text-right py-3 px-4 text-sm">
+                          <span className="text-green-600 font-semibold">
+                            {formatCurrency(service.paid_revenue)}
+                          </span>
+                        </td>
+                        <td className="text-right py-3 px-4 text-sm">
+                          <span className="text-yellow-600 font-semibold">
+                            {formatCurrency(service.pending_revenue)}
+                          </span>
+                        </td>
+                        <td className="text-right py-3 px-4 text-sm">
+                          <span className="text-red-600 font-semibold">
+                            {formatCurrency(service.lost_revenue)}
+                          </span>
+                        </td>
+                        <td className="text-right py-3 px-4 text-sm text-gray-900">
+                          {formatCurrency(service.avg_paid_order)}
+                        </td>
+                        <td className="text-right py-3 px-4 text-xs text-gray-500">
+                          {(service.min_order / 1000).toFixed(0)}K -{" "}
+                          {(service.max_order / 1000000).toFixed(1)}M
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Top Performers */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Top Tours */}
+              {detailedAnalytics.topPerformers.tours.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <Compass className="w-5 h-5 text-blue-600" />
+                    Top Tours
+                  </h3>
+                  <div className="space-y-3">
+                    {detailedAnalytics.topPerformers.tours
+                      .slice(0, 5)
+                      .map((tour, index) => (
+                        <div
+                          key={tour.id}
+                          className="flex items-center justify-between p-3 bg-blue-50 rounded-lg"
+                        >
+                          <div className="flex items-center gap-3 flex-1">
+                            <span className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-bold text-blue-600">
+                              {index + 1}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {tour.title}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {tour.bookings} đơn
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-blue-600">
+                              {(parseFloat(tour.revenue) / 1000000).toFixed(1)}M
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Top Hotels */}
+              {detailedAnalytics.topPerformers.hotels.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <Building2 className="w-5 h-5 text-green-600" />
+                    Top Khách sạn
+                  </h3>
+                  <div className="space-y-3">
+                    {detailedAnalytics.topPerformers.hotels
+                      .slice(0, 5)
+                      .map((hotel, index) => (
+                        <div
+                          key={hotel.id}
+                          className="flex items-center justify-between p-3 bg-green-50 rounded-lg"
+                        >
+                          <div className="flex items-center gap-3 flex-1">
+                            <span className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-sm font-bold text-green-600">
+                              {index + 1}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {hotel.name}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {hotel.bookings} đơn
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-green-600">
+                              {(parseFloat(hotel.revenue) / 1000000).toFixed(1)}
+                              M
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Top Flights */}
+              {detailedAnalytics.topPerformers.flights.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <Plane className="w-5 h-5 text-purple-600" />
+                    Top Chuyến bay
+                  </h3>
+                  <div className="space-y-3">
+                    {detailedAnalytics.topPerformers.flights
+                      .slice(0, 5)
+                      .map((flight, index) => (
+                        <div
+                          key={`${flight.airline}-${index}`}
+                          className="flex items-center justify-between p-3 bg-purple-50 rounded-lg"
+                        >
+                          <div className="flex items-center gap-3 flex-1">
+                            <span className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-sm font-bold text-purple-600">
+                              {index + 1}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900">
+                                {flight.airline}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {flight.from_location} → {flight.to_location} (
+                                {flight.bookings} đơn)
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-purple-600">
+                              {(parseFloat(flight.revenue) / 1000000).toFixed(
+                                1
+                              )}
+                              M
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Top Transports */}
+              {detailedAnalytics.topPerformers.transports.length > 0 && (
+                <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <Bus className="w-5 h-5 text-yellow-600" />
+                    Top Vận chuyển
+                  </h3>
+                  <div className="space-y-3">
+                    {detailedAnalytics.topPerformers.transports
+                      .slice(0, 5)
+                      .map((transport, index) => (
+                        <div
+                          key={`${transport.company}-${index}`}
+                          className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg"
+                        >
+                          <div className="flex items-center gap-3 flex-1">
+                            <span className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center text-sm font-bold text-yellow-600">
+                              {index + 1}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900">
+                                {transport.company}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {transport.from_location} →{" "}
+                                {transport.to_location} ({transport.bookings}{" "}
+                                đơn)
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-yellow-600">
+                              {(
+                                parseFloat(transport.revenue) / 1000000
+                              ).toFixed(1)}
+                              M
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Hourly Distribution Chart */}
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Phân bố đặt hàng theo giờ
+              </h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={detailedAnalytics.hourlyDistribution}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis
+                    dataKey="hour"
+                    stroke="#6b7280"
+                    fontSize={12}
+                    tickFormatter={(hour) => `${hour}h`}
+                  />
+                  <YAxis yAxisId="left" stroke="#6b7280" fontSize={12} />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    stroke="#6b7280"
+                    fontSize={12}
+                    tickFormatter={(value) =>
+                      `${(value / 1000000).toFixed(1)}M`
+                    }
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#fff",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                    }}
+                    formatter={(value, name) => [
+                      name === "revenue"
+                        ? `${(value / 1000000).toFixed(1)}M đ`
+                        : value,
+                      name === "revenue" ? "Doanh thu" : "Đơn hàng",
+                    ]}
+                  />
+                  <Legend />
+                  <Bar
+                    dataKey="bookings"
+                    fill="#3b82f6"
+                    name="Đơn hàng"
+                    yAxisId="left"
+                  />
+                  <Bar
+                    dataKey="revenue"
+                    fill="#10b981"
+                    name="Doanh thu (đ)"
+                    yAxisId="right"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Daily Breakdown Table */}
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Chi tiết theo ngày
+                </h2>
+                <button
+                  onClick={() => {
+                    // Export CSV functionality
+                    const csv = [
+                      [
+                        "Ngày",
+                        "Dịch vụ",
+                        "Tổng đơn",
+                        "Xác nhận",
+                        "Hoàn thành",
+                        "Hủy",
+                        "Chờ",
+                        "Doanh thu",
+                        "Chờ thanh toán",
+                        "Giá TB",
+                      ],
+                      ...detailedAnalytics.dailyBreakdown.map((row) => [
+                        row.date,
+                        row.service_type,
+                        row.total_bookings,
+                        row.confirmed_bookings,
+                        row.completed_bookings,
+                        row.cancelled_bookings,
+                        row.pending_bookings,
+                        parseFloat(row.paid_revenue).toFixed(2),
+                        parseFloat(row.pending_revenue).toFixed(2),
+                        parseFloat(row.avg_order_value).toFixed(2),
+                      ]),
+                    ]
+                      .map((row) => row.join(","))
+                      .join("\n");
+
+                    const blob = new Blob(["\uFEFF" + csv], {
+                      type: "text/csv;charset=utf-8;",
+                    });
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `analytics_${
+                      new Date().toISOString().split("T")[0]
+                    }.csv`;
+                    link.click();
+                    toast.success("Đã xuất file CSV");
+                  }}
+                  className="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                >
+                  <FileText className="w-4 h-4" />
+                  Xuất CSV
+                </button>
+              </div>
+              <div className="overflow-x-auto max-h-96 overflow-y-auto">
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-gray-50">
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-2 px-3 text-xs font-semibold text-gray-700">
+                        Ngày
+                      </th>
+                      <th className="text-left py-2 px-3 text-xs font-semibold text-gray-700">
+                        Dịch vụ
+                      </th>
+                      <th className="text-right py-2 px-3 text-xs font-semibold text-gray-700">
+                        Tổng đơn
+                      </th>
+                      <th className="text-right py-2 px-3 text-xs font-semibold text-gray-700">
+                        Xác nhận
+                      </th>
+                      <th className="text-right py-2 px-3 text-xs font-semibold text-gray-700">
+                        Hoàn thành
+                      </th>
+                      <th className="text-right py-2 px-3 text-xs font-semibold text-gray-700">
+                        Hủy
+                      </th>
+                      <th className="text-right py-2 px-3 text-xs font-semibold text-gray-700">
+                        Doanh thu
+                      </th>
+                      <th className="text-right py-2 px-3 text-xs font-semibold text-gray-700">
+                        Giá TB
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {detailedAnalytics.dailyBreakdown.map((row, index) => (
+                      <tr
+                        key={`${row.date}-${row.service_type}`}
+                        className={`border-b border-gray-100 ${
+                          index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                        }`}
+                      >
+                        <td className="py-2 px-3 text-xs text-gray-900">
+                          {new Date(row.date).toLocaleDateString("vi-VN")}
+                        </td>
+                        <td className="py-2 px-3 text-xs">
+                          <span
+                            className={`px-2 py-1 rounded ${
+                              row.service_type === "tour"
+                                ? "bg-blue-100 text-blue-700"
+                                : row.service_type === "hotel"
+                                ? "bg-green-100 text-green-700"
+                                : row.service_type === "flight"
+                                ? "bg-purple-100 text-purple-700"
+                                : "bg-yellow-100 text-yellow-700"
+                            }`}
+                          >
+                            {row.service_type === "tour"
+                              ? "Tour"
+                              : row.service_type === "hotel"
+                              ? "Hotel"
+                              : row.service_type === "flight"
+                              ? "Flight"
+                              : "Transport"}
+                          </span>
+                        </td>
+                        <td className="text-right py-2 px-3 text-xs font-semibold text-gray-900">
+                          {row.total_bookings}
+                        </td>
+                        <td className="text-right py-2 px-3 text-xs text-green-600">
+                          {row.confirmed_bookings}
+                        </td>
+                        <td className="text-right py-2 px-3 text-xs text-blue-600">
+                          {row.completed_bookings}
+                        </td>
+                        <td className="text-right py-2 px-3 text-xs text-red-600">
+                          {row.cancelled_bookings}
+                        </td>
+                        <td className="text-right py-2 px-3 text-xs font-semibold text-gray-900">
+                          {(parseFloat(row.paid_revenue) / 1000).toFixed(0)}K
+                        </td>
+                        <td className="text-right py-2 px-3 text-xs text-gray-600">
+                          {(parseFloat(row.avg_order_value) / 1000).toFixed(0)}K
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 };

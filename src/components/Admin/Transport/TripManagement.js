@@ -22,6 +22,16 @@ import {
 import { toast } from "react-hot-toast";
 import { API_URL } from "../../../config/api";
 
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
+
 const TripManagement = ({ onBack }) => {
   const [trips, setTrips] = useState([]);
   const [filteredTrips, setFilteredTrips] = useState([]);
@@ -178,13 +188,10 @@ const TripManagement = ({ onBack }) => {
     try {
       const response = await fetch(
         `${API_URL}/transport/admin/trips/${tripId}/cancel`,
-        {
+        getFetchOptions({
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({ cancel_reason: reason }),
-        }
+        })
       );
 
       if (!response.ok) {
@@ -218,13 +225,10 @@ const TripManagement = ({ onBack }) => {
     try {
       const response = await fetch(
         `${API_URL}/transport/admin/trips/${selectedTrip.id}`,
-        {
+        getFetchOptions({
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify(editData),
-        }
+        })
       );
 
       if (!response.ok) {

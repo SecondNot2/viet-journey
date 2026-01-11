@@ -21,6 +21,16 @@ import TourForm from "./TourForm";
 import ScheduleForm from "./ScheduleForm";
 import { API_URL, API_HOST } from "../../../config/api";
 
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
+
 const AdminTours = () => {
   const [activeTab, setActiveTab] = useState("tours"); // 'tours' | 'schedules'
   const [loading, setLoading] = useState(false);
@@ -74,7 +84,10 @@ const AdminTours = () => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/tours/admin/stats`);
+      const response = await fetch(
+        `${API_URL}/tours/admin/stats`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch stats");
 
       const data = await response.json();
@@ -107,7 +120,10 @@ const AdminTours = () => {
         params.append(key, value);
       });
 
-      const response = await fetch(`${API_URL}/tours/admin/tours?${params}`);
+      const response = await fetch(
+        `${API_URL}/tours/admin/tours?${params}`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch tours");
 
       const data = await response.json();
@@ -124,7 +140,10 @@ const AdminTours = () => {
   // Fetch tour types
   const fetchTourTypes = async () => {
     try {
-      const response = await fetch(`${API_URL}/tours/admin/tour-types`);
+      const response = await fetch(
+        `${API_URL}/tours/admin/tour-types`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch tour types");
 
       const data = await response.json();
@@ -185,9 +204,9 @@ const AdminTours = () => {
         try {
           const response = await fetch(
             `${API_URL}/tours/admin/tours/${tourId}`,
-            {
+            getFetchOptions({
               method: "DELETE",
-            }
+            })
           );
 
           if (!response.ok) {
@@ -225,11 +244,13 @@ const AdminTours = () => {
 
   const handleSetInactive = async (tourId) => {
     try {
-      const response = await fetch(`${API_URL}/tours/admin/tours/${tourId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "inactive" }),
-      });
+      const response = await fetch(
+        `${API_URL}/tours/admin/tours/${tourId}`,
+        getFetchOptions({
+          method: "PUT",
+          body: JSON.stringify({ status: "inactive" }),
+        })
+      );
 
       if (!response.ok) throw new Error("Failed to set inactive");
 

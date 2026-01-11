@@ -14,6 +14,16 @@ import {
   Timer,
 } from "lucide-react";
 
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
+
 const FlightForm = ({ flight, onClose, onSave, viewMode: initialViewMode }) => {
   const [viewMode, setViewMode] = useState(initialViewMode);
   const [formData, setFormData] = useState({

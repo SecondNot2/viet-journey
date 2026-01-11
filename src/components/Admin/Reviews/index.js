@@ -16,7 +16,15 @@ import toast from "react-hot-toast";
 import ConfirmDialog from "../../common/ConfirmDialog";
 import ReviewForm from "./ReviewForm";
 
-
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
 
 const AdminReviews = () => {
   const [loading, setLoading] = useState(false);
@@ -67,7 +75,10 @@ const AdminReviews = () => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/reviews/admin/stats`);
+      const response = await fetch(
+        `${API_URL}/reviews/admin/stats`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch stats");
 
       const data = await response.json();
@@ -153,13 +164,10 @@ const AdminReviews = () => {
         try {
           const response = await fetch(
             `${API_URL}/reviews/admin/reviews/${reviewId}/status`,
-            {
+            getFetchOptions({
               method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
               body: JSON.stringify({ status: "banned" }),
-            }
+            })
           );
 
           if (!response.ok) {
@@ -197,13 +205,10 @@ const AdminReviews = () => {
         try {
           const response = await fetch(
             `${API_URL}/reviews/admin/reviews/${reviewId}/status`,
-            {
+            getFetchOptions({
               method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
               body: JSON.stringify({ status: "active" }),
-            }
+            })
           );
 
           if (!response.ok) {
@@ -240,9 +245,9 @@ const AdminReviews = () => {
         try {
           const response = await fetch(
             `${API_URL}/reviews/admin/reviews/${reviewId}`,
-            {
+            getFetchOptions({
               method: "DELETE",
-            }
+            })
           );
 
           if (!response.ok) {

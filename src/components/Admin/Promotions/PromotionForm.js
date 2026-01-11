@@ -10,6 +10,15 @@ import {
 import toast from "react-hot-toast";
 import { API_URL, API_HOST } from "../../../config/api";
 
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
 
 const PromotionForm = ({ promotion, onClose, onSave, viewMode, editMode }) => {
   const isAddMode = !promotion && !viewMode;

@@ -11,6 +11,15 @@ import {
 import toast from "react-hot-toast";
 import { API_URL, API_HOST } from "../../../config/api";
 
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
 
 const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
   const isAddMode = !tour && !viewMode;
@@ -87,7 +96,10 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
 
   const fetchGuides = async () => {
     try {
-      const response = await fetch(`${API_URL}/tours/admin/guides`);
+      const response = await fetch(
+        `${API_URL}/tours/admin/guides`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch guides");
       const data = await response.json();
       setGuides(data.guides || []);
@@ -98,7 +110,10 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
 
   const fetchDestinations = async () => {
     try {
-      const response = await fetch(`${API_URL}/tours/admin/destinations`);
+      const response = await fetch(
+        `${API_URL}/tours/admin/destinations`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch destinations");
       const data = await response.json();
       setDestinations(data.destinations || []);
@@ -172,7 +187,7 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
   };
 
   const handleRemoveStartDate = (index) => {
-      setFormData({
+    setFormData({
       ...formData,
       start_dates: formData.start_dates.filter((_, i) => i !== index),
     });
@@ -206,8 +221,10 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
     formDataUpload.append("folder", "tours");
 
     try {
+      // For file upload, don't include Content-Type header
       const response = await fetch(`${API_URL}/upload`, {
         method: "POST",
+        credentials: "include",
         body: formDataUpload,
       });
 
@@ -312,9 +329,9 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
     return new Intl.NumberFormat("vi-VN").format(price) + " đ";
   };
 
-    return (
+  return (
     <div className="min-h-screen bg-gray-50">
-        {/* Header */}
+      {/* Header */}
       <div className="bg-gradient-to-r from-green-600 to-teal-600 -mx-8 -mt-8 px-8 py-6 mb-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between">
@@ -332,8 +349,8 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                     : editMode
                     ? "Chỉnh sửa Tour"
                     : "Thêm Tour mới"}
-              </h1>
-            </div>
+                </h1>
+              </div>
             </div>
 
             {!viewMode && (
@@ -355,9 +372,9 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                 )}
               </button>
             )}
-            </div>
           </div>
         </div>
+      </div>
 
       {/* Form Content */}
       <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm p-8">
@@ -366,10 +383,10 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-gray-900 border-b pb-2">
               Thông tin cơ bản
-              </h2>
+            </h2>
 
             {/* Title */}
-                <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Tên tour <span className="text-red-500">*</span>
               </label>
@@ -391,7 +408,7 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
 
             {/* Type, Status, Difficulty */}
             <div className="grid grid-cols-3 gap-4">
-                <div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Loại tour
                 </label>
@@ -409,7 +426,7 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                   <option value="beach">Biển</option>
                   <option value="mountain">Núi</option>
                 </select>
-      </div>
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -426,12 +443,12 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                   <option value="inactive">Tạm dừng</option>
                   <option value="draft">Nháp</option>
                 </select>
-          </div>
+              </div>
 
-                  <div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Độ khó
-                    </label>
+                </label>
                 <select
                   name="difficulty_level"
                   value={formData.difficulty_level}
@@ -444,16 +461,16 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                   <option value="challenging">Khó</option>
                   <option value="difficult">Rất khó</option>
                 </select>
-                    </div>
-                  </div>
+              </div>
+            </div>
 
             {/* Location */}
-                  <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Địa điểm <span className="text-red-500">*</span>
-                    </label>
-                      <input
-                        type="text"
+              </label>
+              <input
+                type="text"
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
@@ -465,14 +482,14 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
               />
               {errors.location && (
                 <p className="text-red-500 text-sm mt-1">{errors.location}</p>
-                    )}
-                  </div>
+              )}
+            </div>
 
             {/* Description */}
-                  <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Mô tả
-                    </label>
+              </label>
               <textarea
                 name="description"
                 value={formData.description}
@@ -482,8 +499,8 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100"
                 placeholder="Mô tả chi tiết về tour..."
               />
-                    </div>
-                  </div>
+            </div>
+          </div>
 
           {/* Price & Duration */}
           <div className="space-y-4">
@@ -492,14 +509,14 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
             </h2>
 
             <div className="grid grid-cols-3 gap-4">
-                  <div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Giá tour <span className="text-red-500">*</span>
-                    </label>
-                      <input
-                        type="number"
+                </label>
+                <input
+                  type="number"
                   name="price"
-                        value={formData.price}
+                  value={formData.price}
                   onChange={handleChange}
                   disabled={viewMode}
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 ${
@@ -507,22 +524,22 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                   }`}
                   placeholder="VD: 5000000"
                 />
-                    {errors.price && (
+                {errors.price && (
                   <p className="text-red-500 text-sm mt-1">{errors.price}</p>
                 )}
                 {viewMode && formData.price > 0 && (
                   <p className="text-sm text-gray-600 mt-1">
                     {formatPrice(formData.price)}
-                      </p>
-                    )}
-                  </div>
+                  </p>
+                )}
+              </div>
 
-                  <div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Thời gian (ngày) <span className="text-red-500">*</span>
-                    </label>
-                      <input
-                        type="number"
+                </label>
+                <input
+                  type="number"
                   name="duration"
                   value={formData.duration}
                   onChange={handleChange}
@@ -535,14 +552,14 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                 />
                 {errors.duration && (
                   <p className="text-red-500 text-sm mt-1">{errors.duration}</p>
-                    )}
-                  </div>
+                )}
+              </div>
 
-                  <div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Kích thước nhóm
-                    </label>
-                      <input
+                </label>
+                <input
                   type="text"
                   name="group_size"
                   value={formData.group_size}
@@ -551,9 +568,9 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100"
                   placeholder="VD: 10-20 người"
                 />
-                    </div>
-                  </div>
-                  </div>
+              </div>
+            </div>
+          </div>
 
           {/* Guide & Destination */}
           <div className="space-y-4">
@@ -562,11 +579,11 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
             </h2>
 
             <div className="grid grid-cols-2 gap-4">
-                  <div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Hướng dẫn viên
-                    </label>
-                      <select
+                </label>
+                <select
                   name="guide_id"
                   value={formData.guide_id}
                   onChange={handleChange}
@@ -579,14 +596,14 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                       {guide.name} ({guide.email})
                     </option>
                   ))}
-                      </select>
-                  </div>
+                </select>
+              </div>
 
-                  <div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Điểm đến
-                    </label>
-                      <select
+                </label>
+                <select
                   name="destination_id"
                   value={formData.destination_id}
                   onChange={handleChange}
@@ -599,10 +616,10 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                       {dest.name}
                     </option>
                   ))}
-                      </select>
-                </div>
+                </select>
               </div>
             </div>
+          </div>
 
           {/* Services */}
           <div className="space-y-4">
@@ -611,10 +628,10 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
             </h2>
 
             {/* Included Services */}
-                  <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Dịch vụ bao gồm
-                    </label>
+              </label>
               {!viewMode && (
                 <div className="flex gap-2 mb-2">
                   <input
@@ -656,13 +673,13 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                   </span>
                 ))}
               </div>
-                  </div>
+            </div>
 
             {/* Excluded Services */}
-                  <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Dịch vụ không bao gồm
-                    </label>
+              </label>
               {!viewMode && (
                 <div className="flex gap-2 mb-2">
                   <input
@@ -683,8 +700,8 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                   >
                     <Plus className="w-5 h-5" />
                   </button>
-                        </div>
-                      )}
+                </div>
+              )}
               <div className="flex flex-wrap gap-2">
                 {formData.excluded_services.map((service, index) => (
                   <span
@@ -703,20 +720,20 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                     )}
                   </span>
                 ))}
-                  </div>
-                </div>
               </div>
+            </div>
+          </div>
 
           {/* Start Dates */}
-                <div className="space-y-4">
+          <div className="space-y-4">
             <h2 className="text-lg font-semibold text-gray-900 border-b pb-2">
               Ngày khởi hành
             </h2>
 
-                    <div>
+            <div>
               {!viewMode && (
                 <div className="flex gap-2 mb-2">
-                      <input
+                  <input
                     type="date"
                     value={newStartDate}
                     onChange={(e) => setNewStartDate(e.target.value)}
@@ -729,7 +746,7 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                   >
                     <Plus className="w-5 h-5" />
                   </button>
-                    </div>
+                </div>
               )}
               <div className="flex flex-wrap gap-2">
                 {formData.start_dates.map((date, index) => (
@@ -749,9 +766,9 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                     )}
                   </span>
                 ))}
-                  </div>
-                  </div>
-                    </div>
+              </div>
+            </div>
+          </div>
 
           {/* Image */}
           <div className="space-y-4">
@@ -762,10 +779,10 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
             {!viewMode && (
               <div className="space-y-4">
                 {/* File Upload */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Upload từ thiết bị
-                    </label>
+                  </label>
                   <div className="flex items-center justify-center w-full">
                     <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -777,22 +794,22 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                         <p className="text-xs text-gray-500">
                           PNG, JPG, GIF (MAX. 5MB)
                         </p>
-                  </div>
+                      </div>
                       <input
                         type="file"
                         className="hidden"
                         accept="image/*"
                         onChange={handleImageFileUpload}
                       />
-                      </label>
+                    </label>
                   </div>
-                    </div>
+                </div>
 
                 {/* URL Input */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Hoặc nhập URL
-                      </label>
+                  </label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -816,8 +833,8 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                       Thêm
                     </button>
                   </div>
-                  </div>
                 </div>
+              </div>
             )}
 
             {/* Image Preview */}
@@ -841,8 +858,8 @@ const TourForm = ({ tour, onClose, onSave, viewMode, editMode }) => {
                     <X className="w-4 h-4" />
                   </button>
                 )}
-          </div>
-        )}
+              </div>
+            )}
           </div>
         </form>
       </div>

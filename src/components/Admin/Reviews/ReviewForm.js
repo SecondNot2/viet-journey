@@ -14,7 +14,15 @@ import {
 import toast from "react-hot-toast";
 import ConfirmDialog from "../../common/ConfirmDialog";
 
-
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
 
 const ReviewForm = ({ review, onClose, onStatusChange }) => {
   const [loading, setLoading] = useState(false);
@@ -68,13 +76,10 @@ const ReviewForm = ({ review, onClose, onStatusChange }) => {
         try {
           const response = await fetch(
             `${API_URL}/reviews/admin/reviews/${review.id}/status`,
-            {
+            getFetchOptions({
               method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
               body: JSON.stringify({ status: "banned" }),
-            }
+            })
           );
 
           if (!response.ok) {
@@ -112,13 +117,10 @@ const ReviewForm = ({ review, onClose, onStatusChange }) => {
         try {
           const response = await fetch(
             `${API_URL}/reviews/admin/reviews/${review.id}/status`,
-            {
+            getFetchOptions({
               method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
               body: JSON.stringify({ status: "active" }),
-            }
+            })
           );
 
           if (!response.ok) {

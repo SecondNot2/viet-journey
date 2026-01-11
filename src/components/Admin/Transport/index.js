@@ -27,6 +27,16 @@ import TripManagement from "./TripManagement";
 import ConfirmDialog from "../../common/ConfirmDialog";
 import { API_URL } from "../../../config/api";
 
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
+
 const TransportManagement = () => {
   // State cho tab navigation
   const [activeTab, setActiveTab] = useState("routes"); // 'routes' hoặc 'trips'
@@ -216,13 +226,10 @@ const TransportManagement = () => {
     try {
       const response = await fetch(
         `${API_URL}/transport/admin/routes/${routeId}`,
-        {
+        getFetchOptions({
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({ status: "inactive" }),
-        }
+        })
       );
 
       if (!response.ok) {
@@ -271,9 +278,9 @@ const TransportManagement = () => {
         try {
           const response = await fetch(
             `${API_URL}/transport/admin/routes/${routeId}`,
-            {
+            getFetchOptions({
               method: "DELETE",
-            }
+            })
           );
 
           if (!response.ok) {
@@ -425,13 +432,9 @@ const TransportManagement = () => {
           // Call backend endpoint to trigger generation
           const response = await fetch(
             `${API_URL}/transport/admin/generate-trips`,
-            {
+            getFetchOptions({
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              withCredentials: true,
-            }
+            })
           );
 
           if (!response.ok) {

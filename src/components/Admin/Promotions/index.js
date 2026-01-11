@@ -17,6 +17,15 @@ import ConfirmDialog from "../../common/ConfirmDialog";
 import PromotionForm from "./PromotionForm";
 import { API_URL, API_HOST } from "../../../config/api";
 
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
 
 const AdminPromotions = () => {
   const [loading, setLoading] = useState(false);
@@ -63,7 +72,10 @@ const AdminPromotions = () => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/promotions/admin/stats`);
+      const response = await fetch(
+        `${API_URL}/promotions/admin/stats`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch stats");
 
       const data = await response.json();
@@ -171,9 +183,9 @@ const AdminPromotions = () => {
         try {
           const response = await fetch(
             `${API_URL}/promotions/${promotionId}`,
-            {
+            getFetchOptions({
               method: "DELETE",
-            }
+            })
           );
 
           if (!response.ok) {
@@ -242,7 +254,7 @@ const AdminPromotions = () => {
       );
     }
     if (promotion.is_expiring_soon) {
-    return (
+      return (
         <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded">
           Sắp hết hạn
         </span>
@@ -279,22 +291,22 @@ const AdminPromotions = () => {
               <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
                 <Tag className="w-8 h-8 text-white" />
               </div>
-            <div>
+              <div>
                 <h1 className="text-3xl font-bold text-white">
                   Quản lý Khuyến mãi
-              </h1>
+                </h1>
                 <p className="text-orange-100 mt-1">
                   Quản lý tất cả khuyến mãi và ưu đãi
-              </p>
+                </p>
+              </div>
             </div>
-            </div>
-              <button
+            <button
               onClick={handleAdd}
               className="flex items-center gap-2 bg-white text-orange-600 px-6 py-3 rounded-xl font-medium hover:bg-orange-50 transition-colors shadow-lg"
-              >
+            >
               <Plus className="w-5 h-5" />
-                Thêm khuyến mãi
-              </button>
+              Thêm khuyến mãi
+            </button>
           </div>
 
           {/* Stats Cards */}
@@ -311,9 +323,9 @@ const AdminPromotions = () => {
                 </div>
                 <div className="bg-white/10 p-3 rounded-lg">
                   <Tag className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
-                </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
               <div className="flex items-center justify-between">
@@ -325,9 +337,9 @@ const AdminPromotions = () => {
                 </div>
                 <div className="bg-white/10 p-3 rounded-lg">
                   <TrendingUp className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
-                </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
               <div className="flex items-center justify-between">
@@ -341,9 +353,9 @@ const AdminPromotions = () => {
                 </div>
                 <div className="bg-white/10 p-3 rounded-lg">
                   <Percent className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
-                </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
               <div className="flex items-center justify-between">
@@ -367,10 +379,10 @@ const AdminPromotions = () => {
         {/* Filters */}
         <div className="mb-6 space-y-4">
           {/* Search Bar */}
-              <div className="relative">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
+            <input
+              type="text"
               placeholder="Tìm kiếm theo tiêu đề hoặc mô tả..."
               value={filters.search}
               onChange={(e) =>
@@ -378,7 +390,7 @@ const AdminPromotions = () => {
               }
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             />
-            </div>
+          </div>
 
           {/* Filters Row */}
           <div className="flex flex-wrap gap-4">
@@ -395,8 +407,8 @@ const AdminPromotions = () => {
               <option value="inactive">Inactive</option>
             </select>
 
-                  {/* Type Filter */}
-                    <select
+            {/* Type Filter */}
+            <select
               value={filters.type}
               onChange={(e) =>
                 setFilters({ ...filters, type: e.target.value, page: 1 })
@@ -406,10 +418,10 @@ const AdminPromotions = () => {
               <option value="all">Tất cả loại</option>
               <option value="percentage">Phần trăm (%)</option>
               <option value="fixed">Số tiền cố định (đ)</option>
-                    </select>
+            </select>
 
             {/* Sort */}
-                    <select
+            <select
               value={filters.sort_by}
               onChange={(e) =>
                 setFilters({ ...filters, sort_by: e.target.value, page: 1 })
@@ -424,15 +436,15 @@ const AdminPromotions = () => {
               <option value="discount_asc">Giảm giá thấp nhất</option>
               <option value="end_date_asc">Sắp hết hạn</option>
               <option value="end_date_desc">Còn hạn lâu nhất</option>
-                    </select>
-                  </div>
-                </div>
+            </select>
+          </div>
+        </div>
 
         {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 text-orange-600 animate-spin" />
-                    </div>
+          </div>
         )}
 
         {/* Empty State */}
@@ -452,7 +464,7 @@ const AdminPromotions = () => {
               <Plus className="w-5 h-5" />
               Thêm khuyến mãi
             </button>
-                  </div>
+          </div>
         )}
 
         {/* Promotions Grid */}
@@ -470,13 +482,13 @@ const AdminPromotions = () => {
                       <h3 className="font-semibold text-lg line-clamp-1">
                         {promotion.title}
                       </h3>
-                  </div>
+                    </div>
                     {getStatusBadge(promotion)}
-                </div>
+                  </div>
                   <div className="text-3xl font-bold">
                     {formatDiscount(promotion.discount, promotion.type)}
-            </div>
-          </div>
+                  </div>
+                </div>
 
                 {/* Content */}
                 <div className="p-4">
@@ -489,11 +501,11 @@ const AdminPromotions = () => {
                   <div className="space-y-2 mb-4 text-sm">
                     <div className="flex items-center gap-2 text-gray-600">
                       <Calendar className="w-4 h-4" />
-              <span>
+                      <span>
                         {formatDate(promotion.start_date)} -{" "}
                         {formatDate(promotion.end_date)}
-              </span>
-            </div>
+                      </span>
+                    </div>
                     <div className="flex items-center gap-2 text-gray-600">
                       <Users className="w-4 h-4" />
                       <span>
@@ -501,47 +513,47 @@ const AdminPromotions = () => {
                         {promotion.usage_limit
                           ? ` / ${promotion.usage_limit}`
                           : ""}
-                </span>
-              </div>
+                      </span>
+                    </div>
                     {promotion.service_count > 0 && (
                       <div className="flex items-center gap-2 text-gray-600">
                         <Tag className="w-4 h-4" />
                         <span>{promotion.service_count} dịch vụ</span>
-                            </div>
-                          )}
-                        </div>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Actions */}
-                        <div className="flex items-center gap-2">
-                          <button
+                  <div className="flex items-center gap-2">
+                    <button
                       onClick={() => handleView(promotion)}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                          >
+                    >
                       <Eye className="w-4 h-4" />
                       Xem
-                          </button>
-                          <button
+                    </button>
+                    <button
                       onClick={() => handleEdit(promotion)}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors"
-                          >
+                    >
                       <Edit className="w-4 h-4" />
                       Sửa
-                          </button>
-                          <button
+                    </button>
+                    <button
                       onClick={() => handleDelete(promotion.id)}
                       className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
-                            disabled={promotion.used_count > 0}
-                          >
+                      disabled={promotion.used_count > 0}
+                    >
                       <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-          </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         )}
 
-          {/* Pagination */}
+        {/* Pagination */}
         {!loading && promotions.length > 0 && pagination.total > 0 && (
           <div className="flex items-center justify-between mt-6 pt-6 border-t">
             <p className="text-sm text-gray-600">
@@ -551,7 +563,7 @@ const AdminPromotions = () => {
             </p>
             {pagination.total_pages > 1 && (
               <div className="flex gap-2">
-              <button
+                <button
                   onClick={() =>
                     setFilters({ ...filters, page: filters.page - 1 })
                   }
@@ -559,20 +571,20 @@ const AdminPromotions = () => {
                   className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Trước
-              </button>
+                </button>
                 <span className="px-4 py-2 bg-orange-50 text-orange-600 rounded-lg font-medium">
                   {pagination.page} / {pagination.total_pages}
                 </span>
-              <button
-                onClick={() =>
+                <button
+                  onClick={() =>
                     setFilters({ ...filters, page: filters.page + 1 })
                   }
                   disabled={filters.page === pagination.total_pages}
                   className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Sau
-              </button>
-            </div>
+                </button>
+              </div>
             )}
           </div>
         )}

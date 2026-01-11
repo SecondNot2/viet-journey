@@ -11,6 +11,15 @@ import {
 import toast from "react-hot-toast";
 import { API_URL, API_HOST } from "../../../config/api";
 
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
 
 const UserForm = ({ user, onClose, onSave, viewMode, editMode }) => {
   const isAddMode = !user && !viewMode;
@@ -62,7 +71,10 @@ const UserForm = ({ user, onClose, onSave, viewMode, editMode }) => {
   // Fetch roles
   const fetchRoles = async () => {
     try {
-      const response = await fetch(`${API_URL}/users/admin/roles`);
+      const response = await fetch(
+        `${API_URL}/users/admin/roles`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch roles");
 
       const data = await response.json();

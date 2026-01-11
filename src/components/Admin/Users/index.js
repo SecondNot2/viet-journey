@@ -17,6 +17,15 @@ import ConfirmDialog from "../../common/ConfirmDialog";
 import UserForm from "./UserForm";
 import { API_URL, API_HOST } from "../../../config/api";
 
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
 
 const AdminUsers = () => {
   const [loading, setLoading] = useState(false);
@@ -63,7 +72,10 @@ const AdminUsers = () => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/users/admin/stats`);
+      const response = await fetch(
+        `${API_URL}/users/admin/stats`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch stats");
 
       const data = await response.json();
@@ -96,9 +108,7 @@ const AdminUsers = () => {
         params.append(key, value);
       });
 
-      const response = await fetch(
-        `${API_URL}/users/admin/users?${params}`
-      );
+      const response = await fetch(`${API_URL}/users/admin/users?${params}`);
       if (!response.ok) throw new Error("Failed to fetch users");
 
       const data = await response.json();
@@ -163,9 +173,9 @@ const AdminUsers = () => {
         try {
           const response = await fetch(
             `${API_URL}/users/admin/users/${userId}`,
-            {
+            getFetchOptions({
               method: "DELETE",
-            }
+            })
           );
 
           if (!response.ok) {
@@ -209,13 +219,10 @@ const AdminUsers = () => {
     try {
       const response = await fetch(
         `${API_URL}/users/admin/users/${userId}`,
-        {
+        getFetchOptions({
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({ status: "banned" }),
-        }
+        })
       );
 
       if (!response.ok) throw new Error("Failed to ban user");

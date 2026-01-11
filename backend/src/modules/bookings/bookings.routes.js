@@ -164,36 +164,172 @@ router.get(
       startDate.setDate(startDate.getDate() - parseInt(days));
       const startDateStr = startDate.toISOString().split("T")[0];
 
-      // Get detailed breakdown by service
+      // Get all bookings in the period
       const { data: bookings } = await supabase
         .from("bookings")
         .select("service_type, total_price, status, created_at")
         .gte("created_at", startDateStr);
 
+      // Calculate summary
+      const totalBookings = (bookings || []).length;
+      const confirmedBookings = (bookings || []).filter((b) =>
+        ["confirmed", "completed"].includes(b.status)
+      ).length;
+      const cancelledBookings = (bookings || []).filter(
+        (b) => b.status === "cancelled"
+      ).length;
+      const pendingBookings = (bookings || []).filter(
+        (b) => b.status === "pending"
+      ).length;
+
+      const totalRevenue = (bookings || [])
+        .filter((b) => ["confirmed", "completed"].includes(b.status))
+        .reduce((sum, b) => sum + (parseFloat(b.total_price) || 0), 0);
+
+      const conversionRate =
+        totalBookings > 0
+          ? ((confirmedBookings / totalBookings) * 100).toFixed(1)
+          : 0;
+      const cancellationRate =
+        totalBookings > 0
+          ? ((cancelledBookings / totalBookings) * 100).toFixed(1)
+          : 0;
+
+      // Service Details breakdown
       const byService = {};
       (bookings || []).forEach((b) => {
         const type = b.service_type || "unknown";
         if (!byService[type]) {
           byService[type] = {
-            total: 0,
-            confirmed: 0,
-            pending: 0,
-            cancelled: 0,
-            revenue: 0,
+            service_type: type,
+            total_bookings: 0,
+            confirmed_bookings: 0,
+            completed_bookings: 0,
+            cancelled_bookings: 0,
+            pending_bookings: 0,
+            paid_revenue: 0,
+            pending_revenue: 0,
+            lost_revenue: 0,
+            prices: [],
           };
         }
-        byService[type].total += 1;
-        byService[type][b.status] = (byService[type][b.status] || 0) + 1;
-        if (["confirmed", "completed"].includes(b.status)) {
-          byService[type].revenue += parseFloat(b.total_price) || 0;
+        byService[type].total_bookings += 1;
+        const price = parseFloat(b.total_price) || 0;
+        byService[type].prices.push(price);
+
+        if (b.status === "confirmed") {
+          byService[type].confirmed_bookings += 1;
+          byService[type].paid_revenue += price;
+        } else if (b.status === "completed") {
+          byService[type].completed_bookings += 1;
+          byService[type].paid_revenue += price;
+        } else if (b.status === "cancelled") {
+          byService[type].cancelled_bookings += 1;
+          byService[type].lost_revenue += price;
+        } else if (b.status === "pending") {
+          byService[type].pending_bookings += 1;
+          byService[type].pending_revenue += price;
         }
       });
 
-      res.json({
-        byService: Object.entries(byService).map(([type, data]) => ({
-          service_type: type,
+      const serviceDetails = Object.values(byService).map((service) => ({
+        ...service,
+        avg_paid_order:
+          service.paid_revenue /
+            (service.confirmed_bookings + service.completed_bookings) || 0,
+        min_order: service.prices.length > 0 ? Math.min(...service.prices) : 0,
+        max_order: service.prices.length > 0 ? Math.max(...service.prices) : 0,
+        prices: undefined, // Remove prices array from response
+      }));
+
+      // Hourly distribution
+      const hourlyDist = {};
+      for (let i = 0; i < 24; i++) hourlyDist[i] = { bookings: 0, revenue: 0 };
+      (bookings || []).forEach((b) => {
+        const hour = new Date(b.created_at).getHours();
+        hourlyDist[hour].bookings += 1;
+        if (["confirmed", "completed"].includes(b.status)) {
+          hourlyDist[hour].revenue += parseFloat(b.total_price) || 0;
+        }
+      });
+
+      const hourlyDistribution = Object.entries(hourlyDist).map(
+        ([hour, data]) => ({
+          hour: parseInt(hour),
           ...data,
-        })),
+        })
+      );
+
+      // Daily breakdown
+      const dailyData = {};
+      (bookings || []).forEach((b) => {
+        const date = b.created_at.split("T")[0];
+        const type = b.service_type || "unknown";
+        const key = `${date}-${type}`;
+
+        if (!dailyData[key]) {
+          dailyData[key] = {
+            date,
+            service_type: type,
+            total_bookings: 0,
+            confirmed_bookings: 0,
+            completed_bookings: 0,
+            cancelled_bookings: 0,
+            pending_bookings: 0,
+            total_revenue: 0,
+            pending_revenue: 0,
+            avg_order: 0,
+          };
+        }
+
+        dailyData[key].total_bookings += 1;
+        const price = parseFloat(b.total_price) || 0;
+
+        if (b.status === "confirmed") {
+          dailyData[key].confirmed_bookings += 1;
+          dailyData[key].total_revenue += price;
+        } else if (b.status === "completed") {
+          dailyData[key].completed_bookings += 1;
+          dailyData[key].total_revenue += price;
+        } else if (b.status === "cancelled") {
+          dailyData[key].cancelled_bookings += 1;
+        } else if (b.status === "pending") {
+          dailyData[key].pending_bookings += 1;
+          dailyData[key].pending_revenue += price;
+        }
+      });
+
+      const dailyBreakdown = Object.values(dailyData)
+        .map((d) => ({
+          ...d,
+          avg_order:
+            d.total_bookings > 0 ? d.total_revenue / d.total_bookings : 0,
+        }))
+        .sort((a, b) => b.date.localeCompare(a.date));
+
+      // Top performers (simplified - just get counts by service)
+      // For a real implementation, you would join with tours/hotels/flights tables
+      res.json({
+        summary: {
+          totalBookings,
+          confirmedBookings,
+          cancelledBookings,
+          pendingBookings,
+          totalRevenue,
+          conversionRate: parseFloat(conversionRate),
+          cancellationRate: parseFloat(cancellationRate),
+          avgOrderValue:
+            totalBookings > 0 ? totalRevenue / confirmedBookings : 0,
+        },
+        serviceDetails,
+        topPerformers: {
+          tours: [],
+          hotels: [],
+          flights: [],
+          transports: [],
+        },
+        hourlyDistribution,
+        dailyBreakdown,
         period: { days: parseInt(days), startDate: startDateStr },
       });
     } catch (error) {
@@ -265,18 +401,39 @@ router.get(
           ? 100
           : 0;
 
+      // Calculate average order values
+      const currentAvgOrderValue =
+        (currentData || []).length > 0
+          ? currentRevenue / (currentData || []).length
+          : 0;
+      const previousAvgOrderValue =
+        (previousData || []).length > 0
+          ? previousRevenue / (previousData || []).length
+          : 0;
+      const avgOrderValueChange =
+        previousAvgOrderValue > 0
+          ? ((currentAvgOrderValue - previousAvgOrderValue) /
+              previousAvgOrderValue) *
+            100
+          : currentAvgOrderValue > 0
+          ? 100
+          : 0;
+
       res.json({
         current: {
           revenue: currentRevenue,
           bookings: (currentData || []).length,
+          avgOrderValue: currentAvgOrderValue,
         },
         previous: {
           revenue: previousRevenue,
           bookings: (previousData || []).length,
+          avgOrderValue: previousAvgOrderValue,
         },
-        change: {
+        growth: {
           revenue: revenueChange.toFixed(2),
           bookings: bookingsChange.toFixed(2),
+          avgOrderValue: avgOrderValueChange.toFixed(2),
         },
       });
     } catch (error) {

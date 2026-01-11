@@ -21,7 +21,15 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
 
 const ROOM_AMENITY_OPTIONS = [
   { value: "wifi", label: "WiFi", icon: Wifi },
@@ -196,8 +204,10 @@ const RoomForm = ({ room, hotel, onClose, onSave, viewMode, editMode }) => {
     formDataUpload.append("image", file);
 
     try {
+      // For file upload, don't include Content-Type header
       const response = await fetch(`${API_URL}/hotels/upload`, {
         method: "POST",
+        credentials: "include",
         body: formDataUpload,
       });
 

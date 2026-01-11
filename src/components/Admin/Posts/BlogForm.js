@@ -9,7 +9,15 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
 
 const BlogForm = ({ blog, onClose, onSave, viewMode, editMode }) => {
   const isAddMode = !blog && !viewMode;
@@ -44,9 +52,7 @@ const BlogForm = ({ blog, onClose, onSave, viewMode, editMode }) => {
         }
 
         // Fetch categories
-        const categoriesRes = await fetch(
-          `${API_URL}/blogs/admin/categories`
-        );
+        const categoriesRes = await fetch(`${API_URL}/blogs/admin/categories`);
         if (categoriesRes.ok) {
           const categoriesData = await categoriesRes.json();
           setCategories(categoriesData);
@@ -111,8 +117,10 @@ const BlogForm = ({ blog, onClose, onSave, viewMode, editMode }) => {
       const formDataUpload = new FormData();
       formDataUpload.append("image", file);
 
+      // For file upload, don't include Content-Type header
       const response = await fetch(`${API_URL}/hotels/upload`, {
         method: "POST",
+        credentials: "include",
         body: formDataUpload,
       });
 

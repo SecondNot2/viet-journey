@@ -14,7 +14,15 @@ import {
 import toast from "react-hot-toast";
 import ConfirmDialog from "../../common/ConfirmDialog";
 
-
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
 
 const ScheduleForm = ({ tour, onClose, onSave }) => {
   const [loading, setLoading] = useState(false);
@@ -154,11 +162,10 @@ const ScheduleForm = ({ tour, onClose, onSave }) => {
     try {
       const response = await fetch(
         `${API_URL}/tours/admin/tours/${tour.id}/schedules`,
-        {
+        getFetchOptions({
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
-        }
+        })
       );
 
       if (!response.ok) {
@@ -193,9 +200,9 @@ const ScheduleForm = ({ tour, onClose, onSave }) => {
         try {
           const response = await fetch(
             `${API_URL}/tours/admin/schedules/${scheduleId}`,
-            {
+            getFetchOptions({
               method: "DELETE",
-            }
+            })
           );
 
           if (!response.ok) throw new Error("Failed to delete schedule");

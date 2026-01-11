@@ -18,6 +18,15 @@ import ConfirmDialog from "../../common/ConfirmDialog";
 import DestinationForm from "./DestinationForm";
 import { API_URL, API_HOST } from "../../../config/api";
 
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
 
 const AdminDestinations = () => {
   const [loading, setLoading] = useState(false);
@@ -65,7 +74,10 @@ const AdminDestinations = () => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/destinations/admin/stats`);
+      const response = await fetch(
+        `${API_URL}/destinations/admin/stats`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch stats");
 
       const data = await response.json();
@@ -99,7 +111,8 @@ const AdminDestinations = () => {
       });
 
       const response = await fetch(
-        `${API_URL}/destinations/admin/destinations?${params}`
+        `${API_URL}/destinations/admin/destinations?${params}`,
+        getFetchOptions()
       );
       if (!response.ok) throw new Error("Failed to fetch destinations");
 
@@ -166,9 +179,9 @@ const AdminDestinations = () => {
         try {
           const response = await fetch(
             `${API_URL}/destinations/admin/destinations/${destinationId}`,
-            {
+            getFetchOptions({
               method: "DELETE",
-            }
+            })
           );
 
           if (!response.ok) {
@@ -208,11 +221,10 @@ const AdminDestinations = () => {
     try {
       const response = await fetch(
         `${API_URL}/destinations/admin/destinations/${destinationId}`,
-        {
+        getFetchOptions({
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: "inactive" }),
-        }
+        })
       );
 
       if (!response.ok) throw new Error("Failed to set inactive");
@@ -256,13 +268,13 @@ const AdminDestinations = () => {
               <div className="bg-white/20 p-3 rounded-xl">
                 <MapPin className="w-8 h-8 text-white" />
               </div>
-            <div>
+              <div>
                 <h1 className="text-3xl font-bold text-white">
                   Quản lý Điểm đến
-              </h1>
+                </h1>
                 <p className="text-white/80 mt-1">
                   Quản lý điểm đến du lịch trong hệ thống
-              </p>
+                </p>
               </div>
             </div>
 
@@ -344,10 +356,10 @@ const AdminDestinations = () => {
         <div className="mb-6">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {/* Search */}
-              <div className="relative">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
+              <input
+                type="text"
                 placeholder="Tìm kiếm điểm đến..."
                 value={filters.search}
                 onChange={(e) =>
@@ -358,7 +370,7 @@ const AdminDestinations = () => {
             </div>
 
             {/* Region Filter */}
-              <select
+            <select
               value={filters.region}
               onChange={(e) =>
                 setFilters({ ...filters, region: e.target.value, page: 1 })
@@ -366,13 +378,13 @@ const AdminDestinations = () => {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
               <option value="all">Tất cả miền</option>
-                <option value="north">Miền Bắc</option>
-                <option value="central">Miền Trung</option>
-                <option value="south">Miền Nam</option>
-              </select>
+              <option value="north">Miền Bắc</option>
+              <option value="central">Miền Trung</option>
+              <option value="south">Miền Nam</option>
+            </select>
 
             {/* Type Filter */}
-              <select
+            <select
               value={filters.type}
               onChange={(e) =>
                 setFilters({ ...filters, type: e.target.value, page: 1 })
@@ -380,12 +392,12 @@ const AdminDestinations = () => {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
               <option value="all">Tất cả loại</option>
-                <option value="nature">Thiên nhiên</option>
-                <option value="culture">Văn hóa</option>
+              <option value="nature">Thiên nhiên</option>
+              <option value="culture">Văn hóa</option>
               <option value="beach">Biển</option>
               <option value="mountain">Núi</option>
-                <option value="city">Thành phố</option>
-              </select>
+              <option value="city">Thành phố</option>
+            </select>
 
             {/* Status Filter */}
             <select
@@ -440,21 +452,21 @@ const AdminDestinations = () => {
                   {/* Destination Image */}
                   <div className="w-32 h-32 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
                     {destination.image ? (
-                          <img
-                            src={
+                      <img
+                        src={
                           destination.image.startsWith("http")
                             ? destination.image
                             : `${API_URL}${destination.image}`
-                            }
-                            alt={destination.name}
-                            className="w-full h-full object-cover"
-                          />
+                        }
+                        alt={destination.name}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <MapPin className="w-12 h-12 text-gray-300" />
                       </div>
                     )}
-                        </div>
+                  </div>
 
                   {/* Destination Info */}
                   <div className="flex-1">
@@ -513,8 +525,8 @@ const AdminDestinations = () => {
                       <div className="flex items-center gap-2 text-sm">
                         <Calendar className="w-4 h-4 text-gray-400" />
                         <span>{formatDate(destination.created_at)}</span>
-                        </div>
-                        </div>
+                      </div>
+                    </div>
 
                     {/* Description preview */}
                     {destination.description && (
@@ -524,37 +536,37 @@ const AdminDestinations = () => {
                     )}
 
                     {/* Actions */}
-                        <div className="flex items-center gap-2">
-                          <button
+                    <div className="flex items-center gap-2">
+                      <button
                         onClick={() => handleViewDestination(destination)}
                         className="flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          >
+                      >
                         <Eye className="w-4 h-4" />
                         Xem
-                          </button>
-                          <button
+                      </button>
+                      <button
                         onClick={() => handleEditDestination(destination)}
                         className="flex items-center gap-1 px-3 py-1.5 text-sm text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                          >
+                      >
                         <Edit className="w-4 h-4" />
                         Sửa
-                          </button>
-                          <button
+                      </button>
+                      <button
                         onClick={() => handleDeleteDestination(destination.id)}
                         className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          >
+                      >
                         <Trash2 className="w-4 h-4" />
                         Xóa
-                          </button>
-                        </div>
+                      </button>
+                    </div>
                   </div>
                 </div>
-                      </div>
+              </div>
             ))}
           </div>
         )}
 
-          {/* Pagination */}
+        {/* Pagination */}
         {!loading && destinations.length > 0 && pagination.total > 0 && (
           <div className="flex items-center justify-between mt-6 pt-6 border-t">
             <p className="text-sm text-gray-600">
@@ -564,7 +576,7 @@ const AdminDestinations = () => {
             </p>
             {pagination.total_pages > 1 && (
               <div className="flex gap-2">
-              <button
+                <button
                   onClick={() =>
                     setFilters({ ...filters, page: filters.page - 1 })
                   }
@@ -572,20 +584,20 @@ const AdminDestinations = () => {
                   className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Trước
-              </button>
+                </button>
                 <span className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg font-medium">
                   {pagination.page} / {pagination.total_pages}
                 </span>
-              <button
-                onClick={() =>
+                <button
+                  onClick={() =>
                     setFilters({ ...filters, page: filters.page + 1 })
                   }
                   disabled={filters.page === pagination.total_pages}
                   className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Sau
-              </button>
-            </div>
+                </button>
+              </div>
             )}
           </div>
         )}

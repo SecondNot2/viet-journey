@@ -21,6 +21,15 @@ import HotelForm from "./HotelForm";
 import RoomForm from "./RoomForm";
 import { API_URL, API_HOST } from "../../../config/api";
 
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
 
 const AdminHotels = () => {
   const [activeTab, setActiveTab] = useState("hotels"); // 'hotels' | 'rooms'
@@ -94,7 +103,7 @@ const AdminHotels = () => {
 
   // Fetch hotels
   const fetchHotels = async () => {
-      setLoading(true);
+    setLoading(true);
     try {
       const params = new URLSearchParams();
 
@@ -118,9 +127,7 @@ const AdminHotels = () => {
         params.append(key, value);
       });
 
-      const response = await fetch(
-        `${API_URL}/hotels/admin/hotels?${params}`
-      );
+      const response = await fetch(`${API_URL}/hotels/admin/hotels?${params}`);
       if (!response.ok) throw new Error("Failed to fetch hotels");
 
       const data = await response.json();
@@ -182,7 +189,10 @@ const AdminHotels = () => {
   // Fetch locations
   const fetchLocations = async () => {
     try {
-      const response = await fetch(`${API_URL}/hotels/admin/locations`);
+      const response = await fetch(
+        `${API_URL}/hotels/admin/locations`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch locations");
 
       const data = await response.json();
@@ -195,7 +205,10 @@ const AdminHotels = () => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/hotels/admin/stats`);
+      const response = await fetch(
+        `${API_URL}/hotels/admin/stats`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch stats");
 
       const data = await response.json();
@@ -253,15 +266,15 @@ const AdminHotels = () => {
       confirmText: "Xóa",
       cancelText: "Hủy",
       onConfirm: async () => {
-    try {
-      const response = await fetch(
+        try {
+          const response = await fetch(
             `${API_URL}/hotels/admin/hotels/${hotelId}`,
-        {
-          method: "DELETE",
-        }
-      );
+            getFetchOptions({
+              method: "DELETE",
+            })
+          );
 
-      if (!response.ok) {
+          if (!response.ok) {
             const data = await response.json();
             if (data.hasFutureBookings) {
               setConfirmDialog({
@@ -285,8 +298,8 @@ const AdminHotels = () => {
           await fetchStats(); // Update stats after delete
           toast.success("Đã xóa khách sạn thành công!");
           setConfirmDialog({ ...confirmDialog, isOpen: false });
-    } catch (error) {
-      console.error("Error deleting hotel:", error);
+        } catch (error) {
+          console.error("Error deleting hotel:", error);
           toast.error(error.message || "Có lỗi xảy ra khi xóa khách sạn!");
           setConfirmDialog({ ...confirmDialog, isOpen: false });
         }
@@ -298,11 +311,10 @@ const AdminHotels = () => {
     try {
       const response = await fetch(
         `${API_URL}/hotels/admin/hotels/${hotelId}`,
-        {
+        getFetchOptions({
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: "inactive" }),
-        }
+        })
       );
 
       if (!response.ok) throw new Error("Failed to set inactive");
@@ -359,9 +371,9 @@ const AdminHotels = () => {
         try {
           const response = await fetch(
             `${API_URL}/hotels/admin/rooms/${roomId}`,
-            {
+            getFetchOptions({
               method: "DELETE",
-            }
+            })
           );
 
           if (!response.ok) {
@@ -454,14 +466,14 @@ const AdminHotels = () => {
               <div className="bg-white/20 p-3 rounded-xl">
                 <Building2 className="w-8 h-8 text-white" />
               </div>
-            <div>
+              <div>
                 <h1 className="text-3xl font-bold text-white">
                   Quản lý Khách sạn
-              </h1>
+                </h1>
                 <p className="text-white/80 mt-1">
                   Quản lý khách sạn và phòng trong hệ thống
-              </p>
-            </div>
+                </p>
+              </div>
             </div>
 
             <div className="flex items-center gap-3">
@@ -472,16 +484,16 @@ const AdminHotels = () => {
                 >
                   <Plus className="w-5 h-5" />
                   Thêm khách sạn
-              </button>
+                </button>
               )}
               {activeTab === "rooms" && selectedHotel && (
-              <button
+                <button
                   onClick={handleAddRoom}
                   className="flex items-center gap-2 px-6 py-3 bg-white text-blue-600 rounded-xl font-medium hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl"
                 >
                   <Plus className="w-5 h-5" />
                   Thêm phòng
-              </button>
+                </button>
               )}
             </div>
           </div>
@@ -498,9 +510,9 @@ const AdminHotels = () => {
                 </div>
                 <div className="bg-white/20 p-3 rounded-lg">
                   <Building2 className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
-                </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
               <div className="flex items-center justify-between">
@@ -512,9 +524,9 @@ const AdminHotels = () => {
                 </div>
                 <div className="bg-white/20 p-3 rounded-lg">
                   <CheckCircle className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
-                </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
               <div className="flex items-center justify-between">
@@ -526,9 +538,9 @@ const AdminHotels = () => {
                 </div>
                 <div className="bg-white/20 p-3 rounded-lg">
                   <BedDouble className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
-                </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
               <div className="flex items-center justify-between">
@@ -540,8 +552,8 @@ const AdminHotels = () => {
                 </div>
                 <div className="bg-white/20 p-3 rounded-lg">
                   <Calendar className="w-6 h-6 text-white" />
+                </div>
               </div>
-            </div>
             </div>
           </div>
 
@@ -580,12 +592,12 @@ const AdminHotels = () => {
           <>
             {/* Filters */}
             <div className="mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {/* Search */}
-              <div className="relative">
+                <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
+                  <input
+                    type="text"
                     placeholder="Tìm kiếm khách sạn..."
                     value={hotelFilters.search}
                     onChange={(e) =>
@@ -597,10 +609,10 @@ const AdminHotels = () => {
                     }
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
-            </div>
+                </div>
 
-            {/* Location Filter */}
-              <select
+                {/* Location Filter */}
+                <select
                   value={hotelFilters.location}
                   onChange={(e) =>
                     setHotelFilters({
@@ -610,8 +622,8 @@ const AdminHotels = () => {
                     })
                   }
                   className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Tất cả địa điểm</option>
+                >
+                  <option value="">Tất cả địa điểm</option>
                   {locations.map((loc) => (
                     <option key={loc} value={loc}>
                       {loc}
@@ -654,7 +666,7 @@ const AdminHotels = () => {
                   <option value="name_desc">Tên Z-A</option>
                   <option value="rating_desc">Rating cao nhất</option>
                   <option value="rating_asc">Rating thấp nhất</option>
-              </select>
+                </select>
               </div>
             </div>
 
@@ -691,22 +703,22 @@ const AdminHotels = () => {
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             <Building2 className="w-12 h-12 text-gray-300" />
-                </div>
+                          </div>
                         )}
                       </div>
 
                       {/* Hotel Info */}
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-2">
-                <div>
+                          <div>
                             <h3 className="text-lg font-semibold text-gray-900">
                               {hotel.name}
                             </h3>
                             <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
                               <MapPin className="w-4 h-4" />
                               {hotel.location}
-                </div>
-              </div>
+                            </div>
+                          </div>
                           <div className="flex items-center gap-2">
                             {hotel.status === "active" ? (
                               <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
@@ -722,7 +734,7 @@ const AdminHotels = () => {
                               </span>
                             )}
                           </div>
-            </div>
+                        </div>
 
                         <div className="grid grid-cols-4 gap-4 mb-3">
                           <div className="flex items-center gap-2 text-sm">
@@ -749,18 +761,18 @@ const AdminHotels = () => {
                             <Calendar className="w-4 h-4 text-gray-500" />
                             <span>{formatDate(hotel.created_at)}</span>
                           </div>
-            </div>
+                        </div>
 
                         {/* Actions */}
                         <div className="flex items-center gap-2">
-                    <button
+                          <button
                             onClick={() => handleViewHotel(hotel)}
                             className="flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           >
                             <Eye className="w-4 h-4" />
                             Xem
-                    </button>
-              <button
+                          </button>
+                          <button
                             onClick={() => handleEditHotel(hotel)}
                             className="flex items-center gap-1 px-3 py-1.5 text-sm text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                           >
@@ -780,14 +792,14 @@ const AdminHotels = () => {
                           >
                             <Trash2 className="w-4 h-4" />
                             Xóa
-              </button>
-            </div>
-          </div>
-        </div>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ))}
-          </div>
-        )}
+              </div>
+            )}
 
             {/* Pagination */}
             {hotelPagination.total_pages > 1 && (
@@ -816,7 +828,7 @@ const AdminHotels = () => {
                   </button>
                   <span className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg font-medium">
                     {hotelPagination.page} / {hotelPagination.total_pages}
-                </span>
+                  </span>
                   <button
                     onClick={() =>
                       setHotelFilters({
@@ -828,9 +840,9 @@ const AdminHotels = () => {
                     className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Sau
-                </button>
+                  </button>
+                </div>
               </div>
-            </div>
             )}
           </>
         ) : (
@@ -842,13 +854,13 @@ const AdminHotels = () => {
                 <p className="text-gray-500">
                   Vui lòng chọn khách sạn để quản lý phòng
                 </p>
-          </div>
+              </div>
             ) : (
               <>
                 {/* Hotel Info Banner */}
                 <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 mb-6">
                   <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4">
                       <Building2 className="w-8 h-8 text-blue-600" />
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900">
@@ -890,7 +902,7 @@ const AdminHotels = () => {
                         }
                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
-                            </div>
+                    </div>
 
                     {/* Status Filter */}
                     <select
@@ -932,19 +944,19 @@ const AdminHotels = () => {
                       <option value="capacity_asc">Sức chứa thấp nhất</option>
                       <option value="capacity_desc">Sức chứa cao nhất</option>
                     </select>
-                            </div>
-                          </div>
+                  </div>
+                </div>
 
                 {/* Rooms List */}
                 {loading ? (
                   <div className="flex items-center justify-center py-12">
                     <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                        </div>
+                  </div>
                 ) : rooms.length === 0 ? (
                   <div className="text-center py-12">
                     <BedDouble className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                     <p className="text-gray-500">Không tìm thấy phòng nào</p>
-                        </div>
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {rooms.map((room) => (
@@ -967,7 +979,7 @@ const AdminHotels = () => {
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <BedDouble className="w-16 h-16 text-gray-300" />
-                        </div>
+                            </div>
                           )}
                         </div>
 
@@ -980,21 +992,21 @@ const AdminHotels = () => {
                             {room.status === "available" ? (
                               <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
                                 Có sẵn
-                          </span>
+                              </span>
                             ) : (
                               <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
                                 Không sẵn
                               </span>
                             )}
-                        </div>
+                          </div>
 
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center justify-between text-sm">
                               <span className="text-gray-600">Giá/đêm:</span>
                               <span className="font-semibold text-blue-600">
                                 {formatPrice(room.price)}
-                          </span>
-                        </div>
+                              </span>
+                            </div>
                             <div className="flex items-center justify-between text-sm">
                               <span className="text-gray-600">Sức chứa:</span>
                               <span className="font-medium">
@@ -1005,48 +1017,48 @@ const AdminHotels = () => {
 
                           {/* Actions */}
                           <div className="flex gap-2">
-                          <button
+                            <button
                               onClick={() => handleViewRoom(room)}
                               className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          >
+                            >
                               <Eye className="w-4 h-4" />
                               Xem
-                          </button>
-                          <button
+                            </button>
+                            <button
                               onClick={() => handleEditRoom(room)}
                               className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-sm text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                          >
+                            >
                               <Edit className="w-4 h-4" />
                               Sửa
-                          </button>
-                          <button
+                            </button>
+                            <button
                               onClick={() => handleDeleteRoom(room.id)}
                               className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          >
+                            >
                               <Trash2 className="w-4 h-4" />
                               Xóa
-                          </button>
+                            </button>
+                          </div>
                         </div>
                       </div>
-          </div>
                     ))}
                   </div>
                 )}
 
-          {/* Pagination */}
+                {/* Pagination */}
                 {roomPagination.total_pages > 1 && (
                   <div className="flex items-center justify-between mt-6 pt-6 border-t">
                     <p className="text-sm text-gray-600">
                       Hiển thị{" "}
                       {(roomPagination.page - 1) * roomPagination.limit + 1} -{" "}
-              {Math.min(
+                      {Math.min(
                         roomPagination.page * roomPagination.limit,
                         roomPagination.total
-              )}{" "}
+                      )}{" "}
                       trong tổng số {roomPagination.total} phòng
                     </p>
                     <div className="flex gap-2">
-              <button
+                      <button
                         onClick={() =>
                           setRoomFilters({
                             ...roomFilters,
@@ -1057,12 +1069,12 @@ const AdminHotels = () => {
                         className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Trước
-              </button>
+                      </button>
                       <span className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg font-medium">
                         {roomPagination.page} / {roomPagination.total_pages}
                       </span>
-              <button
-                onClick={() =>
+                      <button
+                        onClick={() =>
                           setRoomFilters({
                             ...roomFilters,
                             page: roomFilters.page + 1,
@@ -1074,15 +1086,15 @@ const AdminHotels = () => {
                         className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Sau
-              </button>
-            </div>
-          </div>
+                      </button>
+                    </div>
+                  </div>
                 )}
               </>
             )}
           </>
         )}
-        </div>
+      </div>
 
       {/* ConfirmDialog */}
       <ConfirmDialog

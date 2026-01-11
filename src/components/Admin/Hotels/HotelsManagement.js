@@ -15,6 +15,16 @@ import {
 import HotelForm from "./HotelForm";
 import { API_URL, API_HOST } from "../../../config/api";
 
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
+
 const PLACEHOLDER_IMAGE = `${API_HOST}/images/placeholder.png`;
 
 const HotelsManagement = () => {
@@ -32,7 +42,7 @@ const HotelsManagement = () => {
   const fetchHotels = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/hotels`);
+      const response = await fetch(`${API_URL}/hotels`, getFetchOptions());
       if (!response.ok) {
         throw new Error("Failed to fetch hotels");
       }
@@ -53,9 +63,12 @@ const HotelsManagement = () => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/hotels/${id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `${API_URL}/hotels/${id}`,
+        getFetchOptions({
+          method: "DELETE",
+        })
+      );
 
       if (!response.ok) {
         throw new Error("Failed to delete hotel");

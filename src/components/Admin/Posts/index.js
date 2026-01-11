@@ -17,6 +17,15 @@ import ConfirmDialog from "../../common/ConfirmDialog";
 import BlogForm from "./BlogForm";
 import { API_URL, API_HOST } from "../../../config/api";
 
+// Helper function to get fetch options with credentials
+const getFetchOptions = (options = {}) => ({
+  ...options,
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+    ...options.headers,
+  },
+});
 
 const AdminBlogs = () => {
   const [loading, setLoading] = useState(false);
@@ -67,7 +76,10 @@ const AdminBlogs = () => {
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/blogs/admin/stats`);
+      const response = await fetch(
+        `${API_URL}/blogs/admin/stats`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch stats");
 
       const data = await response.json();
@@ -80,7 +92,10 @@ const AdminBlogs = () => {
   // Fetch categories
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${API_URL}/blogs/admin/categories`);
+      const response = await fetch(
+        `${API_URL}/blogs/admin/categories`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch categories");
 
       const data = await response.json();
@@ -93,7 +108,10 @@ const AdminBlogs = () => {
   // Fetch authors
   const fetchAuthors = async () => {
     try {
-      const response = await fetch(`${API_URL}/blogs/admin/authors`);
+      const response = await fetch(
+        `${API_URL}/blogs/admin/authors`,
+        getFetchOptions()
+      );
       if (!response.ok) throw new Error("Failed to fetch authors");
 
       const data = await response.json();
@@ -126,9 +144,7 @@ const AdminBlogs = () => {
         params.append(key, value);
       });
 
-      const response = await fetch(
-        `${API_URL}/blogs/admin/blogs?${params}`
-      );
+      const response = await fetch(`${API_URL}/blogs/admin/blogs?${params}`);
       if (!response.ok) throw new Error("Failed to fetch blogs");
 
       const data = await response.json();
@@ -195,9 +211,9 @@ const AdminBlogs = () => {
         try {
           const response = await fetch(
             `${API_URL}/blogs/admin/blogs/${blogId}`,
-            {
+            getFetchOptions({
               method: "DELETE",
-            }
+            })
           );
 
           if (!response.ok) {
@@ -273,22 +289,22 @@ const AdminBlogs = () => {
               <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
                 <FileText className="w-8 h-8 text-white" />
               </div>
-            <div>
+              <div>
                 <h1 className="text-3xl font-bold text-white">
                   Quản lý Bài viết
-              </h1>
+                </h1>
                 <p className="text-purple-100 mt-1">
                   Quản lý tất cả bài viết blog
-              </p>
+                </p>
+              </div>
             </div>
-            </div>
-              <button
+            <button
               onClick={handleAdd}
               className="flex items-center gap-2 bg-white text-purple-600 px-6 py-3 rounded-xl font-medium hover:bg-purple-50 transition-colors shadow-lg"
-              >
+            >
               <Plus className="w-5 h-5" />
-                Thêm bài viết
-              </button>
+              Thêm bài viết
+            </button>
           </div>
 
           {/* Stats Cards */}
@@ -303,9 +319,9 @@ const AdminBlogs = () => {
                 </div>
                 <div className="bg-white/10 p-3 rounded-lg">
                   <FileText className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
-                </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
               <div className="flex items-center justify-between">
@@ -317,9 +333,9 @@ const AdminBlogs = () => {
                 </div>
                 <div className="bg-white/10 p-3 rounded-lg">
                   <BarChart2 className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
-                </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
               <div className="flex items-center justify-between">
@@ -333,9 +349,9 @@ const AdminBlogs = () => {
                 </div>
                 <div className="bg-white/10 p-3 rounded-lg">
                   <ThumbsUp className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
-                </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
               <div className="flex items-center justify-between">
@@ -359,10 +375,10 @@ const AdminBlogs = () => {
         {/* Filters */}
         <div className="mb-6 space-y-4">
           {/* Search Bar */}
-              <div className="relative">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
+            <input
+              type="text"
               placeholder="Tìm kiếm theo tiêu đề hoặc nội dung..."
               value={filters.search}
               onChange={(e) =>
@@ -370,7 +386,7 @@ const AdminBlogs = () => {
               }
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
-            </div>
+          </div>
 
           {/* Filters Row */}
           <div className="flex flex-wrap gap-4">
@@ -408,7 +424,7 @@ const AdminBlogs = () => {
             </select>
 
             {/* Sort */}
-              <select
+            <select
               value={filters.sort_by}
               onChange={(e) =>
                 setFilters({ ...filters, sort_by: e.target.value, page: 1 })
@@ -423,9 +439,9 @@ const AdminBlogs = () => {
               <option value="views_asc">Ít lượt xem nhất</option>
               <option value="likes_desc">Nhiều lượt thích nhất</option>
               <option value="likes_asc">Ít lượt thích nhất</option>
-              </select>
-            </div>
-            </div>
+            </select>
+          </div>
+        </div>
 
         {/* Loading State */}
         {loading && (
@@ -444,14 +460,14 @@ const AdminBlogs = () => {
             <p className="text-gray-500 mb-6">
               Hãy thêm bài viết mới hoặc thay đổi bộ lọc
             </p>
-              <button
+            <button
               onClick={handleAdd}
               className="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-purple-700 transition-colors"
-              >
+            >
               <Plus className="w-5 h-5" />
               Thêm bài viết
-              </button>
-            </div>
+            </button>
+          </div>
         )}
 
         {/* Blogs Grid */}
@@ -473,9 +489,9 @@ const AdminBlogs = () => {
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <FileText className="w-16 h-16 text-gray-400" />
-            </div>
-          )}
-        </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Content */}
                 <div className="p-4">
@@ -487,7 +503,7 @@ const AdminBlogs = () => {
                     <span className="text-xs text-gray-500">
                       {formatDate(blog.created_at)}
                     </span>
-          </div>
+                  </div>
 
                   {/* Title */}
                   <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
@@ -503,54 +519,54 @@ const AdminBlogs = () => {
                   <div className="flex items-center gap-2 mb-4 text-sm text-gray-600">
                     <User className="w-4 h-4" />
                     <span>{blog.author_name}</span>
-              </div>
+                  </div>
 
                   {/* Stats */}
                   <div className="flex items-center gap-4 mb-4 text-sm text-gray-600">
                     <div className="flex items-center gap-1">
                       <BarChart2 className="w-4 h-4" />
                       <span>{blog.views || 0}</span>
-            </div>
+                    </div>
                     <div className="flex items-center gap-1">
                       <ThumbsUp className="w-4 h-4" />
                       <span>{blog.likes || 0}</span>
-          </div>
+                    </div>
                     <div className="flex items-center gap-1">
                       <MessageCircle className="w-4 h-4" />
                       <span>{blog.comment_count || 0}</span>
-                          </div>
-                        </div>
+                    </div>
+                  </div>
 
                   {/* Actions */}
-                        <div className="flex items-center gap-2">
-                          <button
+                  <div className="flex items-center gap-2">
+                    <button
                       onClick={() => handleView(blog)}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                          >
+                    >
                       <Eye className="w-4 h-4" />
                       Xem
-                          </button>
-                          <button
+                    </button>
+                    <button
                       onClick={() => handleEdit(blog)}
                       className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
-                          >
+                    >
                       <Edit className="w-4 h-4" />
                       Sửa
-                          </button>
-                          <button
+                    </button>
+                    <button
                       onClick={() => handleDelete(blog.id)}
                       className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
-                          >
+                    >
                       <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
-                      </div>
-                )}
+          </div>
+        )}
 
-          {/* Pagination */}
+        {/* Pagination */}
         {!loading && blogs.length > 0 && pagination.total > 0 && (
           <div className="flex items-center justify-between mt-6 pt-6 border-t">
             <p className="text-sm text-gray-600">
@@ -560,7 +576,7 @@ const AdminBlogs = () => {
             </p>
             {pagination.total_pages > 1 && (
               <div className="flex gap-2">
-              <button
+                <button
                   onClick={() =>
                     setFilters({ ...filters, page: filters.page - 1 })
                   }
@@ -568,20 +584,20 @@ const AdminBlogs = () => {
                   className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Trước
-              </button>
+                </button>
                 <span className="px-4 py-2 bg-purple-50 text-purple-600 rounded-lg font-medium">
                   {pagination.page} / {pagination.total_pages}
                 </span>
-              <button
-                onClick={() =>
+                <button
+                  onClick={() =>
                     setFilters({ ...filters, page: filters.page + 1 })
                   }
                   disabled={filters.page === pagination.total_pages}
                   className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Sau
-              </button>
-            </div>
+                </button>
+              </div>
             )}
           </div>
         )}
